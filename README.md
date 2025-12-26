@@ -13,7 +13,7 @@ Frontend-only web application for video analysis, deployed on Vercel.
 
 ### Environment Variables
 
-**Secure Build-Time Injection**: This project uses a minimal build script (`build.js`) that injects environment variables into the HTML at build time. This keeps secrets out of your git repository while making them available to the client-side code.
+**Runtime Environment Variable Injection**: This project uses a minimal API route (`api/config.js`) to securely serve environment variables at runtime. This is necessary because Vercel static sites cannot access environment variables directly, and build-time injection wasn't working reliably.
 
 **Required Variables** (set in Vercel dashboard):
 - `SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
@@ -60,7 +60,7 @@ php -S localhost:8000
 - **main.js** - Application logic (auth, upload, analysis)
 - **supabase.js** - Supabase client initialization
 - **style.css** - Minimal styling
-- **build.js** - Build script that injects environment variables
+- **api/config.js** - Minimal API route that serves environment variables (required for Vercel static sites)
 - **vercel.json** - Vercel configuration (static site with build step)
 
 ## API Endpoints Required
