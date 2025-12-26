@@ -16,9 +16,34 @@ const jsonOutput = document.getElementById('json-output');
 
 // Initialize auth state
 async function initAuth() {
+    // Check for OAuth callback
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const accessToken = hashParams.get('access_token');
+    const error = hashParams.get('error');
+    
+    if (error) {
+        console.error('OAuth error:', error);
+        updateStatus('Authentication error: ' + error, 'error');
+        // Clean up URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
     const { data: { session } } = await supabase.auth.getSession();
     currentUser = session?.user || null;
-    updateUI();
+    
+    // If we have an access token in URL, wait a moment for session to be set
+    if (accessToken && !currentUser) {
+        console.log('Access token found in URL, waiting for session...');
+        setTimeout(async () => {
+            const { data: { session: newSession } } = await supabase.auth.getSession();
+            currentUser = newSession?.user || null;
+            updateUI();
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }, 500);
+    } else {
+        updateUI();
+    }
 }
 
 // Update UI based on auth state
@@ -38,14 +63,31 @@ function updateUI() {
 
 // Login handler
 loginBtn.addEventListener('click', async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-            redirectTo: window.location.origin
+    try {
+        const redirectUrl = window.location.origin + window.location.pathname;
+        console.log('Initiating OAuth login with redirect:', redirectUrl);
+        
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: redirectUrl,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                }
+            }
+        });
+        
+        if (error) {
+            console.error('OAuth error:', error);
+            updateStatus('Login error: ' + error.message, 'error');
+        } else if (data?.url) {
+            console.log('Redirecting to:', data.url);
+            // Supabase will handle the redirect automatically
         }
-    });
-    if (error) {
-        updateStatus('Login error: ' + error.message, 'error');
+    } catch (err) {
+        console.error('Login error:', err);
+        updateStatus('Login error: ' + err.message, 'error');
     }
 });
 

@@ -6,9 +6,18 @@
 const fs = require('fs');
 const path = require('path');
 
+// Debug: Log all environment variables that start with EXPO_PUBLIC, SUPABASE, or API
+console.log('Available environment variables:');
+Object.keys(process.env)
+  .filter(key => key.includes('EXPO_PUBLIC') || key.includes('SUPABASE') || key.includes('API'))
+  .forEach(key => {
+    const value = process.env[key];
+    console.log(`  ${key}: ${value ? (key.includes('KEY') ? '***hidden***' : value.substring(0, 50)) : 'NOT SET'}`);
+  });
+
 const envVars = {
   SUPABASE_URL: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL || '',
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_KEY || '',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_KEY || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '',
   API_BASE_URL: process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || process.env.EXPO_PUBLIC_API_BASE_URL || ''
 };
 
