@@ -1,12 +1,12 @@
 {
-  "buildCommand": null,
+  "buildCommand": "npm run vercel-build",
   "devCommand": null,
-  "installCommand": null,
+  "installCommand": "echo 'No dependencies to install'",
   "framework": null,
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/((?!api).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
