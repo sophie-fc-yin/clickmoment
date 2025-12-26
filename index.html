@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ClickMoment - Video Analysis</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>ClickMoment</h1>
+            <div id="auth-section">
+                <button id="login-btn" class="btn btn-primary" style="display: none;">Login</button>
+                <button id="logout-btn" class="btn btn-secondary" style="display: none;">Logout</button>
+            </div>
+        </header>
+
+        <main id="main-content" style="display: none;">
+            <div class="upload-section">
+                <h2>Upload Video</h2>
+                <input type="file" id="video-input" accept="video/*" />
+                <button id="analyze-btn" class="btn btn-primary" disabled>Analyze</button>
+            </div>
+
+            <div class="status-section">
+                <p id="status-text"></p>
+            </div>
+
+            <div class="output-section">
+                <h2>Analysis Result</h2>
+                <pre id="json-output">No analysis yet.</pre>
+            </div>
+        </main>
+
+        <div id="login-prompt" class="login-prompt">
+            <p>Please log in to upload and analyze videos.</p>
+        </div>
+    </div>
+
+    <script type="module" src="supabase.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
+
