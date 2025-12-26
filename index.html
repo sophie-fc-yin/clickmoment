@@ -11,6 +11,7 @@
         <header>
             <h1>ClickMoment</h1>
             <div id="auth-section">
+                <button id="profile-btn" class="btn btn-secondary" style="display: none;">Profile</button>
                 <button id="login-btn" class="btn btn-primary" style="display: none;">Login</button>
                 <button id="logout-btn" class="btn btn-secondary" style="display: none;">Logout</button>
             </div>
@@ -29,6 +30,96 @@
                 <p>No projects yet. Create your first project to get started!</p>
             </div>
         </main>
+
+        <!-- Profile View -->
+        <main id="profile-view" style="display: none;">
+            <div class="profile-header">
+                <button id="back-from-profile-btn" class="btn btn-secondary">← Back</button>
+                <h2>Channel Profile</h2>
+            </div>
+            <form id="profile-form" class="profile-form">
+                <div class="form-group">
+                    <label for="profile-stage">Channel Stage</label>
+                    <select id="profile-stage" name="stage">
+                        <option value="">Select stage...</option>
+                        <option value="new/starter">New/Starter</option>
+                        <option value="growing">Growing</option>
+                        <option value="established">Established</option>
+                        <option value="large/mainstream">Large/Mainstream</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profile-subscriber-count">Subscriber Count</label>
+                    <input type="number" id="profile-subscriber-count" name="subscriber_count" min="0" placeholder="e.g., 1000" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="profile-content-niche">Content Niche</label>
+                    <input type="text" id="profile-content-niche" name="content_niche" maxlength="100" placeholder="e.g., tech reviews, cooking tutorials" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="profile-upload-frequency">Upload Frequency</label>
+                    <select id="profile-upload-frequency" name="upload_frequency">
+                        <option value="">Select frequency...</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="irregular">Irregular</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="profile-growth-goal">Growth Goal</label>
+                    <input type="text" id="profile-growth-goal" name="growth_goal" maxlength="100" placeholder="e.g., build authority, viral reach, loyal community" />
+                </div>
+                
+                <button type="submit" class="btn btn-primary">Save Profile</button>
+            </form>
+        </main>
+
+        <!-- Project Creation Modal -->
+        <div id="create-project-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Create New Project</h2>
+                    <button id="close-modal-btn" class="btn-close">&times;</button>
+                </div>
+                <form id="create-project-form" class="project-form">
+                    <div class="form-group">
+                        <label for="project-name">Project Name *</label>
+                        <input type="text" id="project-name" name="name" required placeholder="My Project" />
+                    </div>
+                    
+                    <h3>Target Settings</h3>
+                    <div class="form-group">
+                        <label for="project-platform">Platform</label>
+                        <select id="project-platform" name="platform">
+                            <option value="youtube">YouTube</option>
+                            <option value="shorts">Shorts</option>
+                            <option value="reels">Reels</option>
+                            <option value="tiktok">TikTok</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project-optimization">Optimization (Optional)</label>
+                        <input type="text" id="project-optimization" name="optimization" placeholder="e.g., CTR, retention" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="project-audience-profile">Audience Profile (Optional)</label>
+                        <textarea id="project-audience-profile" name="audience_profile" maxlength="200" rows="3" placeholder="e.g., tech-savvy millennials, beginner programmers"></textarea>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" id="cancel-project-btn" class="btn btn-secondary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Project</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <!-- Project Detail / Video Upload View -->
         <main id="project-view" style="display: none;">
@@ -144,7 +235,9 @@
 
         import('./supabase.js').then(() => {
             return import('./projects.js').then(() => {
-                return import('./main.js');
+                return import('./profile.js').then(() => {
+                    return import('./main.js');
+                });
             });
         }).catch(err => {
             console.error('Failed to load modules:', err);

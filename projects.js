@@ -1,96 +1,133 @@
-// Project management using localStorage
-// Projects are stored per user (keyed by user ID)
+// Project management using Supabase
+import { supabase } from './supabase.js';
 
 export class ProjectManager {
     constructor(userId) {
         this.userId = userId;
-        this.storageKey = `clickmoment_projects_${userId}`;
     }
 
     // Get all projects for the current user
-    getProjects() {
-        try {
-            const data = localStorage.getItem(this.storageKey);
-            return data ? JSON.parse(data) : [];
-        } catch (error) {
+    async getProjects() {
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('user_id', this.userId)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
             console.error('Error loading projects:', error);
             return [];
         }
-    }
-
-    // Save projects
-    saveProjects(projects) {
-        try {
-            localStorage.setItem(this.storageKey, JSON.stringify(projects));
-            return true;
-        } catch (error) {
-            console.error('Error saving projects:', error);
-            return false;
-        }
+        
+        return data || [];
     }
 
     // Create a new project
-    createProject(name) {
-        const projects = this.getProjects();
-        const newProject = {
-            id: Date.now().toString(),
-            name: name || `Project ${projects.length + 1}`,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            analyses: []
-        };
-        projects.push(newProject);
-        this.saveProjects(projects);
-        return newProject;
+    async createProject(projectData) {
+        const { data, error } = await supabase
+            .from('projects')
+            .insert({
+                user_id: this.userId,
+                name: projectData.name || `Project ${new Date().toISOString()}`,
+                platform: projectData.platform || 'youtube',
+                optimization: projectData.optimization || null,
+                audience_profile: projectData.audience_profile || null,
+            })
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('Error creating project:', error);
+            return { error };
+        }
+        
+        return { data };
     }
 
     // Get a project by ID
-    getProject(projectId) {
-        const projects = this.getProjects();
-        return projects.find(p => p.id === projectId);
+    async getProject(projectId) {
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('id', projectId)
+            .eq('user_id', this.userId)
+            .single();
+        
+        if (error) {
+            console.error('Error fetching project:', error);
+            return null;
+        }
+        
+        return data;
     }
 
     // Update a project
-    updateProject(projectId, updates) {
-        const projects = this.getProjects();
-        const index = projects.findIndex(p => p.id === projectId);
-        if (index !== -1) {
-            projects[index] = {
-                ...projects[index],
-                ...updates,
-                updatedAt: new Date().toISOString()
-            };
-            this.saveProjects(projects);
-            return projects[index];
+    async updateProject(projectId, updates) {
+        const { data, error } = await supabase
+            .from('projects')
+            .update(updates)
+            .eq('id', projectId)
+            .eq('user_id', this.userId)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('Error updating project:', error);
+            return { error };
         }
-        return null;
+        
+        return { data };
     }
 
     // Delete a project
-    deleteProject(projectId) {
-        const projects = this.getProjects();
-        const filtered = projects.filter(p => p.id !== projectId);
-        this.saveProjects(filtered);
-        return filtered.length !== projects.length;
+    async deleteProject(projectId) {
+        const { error } = await supabase
+            .from('projects')
+            .delete()
+            .eq('id', projectId)
+            .eq('user_id', this.userId);
+        
+        if (error) {
+            console.error('Error deleting project:', error);
+            return { error };
+        }
+        
+        return { success: true };
     }
 
     // Add analysis result to a project
-    addAnalysis(projectId, analysisData) {
-        const project = this.getProject(projectId);
-        if (project) {
-            const analysis = {
-                id: Date.now().toString(),
-                timestamp: new Date().toISOString(),
-                data: analysisData
-            };
-            if (!project.analyses) {
-                project.analyses = [];
-            }
-            project.analyses.push(analysis);
-            this.updateProject(projectId, { analyses: project.analyses });
-            return analysis;
+    async addAnalysis(projectId, analysisData, gcsPath = null) {
+        const { data, error } = await supabase
+            .from('analyses')
+            .insert({
+                project_id: projectId,
+                gcs_path: gcsPath,
+                result: analysisData
+            })
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('Error saving analysis:', error);
+            return { error };
         }
-        return null;
+        
+        return { data };
+    }
+
+    // Get analyses for a project
+    async getAnalyses(projectId) {
+        const { data, error } = await supabase
+            .from('analyses')
+            .select('*')
+            .eq('project_id', projectId)
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('Error fetching analyses:', error);
+            return [];
+        }
+        
+        return data || [];
     }
 }
-

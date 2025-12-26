@@ -11,6 +11,17 @@ Frontend-only web application for video analysis, deployed on Vercel.
 
 ## Setup
 
+### Database Setup
+
+1. Go to your Supabase project dashboard
+2. Navigate to **SQL Editor**
+3. Copy and paste the contents of `database-schema.sql`
+4. Run the SQL script to create the required tables:
+   - `channel_profiles` - Stores user channel/profile information
+   - `projects` - Stores projects with Target settings
+   - `analyses` - Stores analysis results for each project
+5. The script also sets up Row Level Security (RLS) policies to ensure users can only access their own data
+
 ### Environment Variables
 
 **Runtime Environment Variable Injection**: This project uses a minimal API route (`api/config.js`) to securely serve environment variables at runtime. This is necessary because Vercel static sites cannot access environment variables directly, and build-time injection wasn't working reliably.
@@ -57,11 +68,33 @@ php -S localhost:8000
 ## Architecture
 
 - **index.html** - Main HTML structure (env vars injected at build time)
-- **main.js** - Application logic (auth, upload, analysis)
+- **main.js** - Application logic (auth, upload, analysis, routing)
 - **supabase.js** - Supabase client initialization
-- **style.css** - Minimal styling
-- **api/config.js** - Minimal API route that serves environment variables (required for Vercel static sites)
+- **projects.js** - Project management using Supabase
+- **profile.js** - Profile/channel management using Supabase
+- **style.css** - Styling
+- **database-schema.sql** - SQL schema for Supabase tables
+- **build.js** - Build script that injects environment variables
 - **vercel.json** - Vercel configuration (static site with build step)
+
+## Data Models
+
+### Channel Profile
+- `stage` - Channel growth stage (new/starter, growing, established, large/mainstream)
+- `subscriber_count` - Approximate subscriber count
+- `content_niche` - Primary content category
+- `upload_frequency` - How often content is published
+- `growth_goal` - Primary growth objective
+
+### Project (Target Settings)
+- `name` - Project name
+- `platform` - Platform to optimize for (youtube, shorts, reels, tiktok)
+- `optimization` - Primary KPI to optimize for (CTR, retention, etc.)
+- `audience_profile` - Target audience description
+
+### Analysis
+- Stores analysis results linked to projects
+- Includes GCS path and result JSON
 
 ## API Endpoints Required
 

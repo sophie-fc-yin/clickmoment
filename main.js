@@ -1,27 +1,37 @@
 import { supabase, getAuthHeaders } from './supabase.js';
 import { ProjectManager } from './projects.js';
+import { ProfileManager } from './profile.js';
 
 const API_BASE_URL = window.API_BASE_URL || 'https://API_BASE_URL';
 
 let currentUser = null;
 let projectManager = null;
+let profileManager = null;
 let currentProjectId = null;
 
 // DOM elements
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
+const profileBtn = document.getElementById('profile-btn');
 const projectsView = document.getElementById('projects-view');
 const projectView = document.getElementById('project-view');
+const profileView = document.getElementById('profile-view');
 const loginPrompt = document.getElementById('login-prompt');
 const projectsList = document.getElementById('projects-list');
 const noProjects = document.getElementById('no-projects');
 const createProjectBtn = document.getElementById('create-project-btn');
 const backToProjectsBtn = document.getElementById('back-to-projects-btn');
+const backFromProfileBtn = document.getElementById('back-from-profile-btn');
 const projectTitle = document.getElementById('project-title');
 const videoInput = document.getElementById('video-input');
 const analyzeBtn = document.getElementById('analyze-btn');
 const statusText = document.getElementById('status-text');
 const jsonOutput = document.getElementById('json-output');
+const createProjectModal = document.getElementById('create-project-modal');
+const createProjectForm = document.getElementById('create-project-form');
+const closeModalBtn = document.getElementById('close-modal-btn');
+const cancelProjectBtn = document.getElementById('cancel-project-btn');
+const profileForm = document.getElementById('profile-form');
 
 // Initialize auth state
 async function initAuth() {
@@ -60,37 +70,47 @@ function updateUI() {
     if (currentUser) {
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
+        profileBtn.style.display = 'inline-block';
         loginPrompt.style.display = 'none';
-        // Initialize project manager
+        // Initialize managers
         if (!projectManager) {
             projectManager = new ProjectManager(currentUser.id);
+        }
+        if (!profileManager) {
+            profileManager = new ProfileManager();
         }
         // Show projects list by default
         showProjectsView();
     } else {
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
+        profileBtn.style.display = 'none';
         projectsView.style.display = 'none';
         projectView.style.display = 'none';
+        profileView.style.display = 'none';
         loginPrompt.style.display = 'block';
     }
 }
 
 // Show projects list view
-function showProjectsView() {
+async function showProjectsView() {
     projectsView.style.display = 'block';
     projectView.style.display = 'none';
+    profileView.style.display = 'none';
+    createProjectModal.style.display = 'none';
     currentProjectId = null;
-    renderProjectsList();
+    await renderProjectsList();
 }
 
 // Show project detail view
-function showProjectView(projectId) {
+async function showProjectView(projectId) {
     projectsView.style.display = 'none';
     projectView.style.display = 'block';
+    profileView.style.display = 'none';
+    createProjectModal.style.display = 'none';
     currentProjectId = projectId;
     
-    const project = projectManager.getProject(projectId);
+    const project = await projectManager.getProject(projectId);
     if (project) {
         projectTitle.textContent = project.name;
     }
@@ -103,10 +123,10 @@ function showProjectView(projectId) {
 }
 
 // Render projects list
-function renderProjectsList() {
+async function renderProjectsList() {
     if (!projectManager) return;
     
-    const projects = projectManager.getProjects();
+    const projects = await projectManager.getProjects();
     projectsList.innerHTML = '';
     
     if (projects.length === 0) {
@@ -116,33 +136,36 @@ function renderProjectsList() {
         noProjects.style.display = 'none';
         projectsList.style.display = 'grid';
         
-        projects.forEach(project => {
+        // Get analyses count for each project
+        for (const project of projects) {
+            const analyses = await projectManager.getAnalyses(project.id);
             const projectCard = document.createElement('div');
             projectCard.className = 'project-card';
             projectCard.innerHTML = `
                 <h3>${escapeHtml(project.name)}</h3>
-                <p class="project-meta">Created: ${new Date(project.createdAt).toLocaleDateString()}</p>
-                <p class="project-meta">Analyses: ${project.analyses ? project.analyses.length : 0}</p>
+                <p class="project-meta">Created: ${new Date(project.created_at).toLocaleDateString()}</p>
+                <p class="project-meta">Analyses: ${analyses.length}</p>
+                <p class="project-meta">Platform: ${escapeHtml(project.platform || 'youtube')}</p>
                 <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
                 <button class="btn btn-secondary delete-project-btn" data-project-id="${project.id}">Delete</button>
             `;
             projectsList.appendChild(projectCard);
-        });
+        }
         
         // Add event listeners
         document.querySelectorAll('.open-project-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const projectId = e.target.getAttribute('data-project-id');
-                showProjectView(projectId);
+                await showProjectView(projectId);
             });
         });
         
         document.querySelectorAll('.delete-project-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
+            btn.addEventListener('click', async (e) => {
                 const projectId = e.target.getAttribute('data-project-id');
                 if (confirm('Are you sure you want to delete this project?')) {
-                    projectManager.deleteProject(projectId);
-                    renderProjectsList();
+                    await projectManager.deleteProject(projectId);
+                    await renderProjectsList();
                 }
             });
         });
@@ -214,17 +237,90 @@ function resetForm() {
     updateStatus('');
 }
 
+// Show profile view
+async function showProfileView() {
+    projectsView.style.display = 'none';
+    projectView.style.display = 'none';
+    profileView.style.display = 'block';
+    createProjectModal.style.display = 'none';
+    
+    // Load existing profile data
+    if (profileManager && currentUser) {
+        const profile = await profileManager.getProfile(currentUser.id);
+        if (profile) {
+            document.getElementById('profile-stage').value = profile.stage || '';
+            document.getElementById('profile-subscriber-count').value = profile.subscriber_count || '';
+            document.getElementById('profile-content-niche').value = profile.content_niche || '';
+            document.getElementById('profile-upload-frequency').value = profile.upload_frequency || '';
+            document.getElementById('profile-growth-goal').value = profile.growth_goal || '';
+        }
+    }
+}
+
 // Project management event listeners
 createProjectBtn.addEventListener('click', () => {
-    const name = prompt('Enter project name:');
-    if (name && name.trim()) {
-        const project = projectManager.createProject(name.trim());
-        showProjectView(project.id);
+    createProjectModal.style.display = 'block';
+});
+
+closeModalBtn.addEventListener('click', () => {
+    createProjectModal.style.display = 'none';
+});
+
+cancelProjectBtn.addEventListener('click', () => {
+    createProjectModal.style.display = 'none';
+    createProjectForm.reset();
+});
+
+createProjectForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const projectData = {
+        name: formData.get('name'),
+        platform: formData.get('platform') || 'youtube',
+        optimization: formData.get('optimization') || null,
+        audience_profile: formData.get('audience_profile') || null,
+    };
+    
+    const result = await projectManager.createProject(projectData);
+    if (result.error) {
+        alert('Error creating project: ' + result.error.message);
+    } else {
+        createProjectModal.style.display = 'none';
+        createProjectForm.reset();
+        await showProjectView(result.data.id);
     }
 });
 
 backToProjectsBtn.addEventListener('click', () => {
     showProjectsView();
+});
+
+profileBtn.addEventListener('click', () => {
+    showProfileView();
+});
+
+backFromProfileBtn.addEventListener('click', () => {
+    showProjectsView();
+});
+
+profileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const profileData = {
+        stage: formData.get('stage') || null,
+        subscriber_count: formData.get('subscriber_count') ? parseInt(formData.get('subscriber_count')) : null,
+        content_niche: formData.get('content_niche') || null,
+        upload_frequency: formData.get('upload_frequency') || null,
+        growth_goal: formData.get('growth_goal') || null,
+    };
+    
+    const result = await profileManager.saveProfile(currentUser.id, profileData);
+    if (result.error) {
+        alert('Error saving profile: ' + result.error.message);
+    } else {
+        alert('Profile saved successfully!');
+        showProjectsView();
+    }
 });
 
 // Enable analyze button when file is selected
@@ -328,7 +424,7 @@ analyzeBtn.addEventListener('click', async () => {
         
         // Step 4: Save analysis to project
         if (currentProjectId && projectManager) {
-            projectManager.addAnalysis(currentProjectId, result);
+            await projectManager.addAnalysis(currentProjectId, result, gcs_path);
         }
         
         // Step 5: Display result
