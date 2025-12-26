@@ -115,6 +115,17 @@ async function showProjectView(projectId) {
     const project = await projectManager.getProject(projectId);
     if (project) {
         projectTitle.textContent = project.name;
+        
+        // Display project info
+        document.getElementById('info-platform').textContent = project.platform || '-';
+        document.getElementById('info-optimization').textContent = project.optimization || '-';
+        document.getElementById('info-audience').textContent = project.audience_profile || '-';
+        document.getElementById('info-mood').textContent = project.mood || '-';
+        document.getElementById('info-title-hint').textContent = project.title_hint || '-';
+        document.getElementById('info-brand-colors').textContent = project.brand_colors && project.brand_colors.length > 0 
+            ? project.brand_colors.join(', ') 
+            : '-';
+        document.getElementById('info-notes').textContent = project.notes || '-';
     }
     
     // Reset form
