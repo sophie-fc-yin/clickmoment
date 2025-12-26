@@ -1,14 +1,23 @@
 import { supabase, getAuthHeaders } from './supabase.js';
+import { ProjectManager } from './projects.js';
 
 const API_BASE_URL = window.API_BASE_URL || 'https://API_BASE_URL';
 
 let currentUser = null;
+let projectManager = null;
+let currentProjectId = null;
 
 // DOM elements
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
-const mainContent = document.getElementById('main-content');
+const projectsView = document.getElementById('projects-view');
+const projectView = document.getElementById('project-view');
 const loginPrompt = document.getElementById('login-prompt');
+const projectsList = document.getElementById('projects-list');
+const noProjects = document.getElementById('no-projects');
+const createProjectBtn = document.getElementById('create-project-btn');
+const backToProjectsBtn = document.getElementById('back-to-projects-btn');
+const projectTitle = document.getElementById('project-title');
 const videoInput = document.getElementById('video-input');
 const analyzeBtn = document.getElementById('analyze-btn');
 const statusText = document.getElementById('status-text');
@@ -51,14 +60,100 @@ function updateUI() {
     if (currentUser) {
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
-        mainContent.style.display = 'block';
         loginPrompt.style.display = 'none';
+        // Initialize project manager
+        if (!projectManager) {
+            projectManager = new ProjectManager(currentUser.id);
+        }
+        // Show projects list by default
+        showProjectsView();
     } else {
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
-        mainContent.style.display = 'none';
+        projectsView.style.display = 'none';
+        projectView.style.display = 'none';
         loginPrompt.style.display = 'block';
     }
+}
+
+// Show projects list view
+function showProjectsView() {
+    projectsView.style.display = 'block';
+    projectView.style.display = 'none';
+    currentProjectId = null;
+    renderProjectsList();
+}
+
+// Show project detail view
+function showProjectView(projectId) {
+    projectsView.style.display = 'none';
+    projectView.style.display = 'block';
+    currentProjectId = projectId;
+    
+    const project = projectManager.getProject(projectId);
+    if (project) {
+        projectTitle.textContent = project.name;
+    }
+    
+    // Reset form
+    videoInput.value = '';
+    analyzeBtn.disabled = true;
+    jsonOutput.textContent = 'No analysis yet.';
+    updateStatus('');
+}
+
+// Render projects list
+function renderProjectsList() {
+    if (!projectManager) return;
+    
+    const projects = projectManager.getProjects();
+    projectsList.innerHTML = '';
+    
+    if (projects.length === 0) {
+        noProjects.style.display = 'block';
+        projectsList.style.display = 'none';
+    } else {
+        noProjects.style.display = 'none';
+        projectsList.style.display = 'grid';
+        
+        projects.forEach(project => {
+            const projectCard = document.createElement('div');
+            projectCard.className = 'project-card';
+            projectCard.innerHTML = `
+                <h3>${escapeHtml(project.name)}</h3>
+                <p class="project-meta">Created: ${new Date(project.createdAt).toLocaleDateString()}</p>
+                <p class="project-meta">Analyses: ${project.analyses ? project.analyses.length : 0}</p>
+                <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
+                <button class="btn btn-secondary delete-project-btn" data-project-id="${project.id}">Delete</button>
+            `;
+            projectsList.appendChild(projectCard);
+        });
+        
+        // Add event listeners
+        document.querySelectorAll('.open-project-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const projectId = e.target.getAttribute('data-project-id');
+                showProjectView(projectId);
+            });
+        });
+        
+        document.querySelectorAll('.delete-project-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const projectId = e.target.getAttribute('data-project-id');
+                if (confirm('Are you sure you want to delete this project?')) {
+                    projectManager.deleteProject(projectId);
+                    renderProjectsList();
+                }
+            });
+        });
+    }
+}
+
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }
 
 // Login handler
@@ -119,6 +214,19 @@ function resetForm() {
     updateStatus('');
 }
 
+// Project management event listeners
+createProjectBtn.addEventListener('click', () => {
+    const name = prompt('Enter project name:');
+    if (name && name.trim()) {
+        const project = projectManager.createProject(name.trim());
+        showProjectView(project.id);
+    }
+});
+
+backToProjectsBtn.addEventListener('click', () => {
+    showProjectsView();
+});
+
 // Enable analyze button when file is selected
 videoInput.addEventListener('change', (e) => {
     analyzeBtn.disabled = !e.target.files.length;
@@ -150,7 +258,11 @@ analyzeBtn.addEventListener('click', async () => {
         // Step 1: Get signed upload URL
         updateStatus('Requesting upload URL...', 'info');
         const authHeaders = await getAuthHeaders();
-        const uploadUrlResponse = await fetch(`${API_BASE_URL}/get-upload-url`, {
+        const apiUrl = `${API_BASE_URL}/get-upload-url`;
+        console.log('Calling API:', apiUrl);
+        console.log('Auth headers:', authHeaders);
+        
+        const uploadUrlResponse = await fetch(apiUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -160,10 +272,15 @@ analyzeBtn.addEventListener('click', async () => {
                 filename: file.name,
                 content_type: file.type
             })
+        }).catch(err => {
+            console.error('Fetch error:', err);
+            throw new Error(`Network error: ${err.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
         });
 
         if (!uploadUrlResponse.ok) {
-            throw new Error(`Failed to get upload URL: ${uploadUrlResponse.statusText}`);
+            const errorText = await uploadUrlResponse.text();
+            console.error('API error response:', errorText);
+            throw new Error(`Failed to get upload URL (${uploadUrlResponse.status}): ${errorText || uploadUrlResponse.statusText}`);
         }
 
         const { signed_url, gcs_path } = await uploadUrlResponse.json();
@@ -184,7 +301,10 @@ analyzeBtn.addEventListener('click', async () => {
 
         // Step 3: Call analyze endpoint
         updateStatus('Analyzing video...', 'info');
-        const analyzeResponse = await fetch(`${API_BASE_URL}/analyze`, {
+        const analyzeUrl = `${API_BASE_URL}/analyze`;
+        console.log('Calling analyze API:', analyzeUrl);
+        
+        const analyzeResponse = await fetch(analyzeUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -193,15 +313,25 @@ analyzeBtn.addEventListener('click', async () => {
             body: JSON.stringify({
                 gcs_path: gcs_path
             })
+        }).catch(err => {
+            console.error('Analyze fetch error:', err);
+            throw new Error(`Network error during analysis: ${err.message}`);
         });
 
         if (!analyzeResponse.ok) {
-            throw new Error(`Analysis failed: ${analyzeResponse.statusText}`);
+            const errorText = await analyzeResponse.text();
+            console.error('Analyze API error response:', errorText);
+            throw new Error(`Analysis failed (${analyzeResponse.status}): ${errorText || analyzeResponse.statusText}`);
         }
 
         const result = await analyzeResponse.json();
         
-        // Step 4: Display result
+        // Step 4: Save analysis to project
+        if (currentProjectId && projectManager) {
+            projectManager.addAnalysis(currentProjectId, result);
+        }
+        
+        // Step 5: Display result
         jsonOutput.textContent = JSON.stringify(result, null, 2);
         updateStatus('Analysis complete!', 'success');
         

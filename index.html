@@ -16,9 +16,28 @@
             </div>
         </header>
 
-        <main id="main-content" style="display: none;">
+        <!-- Projects List View -->
+        <main id="projects-view" style="display: none;">
+            <div class="projects-header">
+                <h2>My Projects</h2>
+                <button id="create-project-btn" class="btn btn-primary">+ New Project</button>
+            </div>
+            <div id="projects-list" class="projects-list">
+                <!-- Projects will be dynamically added here -->
+            </div>
+            <div id="no-projects" class="no-projects" style="display: none;">
+                <p>No projects yet. Create your first project to get started!</p>
+            </div>
+        </main>
+
+        <!-- Project Detail / Video Upload View -->
+        <main id="project-view" style="display: none;">
+            <div class="project-header">
+                <button id="back-to-projects-btn" class="btn btn-secondary">← Back to Projects</button>
+                <h2 id="project-title">Project</h2>
+            </div>
             <div class="upload-section">
-                <h2>Upload Video</h2>
+                <h3>Upload Video</h3>
                 <input type="file" id="video-input" accept="video/*" />
                 <button id="analyze-btn" class="btn btn-primary" disabled>Analyze</button>
             </div>
@@ -28,7 +47,7 @@
             </div>
 
             <div class="output-section">
-                <h2>Analysis Result</h2>
+                <h3>Analysis Result</h3>
                 <pre id="json-output">No analysis yet.</pre>
             </div>
         </main>
@@ -124,7 +143,9 @@
         });
 
         import('./supabase.js').then(() => {
-            return import('./main.js');
+            return import('./projects.js').then(() => {
+                return import('./main.js');
+            });
         }).catch(err => {
             console.error('Failed to load modules:', err);
             const errorDiv = document.getElementById('config-error');
