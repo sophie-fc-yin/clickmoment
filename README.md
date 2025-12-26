@@ -13,20 +13,14 @@ Frontend-only web application for video analysis, deployed on Vercel.
 
 ### Environment Variables
 
-**Important**: Vercel static sites cannot access environment variables directly in client-side code without a build step or API route.
+**Secure Build-Time Injection**: This project uses a minimal build script (`build.js`) that injects environment variables into the HTML at build time. This keeps secrets out of your git repository while making them available to the client-side code.
 
-**Option 1: Create config.js file** (Recommended for static deployment)
-1. Copy `config.example.js` to `config.js`
-2. Fill in your credentials
-3. **Note**: Do NOT commit `config.js` to git (add it to `.gitignore`)
-
-**Option 2: Use Vercel Environment Variables with Build Injection**
-If you need to use Vercel's environment variables, you'll need to add a minimal build step or use Vercel's Edge Config.
-
-**Required Variables:**
+**Required Variables** (set in Vercel dashboard):
 - `SUPABASE_URL` - Your Supabase project URL
-- `SUPABASE_ANON_KEY` - Your Supabase anonymous key  
+- `SUPABASE_ANON_KEY` - Your Supabase anonymous key (safe to expose - protected by RLS)
 - `API_BASE_URL` - Your FastAPI backend URL (e.g., `https://your-api.run.app`)
+
+**Note**: The Supabase `ANON_KEY` is designed to be public. Security is handled by Supabase's Row Level Security (RLS) policies, not by hiding the key.
 
 ### Local Development
 
@@ -46,15 +40,9 @@ php -S localhost:8000
 
 3. Open `http://localhost:8000` in your browser
 
-**Note**: For local development with ES modules, you may need to set environment variables in your browser. You can create a `config.js` file:
-
-```javascript
-window.SUPABASE_URL = 'your-supabase-url';
-window.SUPABASE_ANON_KEY = 'your-anon-key';
-window.API_BASE_URL = 'your-api-url';
-```
-
-Then include it in `index.html` before other scripts.
+**Note**: For local development, you can either:
+1. Run `node build.js` before serving (requires env vars set)
+2. Create a `config.js` file (see `config.example.js`) - this file is gitignored
 
 ### Deployment
 
@@ -65,11 +53,12 @@ Then include it in `index.html` before other scripts.
 
 ## Architecture
 
-- **index.html** - Main HTML structure
+- **index.html** - Main HTML structure (env vars injected at build time)
 - **main.js** - Application logic (auth, upload, analysis)
 - **supabase.js** - Supabase client initialization
 - **style.css** - Minimal styling
-- **vercel.json** - Vercel configuration (static site)
+- **build.js** - Build script that injects environment variables
+- **vercel.json** - Vercel configuration (static site with build step)
 
 ## API Endpoints Required
 
