@@ -4,8 +4,10 @@
   "description": "Frontend-only web app for video analysis",
   "scripts": {
     "build": "node build.js",
-    "vercel-build": "node build.js"
+    "vercel-build": "node build.js",
+    "postinstall": "echo 'Build will run via vercel-build script'"
   },
+  "dependencies": {},
   "engines": {
     "node": ">=18.x"
   }
