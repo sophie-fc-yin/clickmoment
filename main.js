@@ -22,6 +22,7 @@ const noProjects = document.getElementById('no-projects');
 const createProjectBtn = document.getElementById('create-project-btn');
 const backToProjectsBtn = document.getElementById('back-to-projects-btn');
 const backFromProfileBtn = document.getElementById('back-from-profile-btn');
+const editProjectBtn = document.getElementById('edit-project-btn');
 const projectTitle = document.getElementById('project-title');
 const videoInput = document.getElementById('video-input');
 const analyzeBtn = document.getElementById('analyze-btn');
@@ -32,6 +33,7 @@ const createProjectForm = document.getElementById('create-project-form');
 const closeModalBtn = document.getElementById('close-modal-btn');
 const cancelProjectBtn = document.getElementById('cancel-project-btn');
 const profileForm = document.getElementById('profile-form');
+const modalTitle = document.getElementById('modal-title');
 
 // Initialize auth state
 async function initAuth() {
@@ -269,25 +271,72 @@ closeModalBtn.addEventListener('click', () => {
 cancelProjectBtn.addEventListener('click', () => {
     createProjectModal.style.display = 'none';
     createProjectForm.reset();
+    currentProjectId = null;
+    modalTitle.textContent = 'Create New Project';
+});
+
+editProjectBtn.addEventListener('click', async () => {
+    if (!currentProjectId) return;
+    
+    const project = await projectManager.getProject(currentProjectId);
+    if (project) {
+        modalTitle.textContent = 'Edit Project';
+        document.getElementById('project-name').value = project.name;
+        document.getElementById('project-platform').value = project.platform || 'youtube';
+        document.getElementById('project-optimization').value = project.optimization || '';
+        document.getElementById('project-audience-profile').value = project.audience_profile || '';
+        document.getElementById('project-mood').value = project.mood || '';
+        document.getElementById('project-title-hint').value = project.title_hint || '';
+        document.getElementById('project-brand-colors').value = project.brand_colors ? project.brand_colors.join(', ') : '';
+        document.getElementById('project-notes').value = project.notes || '';
+        createProjectModal.style.display = 'block';
+    }
 });
 
 createProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    
+    // Parse brand colors from comma-separated string
+    const brandColorsStr = formData.get('brand_colors') || '';
+    const brandColors = brandColorsStr
+        .split(',')
+        .map(color => color.trim())
+        .filter(color => color.length > 0);
+    
     const projectData = {
         name: formData.get('name'),
         platform: formData.get('platform') || 'youtube',
         optimization: formData.get('optimization') || null,
         audience_profile: formData.get('audience_profile') || null,
+        mood: formData.get('mood') || null,
+        title_hint: formData.get('title_hint') || null,
+        brand_colors: brandColors,
+        notes: formData.get('notes') || null,
     };
     
-    const result = await projectManager.createProject(projectData);
-    if (result.error) {
-        alert('Error creating project: ' + result.error.message);
+    if (currentProjectId) {
+        // Update existing project
+        const result = await projectManager.updateProject(currentProjectId, projectData);
+        if (result.error) {
+            alert('Error updating project: ' + result.error.message);
+        } else {
+            createProjectModal.style.display = 'none';
+            createProjectForm.reset();
+            currentProjectId = null;
+            modalTitle.textContent = 'Create New Project';
+            await showProjectView(result.data.id);
+        }
     } else {
-        createProjectModal.style.display = 'none';
-        createProjectForm.reset();
-        await showProjectView(result.data.id);
+        // Create new project
+        const result = await projectManager.createProject(projectData);
+        if (result.error) {
+            alert('Error creating project: ' + result.error.message);
+        } else {
+            createProjectModal.style.display = 'none';
+            createProjectForm.reset();
+            await showProjectView(result.data.id);
+        }
     }
 });
 

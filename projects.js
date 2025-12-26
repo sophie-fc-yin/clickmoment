@@ -32,6 +32,10 @@ export class ProjectManager {
                 platform: projectData.platform || 'youtube',
                 optimization: projectData.optimization || null,
                 audience_profile: projectData.audience_profile || null,
+                mood: projectData.mood || null,
+                title_hint: projectData.title_hint || null,
+                brand_colors: projectData.brand_colors || [],
+                notes: projectData.notes || null,
             })
             .select()
             .single();
@@ -42,7 +46,6 @@ export class ProjectManager {
         }
         
         return { data };
-    }
 
     // Get a project by ID
     async getProject(projectId) {

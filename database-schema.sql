@@ -26,6 +26,12 @@ CREATE TABLE IF NOT EXISTS projects (
     optimization TEXT,
     audience_profile TEXT CHECK (char_length(audience_profile) <= 200),
     
+    -- Creative Brief settings
+    mood TEXT CHECK (char_length(mood) <= 120),
+    title_hint TEXT,
+    brand_colors TEXT[], -- Array of color strings
+    notes TEXT CHECK (char_length(notes) <= 1000),
+    
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
