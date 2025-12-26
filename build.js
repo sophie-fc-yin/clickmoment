@@ -7,10 +7,21 @@ const fs = require('fs');
 const path = require('path');
 
 const envVars = {
-  SUPABASE_URL: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
-  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '',
-  API_BASE_URL: process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || ''
+  SUPABASE_URL: process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || process.env.EXPO_PUBLIC_SUPABASE_URL || '',
+  SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || process.env.EXPO_PUBLIC_SUPABASE_KEY || '',
+  API_BASE_URL: process.env.API_BASE_URL || process.env.VITE_API_BASE_URL || process.env.EXPO_PUBLIC_API_BASE_URL || ''
 };
+
+// Warn if required vars are missing
+if (!envVars.SUPABASE_URL) {
+  console.warn('⚠️  Warning: SUPABASE_URL is not set');
+}
+if (!envVars.SUPABASE_ANON_KEY) {
+  console.warn('⚠️  Warning: SUPABASE_ANON_KEY is not set');
+}
+if (!envVars.API_BASE_URL) {
+  console.warn('⚠️  Warning: API_BASE_URL is not set - video analysis will not work');
+}
 
 // Read index.html
 const indexPath = path.join(__dirname, 'index.html');

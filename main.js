@@ -95,6 +95,15 @@ analyzeBtn.addEventListener('click', async () => {
         return;
     }
 
+    if (!API_BASE_URL || API_BASE_URL === 'https://API_BASE_URL') {
+        updateStatus('API_BASE_URL is not configured. Please set it in Vercel environment variables.', 'error');
+        jsonOutput.textContent = JSON.stringify({
+            error: 'API_BASE_URL not configured',
+            message: 'Set API_BASE_URL environment variable in Vercel to your FastAPI backend URL (e.g., https://your-api.run.app)'
+        }, null, 2);
+        return;
+    }
+
     try {
         // Step 1: Get signed upload URL
         updateStatus('Requesting upload URL...', 'info');

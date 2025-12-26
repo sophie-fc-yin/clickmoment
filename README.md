@@ -16,11 +16,14 @@ Frontend-only web application for video analysis, deployed on Vercel.
 **Secure Build-Time Injection**: This project uses a minimal build script (`build.js`) that injects environment variables into the HTML at build time. This keeps secrets out of your git repository while making them available to the client-side code.
 
 **Required Variables** (set in Vercel dashboard):
-- `SUPABASE_URL` - Your Supabase project URL
-- `SUPABASE_ANON_KEY` - Your Supabase anonymous key (safe to expose - protected by RLS)
-- `API_BASE_URL` - Your FastAPI backend URL (e.g., `https://your-api.run.app`)
+- `SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `SUPABASE_ANON_KEY` or `EXPO_PUBLIC_SUPABASE_KEY` - Your Supabase anonymous key (safe to expose - protected by RLS)
+- `API_BASE_URL` or `EXPO_PUBLIC_API_BASE_URL` - Your FastAPI backend URL (e.g., `https://your-api-123456.run.app`)
 
-**Note**: The Supabase `ANON_KEY` is designed to be public. Security is handled by Supabase's Row Level Security (RLS) policies, not by hiding the key.
+**Note**: 
+- The Supabase `ANON_KEY` is designed to be public. Security is handled by Supabase's Row Level Security (RLS) policies, not by hiding the key.
+- `API_BASE_URL` is optional for authentication, but required for video upload and analysis functionality.
+- The build script supports both standard and `EXPO_PUBLIC_` prefixed variable names for compatibility.
 
 ### Local Development
 

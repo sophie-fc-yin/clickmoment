@@ -56,13 +56,20 @@
         
         // Check configuration
         window.addEventListener('DOMContentLoaded', () => {
-            if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+            const missing = [];
+            if (!window.SUPABASE_URL) missing.push('SUPABASE_URL');
+            if (!window.SUPABASE_ANON_KEY) missing.push('SUPABASE_ANON_KEY');
+            if (!window.API_BASE_URL) missing.push('API_BASE_URL (your FastAPI backend URL)');
+            
+            if (missing.length > 0) {
                 const errorDiv = document.getElementById('config-error');
                 if (errorDiv) {
                     errorDiv.style.display = 'block';
+                    const isCritical = !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY;
                     errorDiv.innerHTML = `
-                        <strong>Configuration Required:</strong><br>
-                        Environment variables are not set. Please configure SUPABASE_URL, SUPABASE_ANON_KEY, and API_BASE_URL in Vercel's environment variables.
+                        <strong>${isCritical ? 'Configuration Required' : 'Warning'}:</strong><br>
+                        Missing environment variables: ${missing.join(', ')}<br><br>
+                        ${isCritical ? 'Please configure these in Vercel\'s environment variables to use the app.' : 'Video analysis will not work without API_BASE_URL. Auth should still work.'}
                     `;
                 }
             }
