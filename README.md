@@ -13,11 +13,20 @@ Frontend-only web application for video analysis, deployed on Vercel.
 
 ### Environment Variables
 
-Configure these in Vercel dashboard:
+**Important**: Vercel static sites cannot access environment variables directly in client-side code without a build step or API route.
 
-- `VITE_SUPABASE_URL` - Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-- `VITE_API_BASE_URL` - Your FastAPI backend URL (e.g., `https://your-api.run.app`)
+**Option 1: Create config.js file** (Recommended for static deployment)
+1. Copy `config.example.js` to `config.js`
+2. Fill in your credentials
+3. **Note**: Do NOT commit `config.js` to git (add it to `.gitignore`)
+
+**Option 2: Use Vercel Environment Variables with Build Injection**
+If you need to use Vercel's environment variables, you'll need to add a minimal build step or use Vercel's Edge Config.
+
+**Required Variables:**
+- `SUPABASE_URL` - Your Supabase project URL
+- `SUPABASE_ANON_KEY` - Your Supabase anonymous key  
+- `API_BASE_URL` - Your FastAPI backend URL (e.g., `https://your-api.run.app`)
 
 ### Local Development
 

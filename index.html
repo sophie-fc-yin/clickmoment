@@ -33,13 +33,49 @@
             </div>
         </main>
 
-        <div id="login-prompt" class="login-prompt">
+        <div id="login-prompt" class="login-prompt" style="display: block;">
             <p>Please log in to upload and analyze videos.</p>
+            <div id="config-error" style="display: none; color: #cc0000; margin-top: 20px; padding: 10px; background: #ffe6e6; border-radius: 4px;">
+                <strong>Configuration Error:</strong> Environment variables are not set. Please configure SUPABASE_URL, SUPABASE_ANON_KEY, and API_BASE_URL in Vercel.
+            </div>
         </div>
     </div>
 
+    <!-- Load config from local file if it exists -->
+    <script src="config.js" type="text/javascript" onerror="console.log('config.js not found')"></script>
+    <script>
+        // Initialize defaults - these will be overridden by config.js if it exists
+        window.SUPABASE_URL = window.SUPABASE_URL || '';
+        window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
+        window.API_BASE_URL = window.API_BASE_URL || '';
+        
+        // Check configuration after a delay to allow config.js to load
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+                    const errorDiv = document.getElementById('config-error');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        errorDiv.innerHTML = `
+                            <strong>Configuration Required:</strong><br>
+                            Environment variables are not set. For Vercel deployment, you need to inject these variables into the page.<br>
+                            Options:<br>
+                            1. Create a config.js file with your credentials (see config.example.js)<br>
+                            2. Use Vercel's build-time environment variable injection<br>
+                            3. Set window.SUPABASE_URL, window.SUPABASE_ANON_KEY, and window.API_BASE_URL before the scripts load
+                        `;
+                    }
+                }
+            }, 300);
+        });
+    </script>
     <script type="module" src="supabase.js"></script>
     <script type="module" src="main.js"></script>
+    <noscript>
+        <div style="padding: 20px; background: #ffe6e6; border-radius: 4px; margin-top: 20px;">
+            <strong>JavaScript Required:</strong> This application requires JavaScript to function. Please enable JavaScript in your browser.
+        </div>
+    </noscript>
 </body>
 </html>
 
