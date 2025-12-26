@@ -1,18 +1,9 @@
 {
-  "buildCommand": "npm install && npm run build",
+  "buildCommand": null,
   "devCommand": null,
-  "installCommand": "npm install",
+  "installCommand": null,
   "framework": null,
   "outputDirectory": ".",
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "."
-      }
-    }
-  ],
   "rewrites": [
     {
       "source": "/(.*)",

@@ -42,26 +42,62 @@
     </div>
 
     <!-- Load environment variables from API endpoint -->
-    <script src="/api/config.js"></script>
     <script>
-        // Debug: Log what we have
-        console.log('Page loaded. Checking configuration...');
-        console.log('window.SUPABASE_URL:', window.SUPABASE_URL);
-        console.log('window.SUPABASE_ANON_KEY:', window.SUPABASE_ANON_KEY ? 'Set (hidden)' : 'Missing');
-        console.log('window.API_BASE_URL:', window.API_BASE_URL);
+        // Load config from API endpoint
+        (async function() {
+            try {
+                const response = await fetch('/api/config.js');
+                if (!response.ok) {
+                    throw new Error(`Config API returned ${response.status}`);
+                }
+                const configScript = await response.text();
+                // Execute the config script
+                eval(configScript);
+                
+                console.log('✓ Config loaded from API');
+                console.log('window.SUPABASE_URL:', window.SUPABASE_URL);
+                console.log('window.SUPABASE_ANON_KEY:', window.SUPABASE_ANON_KEY ? 'Set (hidden)' : 'Missing');
+                console.log('window.API_BASE_URL:', window.API_BASE_URL);
+                
+                // Initialize defaults if still undefined
+                if (typeof window.SUPABASE_URL === 'undefined') {
+                    window.SUPABASE_URL = '';
+                }
+                if (typeof window.SUPABASE_ANON_KEY === 'undefined') {
+                    window.SUPABASE_ANON_KEY = '';
+                }
+                if (typeof window.API_BASE_URL === 'undefined') {
+                    window.API_BASE_URL = '';
+                }
+                
+                // Check configuration
+                checkConfig();
+                
+                // Load main application scripts after config is loaded
+                await loadApp();
+            } catch (error) {
+                console.error('Failed to load config:', error);
+                // Initialize defaults
+                window.SUPABASE_URL = '';
+                window.SUPABASE_ANON_KEY = '';
+                window.API_BASE_URL = '';
+                
+                const errorDiv = document.getElementById('config-error');
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `
+                        <strong>Failed to Load Configuration:</strong><br>
+                        Could not load environment variables from /api/config.js<br>
+                        Error: ${error.message}<br><br>
+                        Please ensure:<br>
+                        1. Environment variables are set in Vercel<br>
+                        2. The /api/config.js endpoint is accessible<br>
+                        3. Check browser console for more details
+                    `;
+                }
+            }
+        })();
         
-        // Initialize defaults - these will be overridden by build-time injection
-        if (typeof window.SUPABASE_URL === 'undefined') {
-            window.SUPABASE_URL = '';
-        }
-        if (typeof window.SUPABASE_ANON_KEY === 'undefined') {
-            window.SUPABASE_ANON_KEY = '';
-        }
-        if (typeof window.API_BASE_URL === 'undefined') {
-            window.API_BASE_URL = '';
-        }
-        
-        // Check configuration immediately and on DOM ready
         function checkConfig() {
             const missing = [];
             if (!window.SUPABASE_URL) missing.push('SUPABASE_URL');
@@ -70,14 +106,13 @@
             
             if (missing.length > 0) {
                 const errorDiv = document.getElementById('config-error');
-                if (errorDiv) {
+                if (errorDiv && errorDiv.style.display !== 'block') {
                     errorDiv.style.display = 'block';
                     const isCritical = !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY;
                     errorDiv.innerHTML = `
                         <strong>${isCritical ? 'Configuration Required' : 'Warning'}:</strong><br>
                         Missing environment variables: ${missing.join(', ')}<br><br>
-                        ${isCritical ? 'Please configure these in Vercel\'s environment variables to use the app.' : 'Video analysis will not work without API_BASE_URL. Auth should still work.'}<br><br>
-                        <small>Check Vercel build logs to see if build.js ran successfully.</small>
+                        ${isCritical ? 'Please configure these in Vercel\'s environment variables to use the app.' : 'Video analysis will not work without API_BASE_URL. Auth should still work.'}
                     `;
                 }
             } else {
@@ -85,14 +120,23 @@
             }
         }
         
-        // Check immediately
-        checkConfig();
-        
-        // Also check on DOM ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', checkConfig);
-        } else {
-            checkConfig();
+        async function loadApp() {
+            try {
+                await import('./supabase.js');
+                await import('./main.js');
+                console.log('✓ Application loaded successfully');
+            } catch (error) {
+                console.error('Failed to load application:', error);
+                const errorDiv = document.getElementById('config-error');
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `
+                        <strong>Failed to Load Application:</strong><br>
+                        ${error.message || 'Unknown error'}<br>
+                        Check browser console for details.
+                    `;
+                }
+            }
         }
     </script>
     <script type="module">
