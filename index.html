@@ -43,6 +43,12 @@
 
     <!-- Environment variables are injected here at build time by build.js -->
     <script>
+        // Debug: Log what we have
+        console.log('Page loaded. Checking configuration...');
+        console.log('window.SUPABASE_URL:', window.SUPABASE_URL);
+        console.log('window.SUPABASE_ANON_KEY:', window.SUPABASE_ANON_KEY ? 'Set (hidden)' : 'Missing');
+        console.log('window.API_BASE_URL:', window.API_BASE_URL);
+        
         // Initialize defaults - these will be overridden by build-time injection
         if (typeof window.SUPABASE_URL === 'undefined') {
             window.SUPABASE_URL = '';
@@ -54,8 +60,8 @@
             window.API_BASE_URL = '';
         }
         
-        // Check configuration
-        window.addEventListener('DOMContentLoaded', () => {
+        // Check configuration immediately and on DOM ready
+        function checkConfig() {
             const missing = [];
             if (!window.SUPABASE_URL) missing.push('SUPABASE_URL');
             if (!window.SUPABASE_ANON_KEY) missing.push('SUPABASE_ANON_KEY');
@@ -69,14 +75,59 @@
                     errorDiv.innerHTML = `
                         <strong>${isCritical ? 'Configuration Required' : 'Warning'}:</strong><br>
                         Missing environment variables: ${missing.join(', ')}<br><br>
-                        ${isCritical ? 'Please configure these in Vercel\'s environment variables to use the app.' : 'Video analysis will not work without API_BASE_URL. Auth should still work.'}
+                        ${isCritical ? 'Please configure these in Vercel\'s environment variables to use the app.' : 'Video analysis will not work without API_BASE_URL. Auth should still work.'}<br><br>
+                        <small>Check Vercel build logs to see if build.js ran successfully.</small>
                     `;
                 }
+            } else {
+                console.log('✓ All environment variables are set');
+            }
+        }
+        
+        // Check immediately
+        checkConfig();
+        
+        // Also check on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkConfig);
+        } else {
+            checkConfig();
+        }
+    </script>
+    <script type="module">
+        // Load modules with error handling
+        window.addEventListener('error', (e) => {
+            console.error('Script error:', e);
+            const errorDiv = document.getElementById('config-error');
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `
+                    <strong>Error Loading Application:</strong><br>
+                    ${e.message || 'Unknown error'}<br>
+                    Check browser console for details.
+                `;
+            }
+        });
+
+        import('./supabase.js').then(() => {
+            return import('./main.js');
+        }).catch(err => {
+            console.error('Failed to load modules:', err);
+            const errorDiv = document.getElementById('config-error');
+            if (errorDiv) {
+                errorDiv.style.display = 'block';
+                errorDiv.innerHTML = `
+                    <strong>Failed to Load Application:</strong><br>
+                    ${err.message || 'Module loading error'}<br>
+                    Check browser console for details.<br><br>
+                    Debug info:<br>
+                    SUPABASE_URL: ${window.SUPABASE_URL ? 'Set' : 'Missing'}<br>
+                    SUPABASE_ANON_KEY: ${window.SUPABASE_ANON_KEY ? 'Set' : 'Missing'}<br>
+                    API_BASE_URL: ${window.API_BASE_URL ? 'Set' : 'Missing'}
+                `;
             }
         });
     </script>
-    <script type="module" src="supabase.js"></script>
-    <script type="module" src="main.js"></script>
     <noscript>
         <div style="padding: 20px; background: #ffe6e6; border-radius: 4px; margin-top: 20px;">
             <strong>JavaScript Required:</strong> This application requires JavaScript to function. Please enable JavaScript in your browser.

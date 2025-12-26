@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node build.js",
+  "buildCommand": "npm run build",
   "devCommand": null,
   "installCommand": null,
   "framework": null,

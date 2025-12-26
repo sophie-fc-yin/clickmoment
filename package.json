@@ -1,0 +1,12 @@
+{
+  "name": "clickmoment-web",
+  "version": "1.0.0",
+  "description": "Frontend-only web app for video analysis",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}
+

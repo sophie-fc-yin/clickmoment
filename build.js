@@ -49,4 +49,7 @@ if (scriptTagIndex !== -1) {
 fs.writeFileSync(indexPath, html, 'utf8');
 
 console.log('✓ Environment variables injected into index.html');
+console.log(`  SUPABASE_URL: ${envVars.SUPABASE_URL ? '✓ Set' : '✗ Missing'}`);
+console.log(`  SUPABASE_ANON_KEY: ${envVars.SUPABASE_ANON_KEY ? '✓ Set' : '✗ Missing'}`);
+console.log(`  API_BASE_URL: ${envVars.API_BASE_URL ? '✓ Set' : '✗ Missing'}`);
 
