@@ -63,7 +63,7 @@ async function initAuth() {
             window.history.replaceState({}, document.title, window.location.pathname);
         }, 500);
     } else {
-        updateUI();
+        await updateUI();
     }
 }
 
@@ -268,9 +268,9 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 // Listen for auth state changes
-supabase.auth.onAuthStateChange((event, session) => {
+supabase.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user || null;
-    updateUI();
+    await updateUI();
 });
 
 // Update status text
