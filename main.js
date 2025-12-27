@@ -549,6 +549,7 @@ analyzeBtn.addEventListener('click', async () => {
         const authHeaders = await getAuthHeaders();
         const apiUrl = `${API_BASE_URL}/get-upload-url`;
         console.log('Calling API:', apiUrl);
+        console.log('Request origin:', window.location.origin);
         console.log('Auth headers:', authHeaders);
         
         const uploadUrlResponse = await fetch(apiUrl, {
@@ -562,8 +563,19 @@ analyzeBtn.addEventListener('click', async () => {
                 content_type: file.type
             })
         }).catch(err => {
-            console.error('Fetch error:', err);
-            throw new Error(`Network error: ${err.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
+            console.error('Fetch error details:', {
+                message: err.message,
+                name: err.name,
+                stack: err.stack
+            });
+            console.error('API URL attempted:', apiUrl);
+            console.error('Request origin:', window.location.origin);
+            
+            // More specific error message
+            if (err.message.includes('Failed to fetch') || err.message.includes('network')) {
+                throw new Error(`CORS or Network Error: The backend at ${API_BASE_URL} is not allowing requests from ${window.location.origin}. Check your FastAPI backend CORS settings - it needs to allow your Vercel domain. Common fix: Add your Vercel domain to the CORS allowed origins in your FastAPI backend.`);
+            }
+            throw new Error(`Network error: ${err.message}`);
         });
 
         if (!uploadUrlResponse.ok) {
