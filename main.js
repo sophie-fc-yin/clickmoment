@@ -58,7 +58,7 @@ async function initAuth() {
         setTimeout(async () => {
             const { data: { session: newSession } } = await supabase.auth.getSession();
             currentUser = newSession?.user || null;
-            updateUI();
+            await updateUI();
             // Clean up URL
             window.history.replaceState({}, document.title, window.location.pathname);
         }, 500);
@@ -89,7 +89,7 @@ function cleanupOldLocalStorage() {
 }
 
 // Update UI based on auth state
-function updateUI() {
+async function updateUI() {
     if (currentUser) {
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
@@ -106,8 +106,20 @@ function updateUI() {
         if (!profileManager) {
             profileManager = new ProfileManager();
         }
-        // Show projects list by default
-        showProjectsView();
+        
+        // Check if user has a profile, if not prompt them to create one
+        const profile = await profileManager.getProfile(currentUser.id);
+        if (!profile) {
+            // First time user - show profile setup
+            if (confirm('Welcome! Please set up your channel profile to get started. This helps us provide better recommendations.')) {
+                showProfileView();
+            } else {
+                showProjectsView();
+            }
+        } else {
+            // Show projects list by default
+            showProjectsView();
+        }
     } else {
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
@@ -404,7 +416,7 @@ profileForm.addEventListener('submit', async (e) => {
         alert('Error saving profile: ' + result.error.message);
     } else {
         alert('Profile saved successfully!');
-        showProjectsView();
+        await showProjectsView();
     }
 });
 
