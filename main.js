@@ -556,12 +556,16 @@ analyzeBtn.addEventListener('click', async () => {
         const formData = new FormData();
         formData.append('file', file);
         
+        // For FormData, don't manually set Content-Type - browser will set it with boundary
+        // But we still need the Authorization header
+        const headers = {};
+        if (authHeaders && authHeaders.Authorization) {
+            headers['Authorization'] = authHeaders.Authorization;
+        }
+        
         const uploadResponse = await fetch(apiUrl, {
             method: 'POST',
-            headers: {
-                ...authHeaders
-                // Don't set Content-Type - browser will set it with boundary for FormData
-            },
+            headers: headers,
             body: formData
         }).catch(err => {
             console.error('Fetch error details:', {
