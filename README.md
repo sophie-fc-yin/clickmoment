@@ -24,7 +24,7 @@ Frontend-only web application for video analysis, deployed on Vercel.
 
 ### Environment Variables
 
-**Runtime Environment Variable Injection**: This project uses a minimal API route (`api/config.js`) to securely serve environment variables at runtime. This is necessary because Vercel static sites cannot access environment variables directly, and build-time injection wasn't working reliably.
+**Build-Time Variable Injection**: This project uses `build.js` to inject environment variables into `index.html` at build time. The variables are set in Vercel and injected during the deployment build process.
 
 **Required Variables** (set in Vercel dashboard):
 - `SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
