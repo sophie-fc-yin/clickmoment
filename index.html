@@ -146,6 +146,69 @@
             </form>
         </main>
 
+        <!-- Edit Project View -->
+        <main id="edit-project-view" style="display: none;">
+            <div class="project-header">
+                <button id="cancel-edit-project-btn" class="btn btn-secondary">← Back to Project</button>
+                <h2>Edit Project</h2>
+            </div>
+            <form id="edit-project-form" class="project-form">
+                <div class="form-group">
+                    <label for="edit-project-name">Project Name *</label>
+                    <input type="text" id="edit-project-name" name="name" required placeholder="My Project" />
+                </div>
+                
+                <h3>Target Settings</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Configure the target platform and optimization goals for this project.</p>
+                <div class="form-group">
+                    <label for="edit-project-platform">Platform</label>
+                    <select id="edit-project-platform" name="platform">
+                        <option value="youtube">YouTube</option>
+                        <option value="shorts">Shorts</option>
+                        <option value="reels">Reels</option>
+                        <option value="tiktok">TikTok</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-project-optimization">Optimization (Optional)</label>
+                    <input type="text" id="edit-project-optimization" name="optimization" placeholder="e.g., CTR, retention" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-project-audience-profile">Audience Profile (Optional)</label>
+                    <textarea id="edit-project-audience-profile" name="audience_profile" maxlength="200" rows="3" placeholder="e.g., tech-savvy millennials, beginner programmers"></textarea>
+                </div>
+                
+                <h3>Creative Brief</h3>
+                <p style="font-size: 14px; color: #666; margin-bottom: 20px;">Provide creative direction and brand guidelines for thumbnail design.</p>
+                <div class="form-group">
+                    <label for="edit-project-mood">Mood (Optional)</label>
+                    <input type="text" id="edit-project-mood" name="mood" maxlength="120" placeholder="e.g., dramatic, high-contrast, cinematic" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-project-title-hint">Title Hint (Optional)</label>
+                    <input type="text" id="edit-project-title-hint" name="title_hint" placeholder="Optional working title or topic" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-project-brand-colors">Brand Colors (Optional)</label>
+                    <input type="text" id="edit-project-brand-colors" name="brand_colors" placeholder="Comma-separated: e.g., #FF0000, blue, #00FF00" />
+                    <small style="color: #666; font-size: 12px;">Enter colors as names or hex codes, separated by commas</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="edit-project-notes">Notes (Optional)</label>
+                    <textarea id="edit-project-notes" name="notes" maxlength="1000" rows="4" placeholder="Any extra creative guidance or constraints"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="cancel-edit-project-form-btn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </main>
 
         <!-- Project Detail / Video Upload View -->
         <main id="project-view" style="display: none;">

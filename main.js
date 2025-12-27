@@ -37,7 +37,6 @@ const jsonOutput = document.getElementById('json-output');
 const createProjectForm = document.getElementById('create-project-form');
 const editProjectForm = document.getElementById('edit-project-form');
 const profileForm = document.getElementById('profile-form');
-const createProjectTitle = document.getElementById('create-project-title');
 
 // Initialize auth state
 async function initAuth() {
