@@ -567,6 +567,8 @@ analyzeBtn.addEventListener('click', async () => {
             headers['Authorization'] = authHeaders.Authorization;
         }
         
+        console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
+        
         const uploadResponse = await fetch(apiUrl, {
             method: 'POST',
             headers: headers,
@@ -590,6 +592,11 @@ analyzeBtn.addEventListener('click', async () => {
         if (!uploadResponse.ok) {
             const errorText = await uploadResponse.text();
             console.error('API error response:', errorText);
+            
+            if (uploadResponse.status === 413) {
+                throw new Error(`File too large (${uploadResponse.status}): The video file exceeds the server's size limit. Please try a smaller file or compress the video.`);
+            }
+            
             throw new Error(`Failed to upload video (${uploadResponse.status}): ${errorText || uploadResponse.statusText}`);
         }
 
