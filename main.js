@@ -132,6 +132,8 @@ async function updateUI() {
         logoutBtn.style.display = 'none';
         profileBtn.style.display = 'none';
         projectsView.style.display = 'none';
+        createProjectView.style.display = 'none';
+        editProjectView.style.display = 'none';
         projectView.style.display = 'none';
         profileView.style.display = 'none';
         loginPrompt.style.display = 'block';
