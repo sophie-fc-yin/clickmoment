@@ -217,14 +217,6 @@ async function showProjectView(projectId) {
         document.getElementById('info-video-path').textContent = project.video_path || '-';
     }
     
-    // Refresh project info to show updated video_path after upload
-    if (currentProjectId && projectManager) {
-        const updatedProject = await projectManager.getProject(currentProjectId);
-        if (updatedProject && updatedProject.video_path) {
-            document.getElementById('info-video-path').textContent = updatedProject.video_path;
-        }
-    }
-    
     // Reset form
     videoInput.value = '';
     analyzeBtn.disabled = true;
