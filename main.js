@@ -225,7 +225,6 @@ let isRendering = false;
 let renderRequested = false;
 async function renderProjectsList() {
     if (!projectManager || !projectsList) {
-        console.log('Cannot render: projectManager or projectsList not available');
         return;
     }
     
@@ -240,9 +239,7 @@ async function renderProjectsList() {
     renderRequested = false;
     
     try {
-        console.log('=== Starting renderProjectsList ===');
         const projects = await projectManager.getProjects();
-        console.log('Fetched projects from Supabase:', projects.length, 'projects:', projects.map(p => ({ id: p.id, name: p.name })));
         
         // Clear existing content completely
         while (projectsList.firstChild) {
@@ -250,12 +247,9 @@ async function renderProjectsList() {
         }
         projectsList.innerHTML = '';
         
-        console.log('Projects list cleared, current child count:', projectsList.children.length);
-        
         if (projects.length === 0) {
             noProjects.style.display = 'block';
             projectsList.style.display = 'none';
-            console.log('No projects to display');
         } else {
             noProjects.style.display = 'none';
             projectsList.style.display = 'grid';
@@ -274,17 +268,14 @@ async function renderProjectsList() {
                     <button class="btn btn-secondary delete-project-btn" data-project-id="${project.id}">Delete</button>
                 `;
                 projectsList.appendChild(projectCard);
-                console.log('Appended project card:', project.name, 'Total cards now:', projectsList.children.length);
             }
         }
-        console.log('=== renderProjectsList completed ===');
     } catch (error) {
         console.error('Error in renderProjectsList:', error);
     } finally {
         isRendering = false;
         // If a re-render was requested while we were rendering, do it now
         if (renderRequested) {
-            console.log('Re-rendering as requested');
             setTimeout(() => renderProjectsList(), 100);
         }
     }
