@@ -552,10 +552,13 @@ analyzeBtn.addEventListener('click', async () => {
         console.log('Request origin:', window.location.origin);
         console.log('Auth headers:', authHeaders);
         
-        // Create FormData with file and user_id
+        // Create FormData with file, user_id, and project_id
         const formData = new FormData();
         formData.append('file', file);
         formData.append('user_id', currentUser.id);
+        if (currentProjectId) {
+            formData.append('project_id', currentProjectId);
+        }
         
         // For FormData, don't manually set Content-Type - browser will set it with boundary
         // But we still need the Authorization header
