@@ -4,5 +4,5 @@
 
 window.SUPABASE_URL = 'https://your-project.supabase.co';
 window.SUPABASE_ANON_KEY = 'your-anon-key-here';
-window.API_BASE_URL = 'https://your-api.run.app';
+window.API_BASE_URL = 'https://api.yourdomain.com'; // Or your Cloud Run URL
 

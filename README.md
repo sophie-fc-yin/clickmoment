@@ -24,18 +24,18 @@ Frontend-only web application for video analysis, deployed on Vercel.
 
 ### Environment Variables
 
-**Build-Time Variable Injection**: This project uses `build.js` to inject environment variables into `index.html` at build time. The variables are set in Vercel and injected during the deployment build process.
+**Runtime Variable Loading**: This project loads environment variables at runtime from `/api/config.js`, a Vercel serverless function. This means you can update environment variables in Vercel without needing to rebuild or redeploy!
 
 **Required Variables** (set in Vercel dashboard):
 - `SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `SUPABASE_ANON_KEY` or `EXPO_PUBLIC_SUPABASE_KEY` - Your Supabase anonymous key (safe to expose - protected by RLS)
-- `EXPO_PUBLIC_API_BASE_URL` - Your Cloud Run backend URL (e.g., `https://your-service-hash.region.run.app`)
+- `API_BASE_URL` or `EXPO_PUBLIC_API_BASE_URL` - Your Cloud Run backend URL (e.g., `https://your-service-hash.region.run.app`)
 
 **Note**: 
 - The Supabase `ANON_KEY` is designed to be public. Security is handled by Supabase's Row Level Security (RLS) policies, not by hiding the key.
-- `EXPO_PUBLIC_API_BASE_URL` is required for video upload and analysis functionality. This should be your Cloud Run service URL.
-- **Cloud Run URLs**: Cloud Run service URLs are stable once deployed (they don't change unless you delete/recreate the service). If you deploy a new service or change regions, update `EXPO_PUBLIC_API_BASE_URL` in Vercel and redeploy your frontend.
-- The build script injects these environment variables into `index.html` at build time, so you must set them in Vercel and redeploy when they change.
+- `API_BASE_URL` is required for video upload and analysis functionality.
+- **Update without rebuild**: Simply update the environment variable in Vercel → Settings → Environment Variables, and the change takes effect immediately (no redeploy needed)!
+- The `/api/config.js` endpoint serves these variables at runtime from Vercel's environment.
 
 ### Local Development
 

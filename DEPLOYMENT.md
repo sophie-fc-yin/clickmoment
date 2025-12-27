@@ -8,7 +8,39 @@ This frontend application uses environment variables to configure the backend AP
 
 ### Cloud Run URL Management
 
-**Important**: Cloud Run service URLs are **stable** once deployed. They follow this pattern:
+#### Option 1: Custom Domain (Recommended)
+
+**Best Practice**: Map a custom domain to your Cloud Run service for a stable URL that never changes.
+
+**Benefits**:
+- Stable URL (e.g., `https://api.yourdomain.com`) that never changes
+- Professional appearance
+- No need to update environment variables when redeploying
+
+**Setup Steps**:
+
+1. **Map Domain in Cloud Run**:
+   - Go to Google Cloud Console → Cloud Run → Domain Mappings
+   - Click "Add Mapping"
+   - Select your Cloud Run service
+   - Enter your custom domain (e.g., `api.yourdomain.com`)
+   - Follow the prompts to verify domain ownership
+
+2. **Update DNS Records**:
+   - Google will provide DNS records (A/AAAA or CNAME) to add to your domain
+   - Add these records in your domain's DNS settings
+   - Wait for DNS propagation (usually a few minutes to hours)
+
+3. **Set Environment Variable**:
+   - In Vercel, set `EXPO_PUBLIC_API_BASE_URL=https://api.yourdomain.com`
+   - This URL will never change, even if you redeploy your Cloud Run service
+
+**References**:
+- [Google Cloud Run Custom Domain Mapping](https://docs.cloud.google.com/run/docs/mapping-custom-domains)
+
+#### Option 2: Cloud Run Auto-Generated URL
+
+Cloud Run service URLs are **stable** once deployed. They follow this pattern:
 ```
 https://SERVICE-NAME-PROJECT-HASH.REGION.run.app
 ```
@@ -17,6 +49,8 @@ The URL only changes if you:
 - Delete and recreate the service
 - Deploy to a different region
 - Create a new service
+
+**Note**: If you use the auto-generated URL, you'll need to update `EXPO_PUBLIC_API_BASE_URL` in Vercel whenever the URL changes.
 
 ### Setting Up Environment Variables in Vercel
 
@@ -27,14 +61,20 @@ The URL only changes if you:
    ```
    EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
    EXPO_PUBLIC_SUPABASE_KEY=your-anon-key
-   EXPO_PUBLIC_API_BASE_URL=https://your-service-hash.region.run.app
+   EXPO_PUBLIC_API_BASE_URL=https://api.yourdomain.com
    ```
+   
+   **For `EXPO_PUBLIC_API_BASE_URL`**:
+   - **Recommended**: Use a custom domain (e.g., `https://api.yourdomain.com`)
+   - **Alternative**: Use the Cloud Run auto-generated URL (e.g., `https://your-service-hash.region.run.app`)
 
 4. **Redeploy** your frontend after adding/updating variables
 
 ### When Your Cloud Run URL Changes
 
-If you need to update the API URL (e.g., you deployed a new Cloud Run service):
+**If using a custom domain**: No action needed! The custom domain mapping automatically routes to your current Cloud Run service, even if you redeploy or recreate it.
+
+**If using auto-generated URL**: If your Cloud Run service URL changes:
 
 1. Get your new Cloud Run service URL from Google Cloud Console
 2. Go to Vercel → Settings → Environment Variables
@@ -42,6 +82,8 @@ If you need to update the API URL (e.g., you deployed a new Cloud Run service):
 4. Trigger a new deployment (push to GitHub or manually redeploy)
 
 **The build script will automatically inject the new URL into your frontend during the build process.**
+
+**Recommendation**: Use a custom domain to avoid this step entirely.
 
 ### Multiple Environments
 

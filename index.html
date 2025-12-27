@@ -313,109 +313,121 @@
         </main>
     </div>
 
-    <!-- Environment variables are injected here at build time by build.js -->
+    <!-- Load configuration from runtime API endpoint (no rebuild needed when env vars change) -->
     <script>
-        // Initialize defaults - these will be overridden by build-time injection
-        if (typeof window.SUPABASE_URL === 'undefined') {
-            window.SUPABASE_URL = '';
-        }
-        if (typeof window.SUPABASE_ANON_KEY === 'undefined') {
-            window.SUPABASE_ANON_KEY = '';
-        }
-        if (typeof window.API_BASE_URL === 'undefined') {
-            window.API_BASE_URL = '';
-        }
-        
-        // Debug: Log what we have
-        console.log('Page loaded. Checking configuration...');
-        console.log('window.SUPABASE_URL:', window.SUPABASE_URL);
-        console.log('window.SUPABASE_ANON_KEY:', window.SUPABASE_ANON_KEY ? 'Set (hidden)' : 'Missing');
-        console.log('window.API_BASE_URL:', window.API_BASE_URL);
-        
-        // Check configuration
-        function checkConfig() {
-            const missing = [];
-            if (!window.SUPABASE_URL) missing.push('SUPABASE_URL');
-            if (!window.SUPABASE_ANON_KEY) missing.push('SUPABASE_ANON_KEY');
-            if (!window.API_BASE_URL) missing.push('API_BASE_URL (your FastAPI backend URL)');
-            
-            if (missing.length > 0) {
+        // Load config from Vercel serverless function at runtime
+        // This allows updating environment variables in Vercel without rebuilding
+        (async function() {
+            try {
+                const response = await fetch('/api/config.js');
+                if (!response.ok) {
+                    throw new Error(`Failed to load config: ${response.status}`);
+                }
+                const configScript = await response.text();
+                eval(configScript); // Execute the config script
+                
+                console.log('✓ Configuration loaded from /api/config.js');
+                console.log('window.SUPABASE_URL:', window.SUPABASE_URL);
+                console.log('window.SUPABASE_ANON_KEY:', window.SUPABASE_ANON_KEY ? 'Set (hidden)' : 'Missing');
+                console.log('window.API_BASE_URL:', window.API_BASE_URL);
+                
+                // Check configuration
+                const missing = [];
+                if (!window.SUPABASE_URL) missing.push('SUPABASE_URL');
+                if (!window.SUPABASE_ANON_KEY) missing.push('SUPABASE_ANON_KEY');
+                if (!window.API_BASE_URL) missing.push('API_BASE_URL');
+                
+                if (missing.length > 0) {
+                    const errorDiv = document.getElementById('config-error');
+                    if (errorDiv) {
+                        errorDiv.style.display = 'block';
+                        const isCritical = !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY;
+                        errorDiv.innerHTML = `
+                            <strong>${isCritical ? 'Configuration Required' : 'Warning'}:</strong><br>
+                            Missing environment variables: ${missing.join(', ')}<br><br>
+                            ${isCritical ? 'Please configure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY in Vercel\'s environment variables.' : 'Video analysis will not work without API_BASE_URL. Auth should still work.'}<br><br>
+                            <small>Set these in Vercel → Settings → Environment Variables. No rebuild needed - changes take effect immediately.</small>
+                        `;
+                    }
+                } else {
+                    console.log('✓ All environment variables are set');
+                }
+                
+                // Mark config as loaded
+                window.CONFIG_LOADED = true;
+                
+                // Load main app scripts after config is ready
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', loadAppScripts);
+                } else {
+                    loadAppScripts();
+                }
+            } catch (error) {
+                console.error('Failed to load configuration:', error);
                 const errorDiv = document.getElementById('config-error');
                 if (errorDiv) {
                     errorDiv.style.display = 'block';
-                    const isCritical = !window.SUPABASE_URL || !window.SUPABASE_ANON_KEY;
                     errorDiv.innerHTML = `
-                        <strong>${isCritical ? 'Configuration Required' : 'Warning'}:</strong><br>
-                        Missing environment variables: ${missing.join(', ')}<br><br>
-                        ${isCritical ? 'Please configure EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_KEY in Vercel\'s environment variables.' : 'Video analysis will not work without API_BASE_URL. Auth should still work.'}<br><br>
-                        <small>If variables are set, check Vercel build logs to ensure build.js ran.</small>
+                        <strong>Failed to Load Configuration:</strong><br>
+                        ${error.message}<br><br>
+                        Please check that the /api/config.js endpoint is accessible.
                     `;
                 }
-            } else {
-                console.log('✓ All environment variables are set');
+                // Still try to load app (might have fallback values)
+                window.CONFIG_LOADED = true;
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', loadAppScripts);
+                } else {
+                    loadAppScripts();
+                }
             }
+        })();
+        
+        function loadAppScripts() {
+            // App scripts will load after config is ready
+        }
+    </script>
+    <script type="module">
+        // Wait for config to load, then load application modules
+        function waitForConfig() {
+            return new Promise((resolve) => {
+                if (window.CONFIG_LOADED) {
+                    resolve();
+                } else {
+                    const checkInterval = setInterval(() => {
+                        if (window.CONFIG_LOADED) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 50);
+                }
+            });
         }
         
-        // Check on DOM ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', checkConfig);
-        } else {
-            checkConfig();
-        }
-    </script>
-    <script type="module">
-        // Load main application scripts
-        import('./supabase.js').then(() => {
-            return import('./main.js');
-        }).catch(err => {
-            console.error('Failed to load application:', err);
-            const errorDiv = document.getElementById('config-error');
-            if (errorDiv) {
-                errorDiv.style.display = 'block';
-                errorDiv.innerHTML = `
-                    <strong>Failed to Load Application:</strong><br>
-                    ${err.message || 'Unknown error'}<br>
-                    Check browser console for details.
-                `;
-            }
-        });
-    </script>
-    <script type="module">
-        // Load modules with error handling
-        window.addEventListener('error', (e) => {
-            console.error('Script error:', e);
-            const errorDiv = document.getElementById('config-error');
-            if (errorDiv) {
-                errorDiv.style.display = 'block';
-                errorDiv.innerHTML = `
-                    <strong>Error Loading Application:</strong><br>
-                    ${e.message || 'Unknown error'}<br>
-                    Check browser console for details.
-                `;
-            }
-        });
-
-        import('./supabase.js').then(() => {
-            return import('./projects.js').then(() => {
-                return import('./profile.js').then(() => {
-                    return import('./main.js');
+        waitForConfig().then(() => {
+            // Load modules with error handling
+            import('./supabase.js').then(() => {
+                return import('./projects.js').then(() => {
+                    return import('./profile.js').then(() => {
+                        return import('./main.js');
+                    });
                 });
+            }).catch(err => {
+                console.error('Failed to load modules:', err);
+                const errorDiv = document.getElementById('config-error');
+                if (errorDiv) {
+                    errorDiv.style.display = 'block';
+                    errorDiv.innerHTML = `
+                        <strong>Failed to Load Application:</strong><br>
+                        ${err.message || 'Module loading error'}<br>
+                        Check browser console for details.<br><br>
+                        Debug info:<br>
+                        SUPABASE_URL: ${window.SUPABASE_URL ? 'Set' : 'Missing'}<br>
+                        SUPABASE_ANON_KEY: ${window.SUPABASE_ANON_KEY ? 'Set' : 'Missing'}<br>
+                        API_BASE_URL: ${window.API_BASE_URL ? 'Set' : 'Missing'}
+                    `;
+                }
             });
-        }).catch(err => {
-            console.error('Failed to load modules:', err);
-            const errorDiv = document.getElementById('config-error');
-            if (errorDiv) {
-                errorDiv.style.display = 'block';
-                errorDiv.innerHTML = `
-                    <strong>Failed to Load Application:</strong><br>
-                    ${err.message || 'Module loading error'}<br>
-                    Check browser console for details.<br><br>
-                    Debug info:<br>
-                    SUPABASE_URL: ${window.SUPABASE_URL ? 'Set' : 'Missing'}<br>
-                    SUPABASE_ANON_KEY: ${window.SUPABASE_ANON_KEY ? 'Set' : 'Missing'}<br>
-                    API_BASE_URL: ${window.API_BASE_URL ? 'Set' : 'Missing'}
-                `;
-            }
         });
     </script>
     <noscript>
