@@ -6,13 +6,13 @@ export class ProjectManager {
         this.userId = userId;
     }
 
-    // Get all projects for the current user
+    // Get all projects for the current user, ordered by latest updated
     async getProjects() {
         const { data, error } = await supabase
             .from('projects')
             .select('*')
             .eq('user_id', this.userId)
-            .order('created_at', { ascending: false });
+            .order('updated_at', { ascending: false });
         
         if (error) {
             console.error('Error loading projects:', error);
