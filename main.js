@@ -544,24 +544,25 @@ analyzeBtn.addEventListener('click', async () => {
     }
 
     try {
-        // Step 1: Get signed upload URL
-        updateStatus('Requesting upload URL...', 'info');
+        // Step 1: Upload video directly to backend
+        updateStatus('Uploading video...', 'info');
         const authHeaders = await getAuthHeaders();
         const apiUrl = `${API_BASE_URL}/videos/upload`;
         console.log('Calling API:', apiUrl);
         console.log('Request origin:', window.location.origin);
         console.log('Auth headers:', authHeaders);
         
-        const uploadUrlResponse = await fetch(apiUrl, {
+        // Create FormData with file only - user_id comes from auth token
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const uploadResponse = await fetch(apiUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 ...authHeaders
+                // Don't set Content-Type - browser will set it with boundary for FormData
             },
-            body: JSON.stringify({
-                filename: file.name,
-                content_type: file.type
-            })
+            body: formData
         }).catch(err => {
             console.error('Fetch error details:', {
                 message: err.message,
@@ -578,42 +579,31 @@ analyzeBtn.addEventListener('click', async () => {
             throw new Error(`Network error: ${err.message}`);
         });
 
-        if (!uploadUrlResponse.ok) {
-            const errorText = await uploadUrlResponse.text();
-            console.error('API error response:', errorText);
-            throw new Error(`Failed to get upload URL (${uploadUrlResponse.status}): ${errorText || uploadUrlResponse.statusText}`);
-        }
-
-        const { signed_url, gcs_path } = await uploadUrlResponse.json();
-
-        // Step 2: Upload video to GCS
-        updateStatus('Uploading video to storage...', 'info');
-        const uploadResponse = await fetch(signed_url, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': file.type
-            },
-            body: file
-        });
-
         if (!uploadResponse.ok) {
-            throw new Error(`Failed to upload video: ${uploadResponse.statusText}`);
+            const errorText = await uploadResponse.text();
+            console.error('API error response:', errorText);
+            throw new Error(`Failed to upload video (${uploadResponse.status}): ${errorText || uploadResponse.statusText}`);
         }
 
-        // Step 2.5: Save video_path to project immediately after successful upload
-        if (currentProjectId && projectManager) {
+        const result = await uploadResponse.json();
+        const gcs_path = result.gcs_path || result.file_path || result.path;
+        
+        // Step 2: Save video_path to project immediately after successful upload
+        if (currentProjectId && projectManager && gcs_path) {
             await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
         }
 
         // Step 3: Display success and refresh project view to show video_path
-        jsonOutput.textContent = JSON.stringify({
-            message: 'Video uploaded successfully',
-            gcs_path: gcs_path,
-            filename: file.name
-        }, null, 2);
+        jsonOutput.textContent = JSON.stringify(result, null, 2);
         updateStatus('Video uploaded successfully!', 'success');
         
-        // Note: Analysis functionality is disabled for now
+        // Refresh project info to show updated video_path
+        if (currentProjectId && projectManager && gcs_path) {
+            const updatedProject = await projectManager.getProject(currentProjectId);
+            if (updatedProject && updatedProject.video_path) {
+                document.getElementById('info-video-path').textContent = updatedProject.video_path;
+            }
+        }
         
         // Refresh project info to show updated video_path
         if (currentProjectId && projectManager) {
