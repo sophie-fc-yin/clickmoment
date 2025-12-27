@@ -2,7 +2,7 @@ import { supabase, getAuthHeaders } from './supabase.js';
 import { ProjectManager } from './projects.js';
 import { ProfileManager } from './profile.js';
 
-const API_BASE_URL = window.API_BASE_URL || 'https://thumbnail-alchemist-90067411133.us-west1.run.app';
+const API_BASE_URL = window.API_BASE_URL || '';
 
 let currentUser = null;
 let projectManager = null;
@@ -534,11 +534,11 @@ analyzeBtn.addEventListener('click', async () => {
         return;
     }
 
-    if (!API_BASE_URL || API_BASE_URL === 'https://API_BASE_URL') {
-        updateStatus('API_BASE_URL is not configured. Please set it in Vercel environment variables.', 'error');
+    if (!API_BASE_URL || API_BASE_URL.trim() === '') {
+        updateStatus('API_BASE_URL is not configured. Please set EXPO_PUBLIC_API_BASE_URL in Vercel environment variables to your Cloud Run service URL.', 'error');
         jsonOutput.textContent = JSON.stringify({
             error: 'API_BASE_URL not configured',
-            message: 'Set API_BASE_URL environment variable in Vercel to your FastAPI backend URL (e.g., https://your-api.run.app)'
+            message: 'Set EXPO_PUBLIC_API_BASE_URL environment variable in Vercel to your Cloud Run backend URL (e.g., https://your-service-hash.region.run.app). The URL is injected at build time, so update it in Vercel and redeploy if your Cloud Run URL changes.'
         }, null, 2);
         return;
     }

@@ -29,12 +29,13 @@ Frontend-only web application for video analysis, deployed on Vercel.
 **Required Variables** (set in Vercel dashboard):
 - `SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `SUPABASE_ANON_KEY` or `EXPO_PUBLIC_SUPABASE_KEY` - Your Supabase anonymous key (safe to expose - protected by RLS)
-- `API_BASE_URL` or `EXPO_PUBLIC_API_BASE_URL` - Your FastAPI backend URL (e.g., `https://thumbnail-alchemist-90067411133.us-west1.run.app`)
+- `EXPO_PUBLIC_API_BASE_URL` - Your Cloud Run backend URL (e.g., `https://your-service-hash.region.run.app`)
 
 **Note**: 
 - The Supabase `ANON_KEY` is designed to be public. Security is handled by Supabase's Row Level Security (RLS) policies, not by hiding the key.
-- `API_BASE_URL` is optional for authentication, but required for video upload and analysis functionality.
-- The build script supports both standard and `EXPO_PUBLIC_` prefixed variable names for compatibility.
+- `EXPO_PUBLIC_API_BASE_URL` is required for video upload and analysis functionality. This should be your Cloud Run service URL.
+- **Cloud Run URLs**: Cloud Run service URLs are stable once deployed (they don't change unless you delete/recreate the service). If you deploy a new service or change regions, update `EXPO_PUBLIC_API_BASE_URL` in Vercel and redeploy your frontend.
+- The build script injects these environment variables into `index.html` at build time, so you must set them in Vercel and redeploy when they change.
 
 ### Local Development
 
