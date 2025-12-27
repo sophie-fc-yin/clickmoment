@@ -13,12 +13,14 @@ let currentProjectId = null;
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const profileBtn = document.getElementById('profile-btn');
+const landingPage = document.getElementById('landing-page');
 const projectsView = document.getElementById('projects-view');
 const createProjectView = document.getElementById('create-project-view');
 const editProjectView = document.getElementById('edit-project-view');
 const projectView = document.getElementById('project-view');
 const profileView = document.getElementById('profile-view');
-const loginPrompt = document.getElementById('login-prompt');
+const landingLoginBtn = document.getElementById('landing-login-btn');
+const landingFooterLoginBtn = document.getElementById('landing-footer-login-btn');
 const projectsList = document.getElementById('projects-list');
 const noProjects = document.getElementById('no-projects');
 const createProjectBtn = document.getElementById('create-project-btn');
@@ -94,10 +96,11 @@ function cleanupOldLocalStorage() {
 // Update UI based on auth state
 async function updateUI() {
     if (currentUser) {
+        // User is logged in - show app
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
         profileBtn.style.display = 'inline-block';
-        loginPrompt.style.display = 'none';
+        landingPage.style.display = 'none';
         
         // Clean up old localStorage data once
         cleanupOldLocalStorage();
@@ -128,15 +131,16 @@ async function updateUI() {
             await showProjectsView();
         }
     } else {
+        // User is not logged in - show landing page
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
         profileBtn.style.display = 'none';
+        landingPage.style.display = 'block';
         projectsView.style.display = 'none';
         createProjectView.style.display = 'none';
         editProjectView.style.display = 'none';
         projectView.style.display = 'none';
         profileView.style.display = 'none';
-        loginPrompt.style.display = 'block';
     }
 }
 
@@ -274,7 +278,9 @@ function escapeHtml(text) {
 }
 
 // Login handler
-loginBtn.addEventListener('click', async () => {
+function handleLogin() {
+    // This will be called from both the header login button and landing page buttons
+    const loginHandler = async () => {
     try {
         const redirectUrl = window.location.origin + window.location.pathname;
         console.log('Initiating OAuth login with redirect:', redirectUrl);

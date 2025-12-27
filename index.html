@@ -233,12 +233,65 @@
             </div>
         </main>
 
-        <div id="login-prompt" class="login-prompt" style="display: block;">
-            <p>Please log in to upload and analyze videos.</p>
+        <!-- Landing Page (shown when not logged in) -->
+        <main id="landing-page" style="display: block;">
+            <div class="landing-hero">
+                <h1 class="landing-title">ClickMoment</h1>
+                <p class="landing-subtitle">AI-Powered Video Thumbnail Analysis & Optimization</p>
+                <p class="landing-description">
+                    Create compelling thumbnails that drive clicks and engagement. Our AI analyzes your videos 
+                    and provides insights to help you design thumbnails that resonate with your audience.
+                </p>
+                <div class="landing-cta">
+                    <button id="landing-login-btn" class="btn btn-primary btn-large">Get Started</button>
+                </div>
+            </div>
+
+            <div class="landing-features">
+                <div class="feature-card">
+                    <h3>🎯 Targeted Recommendations</h3>
+                    <p>Get personalized thumbnail suggestions based on your channel's stage, niche, and audience profile.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📊 Performance Insights</h3>
+                    <p>Analyze your videos and understand what makes thumbnails effective for your content type.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🎨 Creative Briefs</h3>
+                    <p>Define your brand guidelines, mood, and style to maintain consistency across your thumbnails.</p>
+                </div>
+            </div>
+
+            <div class="landing-how-it-works">
+                <h2>How It Works</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Create Your Profile</h3>
+                        <p>Tell us about your channel - stage, niche, subscriber count, and growth goals.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Set Up Projects</h3>
+                        <p>Create projects for different video series or campaigns with specific target settings.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Upload & Analyze</h3>
+                        <p>Upload your videos and get AI-powered insights for thumbnail optimization.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="landing-footer">
+                <p>Ready to boost your click-through rates?</p>
+                <button id="landing-footer-login-btn" class="btn btn-primary btn-large">Start Free</button>
+            </div>
+
             <div id="config-error" style="display: none; color: #cc0000; margin-top: 20px; padding: 10px; background: #ffe6e6; border-radius: 4px;">
                 <strong>Configuration Error:</strong> Environment variables are not set. Please configure SUPABASE_URL, SUPABASE_ANON_KEY, and API_BASE_URL in Vercel.
             </div>
-        </div>
+        </main>
     </div>
 
     <!-- Environment variables are injected here at build time by build.js -->
