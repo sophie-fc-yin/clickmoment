@@ -2,7 +2,7 @@ import { supabase, getAuthHeaders } from './supabase.js';
 import { ProjectManager } from './projects.js';
 import { ProfileManager } from './profile.js';
 
-const API_BASE_URL = window.API_BASE_URL || 'https://API_BASE_URL';
+const API_BASE_URL = window.API_BASE_URL || 'https://thumbnail-alchemist-90067411133.us-west1.run.app';
 
 let currentUser = null;
 let projectManager = null;
@@ -220,7 +220,7 @@ async function showProjectView(projectId) {
     // Reset form
     videoInput.value = '';
     analyzeBtn.disabled = true;
-    jsonOutput.textContent = 'No analysis yet.';
+    jsonOutput.textContent = 'No video uploaded yet.';
     updateStatus('');
 }
 
@@ -516,12 +516,12 @@ profileForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Enable analyze button when file is selected
+// Enable upload button when file is selected
 videoInput.addEventListener('change', (e) => {
     analyzeBtn.disabled = !e.target.files.length;
 });
 
-// Analyze handler
+// Upload and analyze handler
 analyzeBtn.addEventListener('click', async () => {
     const file = videoInput.files[0];
     if (!file) {
@@ -627,7 +627,7 @@ analyzeBtn.addEventListener('click', async () => {
         
         // Step 5: Display result and refresh project view to show video_path
         jsonOutput.textContent = JSON.stringify(result, null, 2);
-        updateStatus('Analysis complete!', 'success');
+        updateStatus('Upload and analysis complete!', 'success');
         
         // Refresh project info to show updated video_path
         if (currentProjectId && projectManager) {

@@ -29,7 +29,7 @@ Frontend-only web application for video analysis, deployed on Vercel.
 **Required Variables** (set in Vercel dashboard):
 - `SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `SUPABASE_ANON_KEY` or `EXPO_PUBLIC_SUPABASE_KEY` - Your Supabase anonymous key (safe to expose - protected by RLS)
-- `API_BASE_URL` or `EXPO_PUBLIC_API_BASE_URL` - Your FastAPI backend URL (e.g., `https://your-api-123456.run.app`)
+- `API_BASE_URL` or `EXPO_PUBLIC_API_BASE_URL` - Your FastAPI backend URL (e.g., `https://thumbnail-alchemist-90067411133.us-west1.run.app`)
 
 **Note**: 
 - The Supabase `ANON_KEY` is designed to be public. Security is handled by Supabase's Row Level Security (RLS) policies, not by hiding the key.
