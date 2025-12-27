@@ -605,41 +605,15 @@ analyzeBtn.addEventListener('click', async () => {
             await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
         }
 
-        // Step 3: Call analyze endpoint
-        updateStatus('Analyzing video...', 'info');
-        const analyzeUrl = `${API_BASE_URL}/analyze`;
-        console.log('Calling analyze API:', analyzeUrl);
+        // Step 3: Display success and refresh project view to show video_path
+        jsonOutput.textContent = JSON.stringify({
+            message: 'Video uploaded successfully',
+            gcs_path: gcs_path,
+            filename: file.name
+        }, null, 2);
+        updateStatus('Video uploaded successfully!', 'success');
         
-        const analyzeResponse = await fetch(analyzeUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...authHeaders
-            },
-            body: JSON.stringify({
-                gcs_path: gcs_path
-            })
-        }).catch(err => {
-            console.error('Analyze fetch error:', err);
-            throw new Error(`Network error during analysis: ${err.message}`);
-        });
-
-        if (!analyzeResponse.ok) {
-            const errorText = await analyzeResponse.text();
-            console.error('Analyze API error response:', errorText);
-            throw new Error(`Analysis failed (${analyzeResponse.status}): ${errorText || analyzeResponse.statusText}`);
-        }
-
-        const result = await analyzeResponse.json();
-        
-        // Step 4: Save analysis result to project
-        if (currentProjectId && projectManager) {
-            await projectManager.addAnalysis(currentProjectId, result, gcs_path);
-        }
-        
-        // Step 5: Display result and refresh project view to show video_path
-        jsonOutput.textContent = JSON.stringify(result, null, 2);
-        updateStatus('Upload and analysis complete!', 'success');
+        // Note: Analysis functionality is disabled for now
         
         // Refresh project info to show updated video_path
         if (currentProjectId && projectManager) {
