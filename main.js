@@ -535,10 +535,10 @@ analyzeBtn.addEventListener('click', async () => {
     }
 
     if (!API_BASE_URL || API_BASE_URL.trim() === '') {
-        updateStatus('API_BASE_URL is not configured. Please set EXPO_PUBLIC_API_BASE_URL in Vercel environment variables to your Cloud Run service URL.', 'error');
+        updateStatus('API_BASE_URL is not configured. Please set API_BASE_URL (or EXPO_PUBLIC_API_BASE_URL) in Vercel environment variables to your Cloud Run service URL.', 'error');
         jsonOutput.textContent = JSON.stringify({
             error: 'API_BASE_URL not configured',
-            message: 'Set EXPO_PUBLIC_API_BASE_URL environment variable in Vercel to your Cloud Run backend URL (e.g., https://your-service-hash.region.run.app). The URL is injected at build time, so update it in Vercel and redeploy if your Cloud Run URL changes.'
+            message: 'Set API_BASE_URL or EXPO_PUBLIC_API_BASE_URL environment variable in Vercel to your Cloud Run backend URL (e.g., https://your-service-hash.region.run.app). Update it in Vercel → Settings → Environment Variables and it will take effect immediately (no rebuild needed).'
         }, null, 2);
         return;
     }
