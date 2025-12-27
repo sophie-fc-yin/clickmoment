@@ -14,13 +14,19 @@ const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
 const profileBtn = document.getElementById('profile-btn');
 const projectsView = document.getElementById('projects-view');
+const createProjectView = document.getElementById('create-project-view');
+const editProjectView = document.getElementById('edit-project-view');
 const projectView = document.getElementById('project-view');
 const profileView = document.getElementById('profile-view');
 const loginPrompt = document.getElementById('login-prompt');
 const projectsList = document.getElementById('projects-list');
 const noProjects = document.getElementById('no-projects');
 const createProjectBtn = document.getElementById('create-project-btn');
+const cancelCreateProjectBtn = document.getElementById('cancel-create-project-btn');
+const cancelCreateProjectFormBtn = document.getElementById('cancel-create-project-form-btn');
 const backToProjectsBtn = document.getElementById('back-to-projects-btn');
+const cancelEditProjectBtn = document.getElementById('cancel-edit-project-btn');
+const cancelEditProjectFormBtn = document.getElementById('cancel-edit-project-form-btn');
 const backFromProfileBtn = document.getElementById('back-from-profile-btn');
 const editProjectBtn = document.getElementById('edit-project-btn');
 const projectTitle = document.getElementById('project-title');
@@ -28,12 +34,10 @@ const videoInput = document.getElementById('video-input');
 const analyzeBtn = document.getElementById('analyze-btn');
 const statusText = document.getElementById('status-text');
 const jsonOutput = document.getElementById('json-output');
-const createProjectModal = document.getElementById('create-project-modal');
 const createProjectForm = document.getElementById('create-project-form');
-const closeModalBtn = document.getElementById('close-modal-btn');
-const cancelProjectBtn = document.getElementById('cancel-project-btn');
+const editProjectForm = document.getElementById('edit-project-form');
 const profileForm = document.getElementById('profile-form');
-const modalTitle = document.getElementById('modal-title');
+const createProjectTitle = document.getElementById('create-project-title');
 
 // Initialize auth state
 async function initAuth() {
@@ -107,7 +111,7 @@ async function updateUI() {
             profileManager = new ProfileManager();
         }
         
-        // Check if user has a profile with data, if not prompt them to create one
+        // Check if user has a profile with data, if not show profile setup
         const profile = await profileManager.getProfile(currentUser.id);
         const hasProfileData = profile && (
             profile.stage || 
@@ -119,11 +123,7 @@ async function updateUI() {
         
         if (!hasProfileData) {
             // First time user or empty profile - show profile setup
-            if (confirm('Welcome! Please set up your channel profile to get started. This helps us provide better recommendations.')) {
-                await showProfileView();
-            } else {
-                await showProjectsView();
-            }
+            await showProfileView();
         } else {
             // Show projects list by default
             await showProjectsView();
@@ -142,19 +142,54 @@ async function updateUI() {
 // Show projects list view
 async function showProjectsView() {
     projectsView.style.display = 'block';
+    createProjectView.style.display = 'none';
+    editProjectView.style.display = 'none';
     projectView.style.display = 'none';
     profileView.style.display = 'none';
-    createProjectModal.style.display = 'none';
     currentProjectId = null;
     await renderProjectsList();
+}
+
+// Show create project view
+function showCreateProjectView() {
+    projectsView.style.display = 'none';
+    createProjectView.style.display = 'block';
+    editProjectView.style.display = 'none';
+    projectView.style.display = 'none';
+    profileView.style.display = 'none';
+    createProjectForm.reset();
+    currentProjectId = null;
+}
+
+// Show edit project view
+async function showEditProjectView(projectId) {
+    projectsView.style.display = 'none';
+    createProjectView.style.display = 'none';
+    editProjectView.style.display = 'block';
+    projectView.style.display = 'none';
+    profileView.style.display = 'none';
+    currentProjectId = projectId;
+    
+    const project = await projectManager.getProject(projectId);
+    if (project) {
+        document.getElementById('edit-project-name').value = project.name;
+        document.getElementById('edit-project-platform').value = project.platform || 'youtube';
+        document.getElementById('edit-project-optimization').value = project.optimization || '';
+        document.getElementById('edit-project-audience-profile').value = project.audience_profile || '';
+        document.getElementById('edit-project-mood').value = project.mood || '';
+        document.getElementById('edit-project-title-hint').value = project.title_hint || '';
+        document.getElementById('edit-project-brand-colors').value = project.brand_colors ? project.brand_colors.join(', ') : '';
+        document.getElementById('edit-project-notes').value = project.notes || '';
+    }
 }
 
 // Show project detail view
 async function showProjectView(projectId) {
     projectsView.style.display = 'none';
+    createProjectView.style.display = 'none';
+    editProjectView.style.display = 'none';
     projectView.style.display = 'block';
     profileView.style.display = 'none';
-    createProjectModal.style.display = 'none';
     currentProjectId = projectId;
     
     const project = await projectManager.getProject(projectId);
@@ -298,9 +333,10 @@ function resetForm() {
 // Show profile view
 async function showProfileView() {
     projectsView.style.display = 'none';
+    createProjectView.style.display = 'none';
+    editProjectView.style.display = 'none';
     projectView.style.display = 'none';
     profileView.style.display = 'block';
-    createProjectModal.style.display = 'none';
     
     // Load existing profile data
     if (profileManager && currentUser) {
@@ -317,35 +353,35 @@ async function showProfileView() {
 
 // Project management event listeners
 createProjectBtn.addEventListener('click', () => {
-    createProjectModal.style.display = 'block';
+    showCreateProjectView();
 });
 
-closeModalBtn.addEventListener('click', () => {
-    createProjectModal.style.display = 'none';
+cancelCreateProjectBtn.addEventListener('click', () => {
+    showProjectsView();
 });
 
-cancelProjectBtn.addEventListener('click', () => {
-    createProjectModal.style.display = 'none';
-    createProjectForm.reset();
-    currentProjectId = null;
-    modalTitle.textContent = 'Create New Project';
+cancelCreateProjectFormBtn.addEventListener('click', () => {
+    showProjectsView();
 });
 
 editProjectBtn.addEventListener('click', async () => {
     if (!currentProjectId) return;
-    
-    const project = await projectManager.getProject(currentProjectId);
-    if (project) {
-        modalTitle.textContent = 'Edit Project';
-        document.getElementById('project-name').value = project.name;
-        document.getElementById('project-platform').value = project.platform || 'youtube';
-        document.getElementById('project-optimization').value = project.optimization || '';
-        document.getElementById('project-audience-profile').value = project.audience_profile || '';
-        document.getElementById('project-mood').value = project.mood || '';
-        document.getElementById('project-title-hint').value = project.title_hint || '';
-        document.getElementById('project-brand-colors').value = project.brand_colors ? project.brand_colors.join(', ') : '';
-        document.getElementById('project-notes').value = project.notes || '';
-        createProjectModal.style.display = 'block';
+    await showEditProjectView(currentProjectId);
+});
+
+cancelEditProjectBtn.addEventListener('click', async () => {
+    if (currentProjectId) {
+        await showProjectView(currentProjectId);
+    } else {
+        showProjectsView();
+    }
+});
+
+cancelEditProjectFormBtn.addEventListener('click', async () => {
+    if (currentProjectId) {
+        await showProjectView(currentProjectId);
+    } else {
+        showProjectsView();
     }
 });
 
@@ -371,28 +407,45 @@ createProjectForm.addEventListener('submit', async (e) => {
         notes: formData.get('notes') || null,
     };
     
-    if (currentProjectId) {
-        // Update existing project
-        const result = await projectManager.updateProject(currentProjectId, projectData);
-        if (result.error) {
-            alert('Error updating project: ' + result.error.message);
-        } else {
-            createProjectModal.style.display = 'none';
-            createProjectForm.reset();
-            currentProjectId = null;
-            modalTitle.textContent = 'Create New Project';
-            await showProjectView(result.data.id);
-        }
+    // Create new project
+    const result = await projectManager.createProject(projectData);
+    if (result.error) {
+        alert('Error creating project: ' + result.error.message);
     } else {
-        // Create new project
-        const result = await projectManager.createProject(projectData);
-        if (result.error) {
-            alert('Error creating project: ' + result.error.message);
-        } else {
-            createProjectModal.style.display = 'none';
-            createProjectForm.reset();
-            await showProjectView(result.data.id);
-        }
+        await showProjectView(result.data.id);
+    }
+});
+
+editProjectForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!currentProjectId) return;
+    
+    const formData = new FormData(e.target);
+    
+    // Parse brand colors from comma-separated string
+    const brandColorsStr = formData.get('brand_colors') || '';
+    const brandColors = brandColorsStr
+        .split(',')
+        .map(color => color.trim())
+        .filter(color => color.length > 0);
+    
+    const projectData = {
+        name: formData.get('name'),
+        platform: formData.get('platform') || 'youtube',
+        optimization: formData.get('optimization') || null,
+        audience_profile: formData.get('audience_profile') || null,
+        mood: formData.get('mood') || null,
+        title_hint: formData.get('title_hint') || null,
+        brand_colors: brandColors,
+        notes: formData.get('notes') || null,
+    };
+    
+    // Update existing project
+    const result = await projectManager.updateProject(currentProjectId, projectData);
+    if (result.error) {
+        alert('Error updating project: ' + result.error.message);
+    } else {
+        await showProjectView(result.data.id);
     }
 });
 
@@ -423,7 +476,7 @@ profileForm.addEventListener('submit', async (e) => {
     if (result.error) {
         alert('Error saving profile: ' + result.error.message);
     } else {
-        alert('Profile saved successfully!');
+        // Profile saved successfully - go to projects view
         await showProjectsView();
     }
 });
