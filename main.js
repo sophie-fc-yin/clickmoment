@@ -547,7 +547,7 @@ analyzeBtn.addEventListener('click', async () => {
         // Step 1: Get signed upload URL
         updateStatus('Requesting upload URL...', 'info');
         const authHeaders = await getAuthHeaders();
-        const apiUrl = `${API_BASE_URL}/get-upload-url`;
+        const apiUrl = `${API_BASE_URL}/videos/upload`;
         console.log('Calling API:', apiUrl);
         console.log('Request origin:', window.location.origin);
         console.log('Auth headers:', authHeaders);

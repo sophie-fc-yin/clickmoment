@@ -30,7 +30,7 @@ Frontend-only web application for video analysis, deployed on Vercel.
 - `SUPABASE_URL` or `EXPO_PUBLIC_SUPABASE_URL` - Your Supabase project URL
 - `SUPABASE_ANON_KEY` or `EXPO_PUBLIC_SUPABASE_KEY` - Your Supabase anonymous key (safe to expose - protected by RLS)
 - `API_BASE_URL` or `EXPO_PUBLIC_API_BASE_URL` - Your Cloud Run backend base URL (e.g., `https://thumbnail-alchemist-90067411133.us-west1.run.app`)
-  - **Important**: Use the base URL only (no `/docs` or trailing slash). The app will append endpoints like `/get-upload-url` and `/analyze` automatically.
+  - **Important**: Use the base URL only (no `/docs` or trailing slash). The app will append endpoints like `/videos/upload` and `/analyze` automatically.
 
 **Note**: 
 - The Supabase `ANON_KEY` is designed to be public. Security is handled by Supabase's Row Level Security (RLS) policies, not by hiding the key.
@@ -102,7 +102,7 @@ php -S localhost:8000
 
 The backend FastAPI service must expose:
 
-- `POST /get-upload-url` - Returns `{ signed_url, gcs_path }`
-- `POST /analyze` - Accepts `{ gcs_path }`, returns analysis JSON
+- `POST /videos/upload` - Returns `{ signed_url, gcs_path }` (or similar response with upload URL and GCS path)
+- `POST /analyze` - Accepts `{ gcs_path }`, returns analysis JSON (or check your `/docs` for the actual endpoint name)
 
 Both endpoints should accept `Authorization: Bearer <token>` header for Supabase auth.
