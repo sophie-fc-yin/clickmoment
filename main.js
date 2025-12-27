@@ -277,10 +277,8 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Login handler
-function handleLogin() {
-    // This will be called from both the header login button and landing page buttons
-    const loginHandler = async () => {
+// Login handler (shared function)
+async function handleLogin() {
     try {
         const redirectUrl = window.location.origin + window.location.pathname;
         console.log('Initiating OAuth login with redirect:', redirectUrl);
@@ -307,7 +305,16 @@ function handleLogin() {
         console.error('Login error:', err);
         updateStatus('Login error: ' + err.message, 'error');
     }
-});
+}
+
+// Login button handlers
+loginBtn.addEventListener('click', handleLogin);
+if (landingLoginBtn) {
+    landingLoginBtn.addEventListener('click', handleLogin);
+}
+if (landingFooterLoginBtn) {
+    landingFooterLoginBtn.addEventListener('click', handleLogin);
+}
 
 // Logout handler
 logoutBtn.addEventListener('click', async () => {
