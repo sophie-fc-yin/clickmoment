@@ -67,6 +67,27 @@ async function initAuth() {
     }
 }
 
+// Clean up old localStorage data (from before Supabase migration)
+function cleanupOldLocalStorage() {
+    try {
+        // Clear old project data stored in localStorage
+        const keysToRemove = [];
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('clickmoment_projects_')) {
+                keysToRemove.push(key);
+            }
+        }
+        keysToRemove.forEach(key => localStorage.removeItem(key));
+        
+        if (keysToRemove.length > 0) {
+            console.log(`Cleaned up ${keysToRemove.length} old localStorage entries`);
+        }
+    } catch (error) {
+        console.error('Error cleaning up localStorage:', error);
+    }
+}
+
 // Update UI based on auth state
 function updateUI() {
     if (currentUser) {
@@ -74,6 +95,10 @@ function updateUI() {
         logoutBtn.style.display = 'inline-block';
         profileBtn.style.display = 'inline-block';
         loginPrompt.style.display = 'none';
+        
+        // Clean up old localStorage data once
+        cleanupOldLocalStorage();
+        
         // Initialize managers
         if (!projectManager) {
             projectManager = new ProjectManager(currentUser.id);
