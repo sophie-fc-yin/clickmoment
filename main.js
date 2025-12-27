@@ -107,18 +107,26 @@ async function updateUI() {
             profileManager = new ProfileManager();
         }
         
-        // Check if user has a profile, if not prompt them to create one
+        // Check if user has a profile with data, if not prompt them to create one
         const profile = await profileManager.getProfile(currentUser.id);
-        if (!profile) {
-            // First time user - show profile setup
+        const hasProfileData = profile && (
+            profile.stage || 
+            profile.subscriber_count || 
+            profile.content_niche || 
+            profile.upload_frequency || 
+            profile.growth_goal
+        );
+        
+        if (!hasProfileData) {
+            // First time user or empty profile - show profile setup
             if (confirm('Welcome! Please set up your channel profile to get started. This helps us provide better recommendations.')) {
-                showProfileView();
+                await showProfileView();
             } else {
-                showProjectsView();
+                await showProjectsView();
             }
         } else {
             // Show projects list by default
-            showProjectsView();
+            await showProjectsView();
         }
     } else {
         loginBtn.style.display = 'inline-block';
