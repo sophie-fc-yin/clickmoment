@@ -221,52 +221,63 @@ async function showProjectView(projectId) {
 }
 
 // Render projects list
+let isRendering = false;
 async function renderProjectsList() {
     if (!projectManager) return;
     
-    const projects = await projectManager.getProjects();
-    projectsList.innerHTML = '';
+    // Prevent multiple simultaneous renders
+    if (isRendering) {
+        console.log('Render already in progress, skipping...');
+        return;
+    }
     
-    if (projects.length === 0) {
-        noProjects.style.display = 'block';
-        projectsList.style.display = 'none';
-    } else {
-        noProjects.style.display = 'none';
-        projectsList.style.display = 'grid';
+    isRendering = true;
+    try {
+        const projects = await projectManager.getProjects();
+        console.log('Fetched projects from Supabase:', projects.length, projects);
         
-        // Get analyses count for each project
-        for (const project of projects) {
-            const analyses = await projectManager.getAnalyses(project.id);
-            const projectCard = document.createElement('div');
-            projectCard.className = 'project-card';
-            projectCard.innerHTML = `
-                <h3>${escapeHtml(project.name)}</h3>
-                <p class="project-meta">Created: ${new Date(project.created_at).toLocaleDateString()}</p>
-                <p class="project-meta">Analyses: ${analyses.length}</p>
-                <p class="project-meta">Platform: ${escapeHtml(project.platform || 'youtube')}</p>
-                <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
-                <button class="btn btn-secondary delete-project-btn" data-project-id="${project.id}">Delete</button>
-            `;
-            projectsList.appendChild(projectCard);
-        }
+        // Clear existing content
+        projectsList.innerHTML = '';
         
-        // Add event listeners
-        document.querySelectorAll('.open-project-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const projectId = e.target.getAttribute('data-project-id');
-                await showProjectView(projectId);
-            });
-        });
-        
-        document.querySelectorAll('.delete-project-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-                const projectId = e.target.getAttribute('data-project-id');
-                if (confirm('Are you sure you want to delete this project?')) {
-                    await projectManager.deleteProject(projectId);
-                    await renderProjectsList();
+        if (projects.length === 0) {
+            noProjects.style.display = 'block';
+            projectsList.style.display = 'none';
+        } else {
+            noProjects.style.display = 'none';
+            projectsList.style.display = 'grid';
+            
+            // Get analyses count for each project
+            for (const project of projects) {
+                const analyses = await projectManager.getAnalyses(project.id);
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
+                projectCard.innerHTML = `
+                    <h3>${escapeHtml(project.name)}</h3>
+                    <p class="project-meta">Created: ${new Date(project.created_at).toLocaleDateString()}</p>
+                    <p class="project-meta">Analyses: ${analyses.length}</p>
+                    <p class="project-meta">Platform: ${escapeHtml(project.platform || 'youtube')}</p>
+                    <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
+                    <button class="btn btn-secondary delete-project-btn" data-project-id="${project.id}">Delete</button>
+                `;
+                projectsList.appendChild(projectCard);
+            }
+            
+            // Add event listeners (using event delegation to avoid duplicate listeners)
+            projectsList.addEventListener('click', async (e) => {
+                if (e.target.classList.contains('open-project-btn')) {
+                    const projectId = e.target.getAttribute('data-project-id');
+                    await showProjectView(projectId);
+                } else if (e.target.classList.contains('delete-project-btn')) {
+                    const projectId = e.target.getAttribute('data-project-id');
+                    if (confirm('Are you sure you want to delete this project?')) {
+                        await projectManager.deleteProject(projectId);
+                        await renderProjectsList();
+                    }
                 }
             });
-        });
+        }
+    } finally {
+        isRendering = false;
     }
 }
 
