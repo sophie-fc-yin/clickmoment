@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS projects (
     brand_colors TEXT[], -- Array of color strings
     notes TEXT CHECK (char_length(notes) <= 1000),
     
+    -- Video path (stored after video upload)
+    video_path TEXT,
+    
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

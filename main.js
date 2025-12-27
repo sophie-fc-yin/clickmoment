@@ -214,6 +214,7 @@ async function showProjectView(projectId) {
             ? project.brand_colors.join(', ') 
             : '-';
         document.getElementById('info-notes').textContent = project.notes || '-';
+        document.getElementById('info-video-path').textContent = project.video_path || '-';
     }
     
     // Reset form
@@ -614,8 +615,11 @@ analyzeBtn.addEventListener('click', async () => {
 
         const result = await analyzeResponse.json();
         
-        // Step 4: Save analysis to project
+        // Step 4: Update project with video_path and save analysis
         if (currentProjectId && projectManager) {
+            // Update project with video path (gcs_path)
+            await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
+            // Save analysis result
             await projectManager.addAnalysis(currentProjectId, result, gcs_path);
         }
         
