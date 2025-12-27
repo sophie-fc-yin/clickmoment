@@ -262,19 +262,7 @@ async function renderProjectsList() {
                 projectsList.appendChild(projectCard);
             }
             
-            // Add event listeners (using event delegation to avoid duplicate listeners)
-            projectsList.addEventListener('click', async (e) => {
-                if (e.target.classList.contains('open-project-btn')) {
-                    const projectId = e.target.getAttribute('data-project-id');
-                    await showProjectView(projectId);
-                } else if (e.target.classList.contains('delete-project-btn')) {
-                    const projectId = e.target.getAttribute('data-project-id');
-                    if (confirm('Are you sure you want to delete this project?')) {
-                        await projectManager.deleteProject(projectId);
-                        await renderProjectsList();
-                    }
-                }
-            });
+            // Event listeners are attached once via event delegation (see end of file)
         }
     } finally {
         isRendering = false;
@@ -618,6 +606,20 @@ analyzeBtn.addEventListener('click', async () => {
         updateStatus(`Error: ${error.message}`, 'error');
         jsonOutput.textContent = `Error: ${error.message}`;
         console.error('Analysis error:', error);
+    }
+});
+
+// Event delegation for project list buttons (attached once)
+projectsList.addEventListener('click', async (e) => {
+    if (e.target.classList.contains('open-project-btn')) {
+        const projectId = e.target.getAttribute('data-project-id');
+        await showProjectView(projectId);
+    } else if (e.target.classList.contains('delete-project-btn')) {
+        const projectId = e.target.getAttribute('data-project-id');
+        if (confirm('Are you sure you want to delete this project?')) {
+            await projectManager.deleteProject(projectId);
+            await renderProjectsList();
+        }
     }
 });
 
