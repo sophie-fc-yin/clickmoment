@@ -57,6 +57,9 @@ async function initAuth() {
     const { data: { session } } = await supabase.auth.getSession();
     currentUser = session?.user || null;
     
+    // Mark that initial auth state is handled
+    authStateChangeInitialized = true;
+    
     // If we have an access token in URL, wait a moment for session to be set
     if (accessToken && !currentUser) {
         console.log('Access token found in URL, waiting for session...');
@@ -336,8 +339,14 @@ logoutBtn.addEventListener('click', async () => {
 });
 
 // Listen for auth state changes
+let authStateChangeInitialized = false;
 supabase.auth.onAuthStateChange(async (event, session) => {
     currentUser = session?.user || null;
+    // Skip the first call since initAuth already handles initial state
+    if (!authStateChangeInitialized) {
+        authStateChangeInitialized = true;
+        return;
+    }
     await updateUI();
 });
 
