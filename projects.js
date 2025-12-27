@@ -46,6 +46,7 @@ export class ProjectManager {
         }
         
         return { data };
+    }
 
     // Get a project by ID
     async getProject(projectId) {
