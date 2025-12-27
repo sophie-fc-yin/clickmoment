@@ -217,6 +217,14 @@ async function showProjectView(projectId) {
         document.getElementById('info-video-path').textContent = project.video_path || '-';
     }
     
+    // Refresh project info to show updated video_path after upload
+    if (currentProjectId && projectManager) {
+        const updatedProject = await projectManager.getProject(currentProjectId);
+        if (updatedProject && updatedProject.video_path) {
+            document.getElementById('info-video-path').textContent = updatedProject.video_path;
+        }
+    }
+    
     // Reset form
     videoInput.value = '';
     analyzeBtn.disabled = true;
@@ -588,6 +596,11 @@ analyzeBtn.addEventListener('click', async () => {
             throw new Error(`Failed to upload video: ${uploadResponse.statusText}`);
         }
 
+        // Step 2.5: Save video_path to project immediately after successful upload
+        if (currentProjectId && projectManager) {
+            await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
+        }
+
         // Step 3: Call analyze endpoint
         updateStatus('Analyzing video...', 'info');
         const analyzeUrl = `${API_BASE_URL}/analyze`;
@@ -615,17 +628,22 @@ analyzeBtn.addEventListener('click', async () => {
 
         const result = await analyzeResponse.json();
         
-        // Step 4: Update project with video_path and save analysis
+        // Step 4: Save analysis result to project
         if (currentProjectId && projectManager) {
-            // Update project with video path (gcs_path)
-            await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
-            // Save analysis result
             await projectManager.addAnalysis(currentProjectId, result, gcs_path);
         }
         
-        // Step 5: Display result
+        // Step 5: Display result and refresh project view to show video_path
         jsonOutput.textContent = JSON.stringify(result, null, 2);
         updateStatus('Analysis complete!', 'success');
+        
+        // Refresh project info to show updated video_path
+        if (currentProjectId && projectManager) {
+            const updatedProject = await projectManager.getProject(currentProjectId);
+            if (updatedProject && updatedProject.video_path) {
+                document.getElementById('info-video-path').textContent = updatedProject.video_path;
+            }
+        }
         
     } catch (error) {
         updateStatus(`Error: ${error.message}`, 'error');
