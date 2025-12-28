@@ -533,6 +533,10 @@ analyzeBtn.addEventListener('click', async () => {
         updateStatus('Please log in first', 'error');
         return;
     }
+    
+    // Note: With signed URL uploads, we upload directly to GCS, so no size limit from Cloud Run
+    // GCS can handle very large files (up to 5TB per object)
+    console.log('File selected:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
 
     if (!API_BASE_URL || API_BASE_URL.trim() === '') {
         updateStatus('API_BASE_URL is not configured. Please set API_BASE_URL (or EXPO_PUBLIC_API_BASE_URL) in Vercel environment variables to your Cloud Run service URL.', 'error');
@@ -619,13 +623,19 @@ analyzeBtn.addEventListener('click', async () => {
         const result = await uploadResponse.json();
         const gcs_path = result.gcs_path || result.file_path || result.path;
         
-        // Step 2: Save video_path to project immediately after successful upload
+        // Step 4: Save video_path to project in Supabase
         if (currentProjectId && projectManager && gcs_path) {
             await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
         }
 
-        // Step 3: Display success and refresh project view to show video_path
-        jsonOutput.textContent = JSON.stringify(result, null, 2);
+        // Step 5: Display success and refresh project view to show video_path
+        const successResult = {
+            message: 'Video uploaded successfully',
+            gcs_path: gcs_path,
+            filename: file.name,
+            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
+        };
+        jsonOutput.textContent = JSON.stringify(successResult, null, 2);
         updateStatus('Video uploaded successfully!', 'success');
         
         // Refresh project info to show updated video_path
