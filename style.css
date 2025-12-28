@@ -42,9 +42,8 @@ h1 {
 }
 
 .logo {
-    height: 50px;
-    width: auto;
-    min-width: 160px;
+    width: 200px;
+    height: auto;
     display: block;
 }
 
@@ -511,7 +510,7 @@ h3 {
     }
     
     .logo {
-        height: 48px;
+        width: 160px;
     }
     
     .landing-hero {
