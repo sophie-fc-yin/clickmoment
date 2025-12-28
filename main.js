@@ -595,13 +595,32 @@ analyzeBtn.addEventListener('click', async () => {
         }
 
         console.log('File uploaded to GCS successfully');
+        console.log('GCS path:', gcs_path);
+        console.log('Current project ID:', currentProjectId);
+        console.log('Project manager:', projectManager);
         
         // Step 3: Save video_path to project in Supabase
         if (currentProjectId && projectManager && gcs_path) {
-            await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
+            console.log('Saving video_path to project...');
+            try {
+                const updateResult = await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
+                console.log('Update result:', updateResult);
+                if (updateResult.error) {
+                    console.error('Error updating project:', updateResult.error);
+                }
+            } catch (error) {
+                console.error('Error saving video_path:', error);
+            }
+        } else {
+            console.warn('Cannot save video_path - missing:', {
+                currentProjectId: !!currentProjectId,
+                projectManager: !!projectManager,
+                gcs_path: !!gcs_path
+            });
         }
 
         // Step 4: Display success and refresh project view to show video_path
+        console.log('Displaying success message...');
         const successResult = {
             message: 'Video uploaded successfully',
             gcs_path: gcs_path,
@@ -613,9 +632,21 @@ analyzeBtn.addEventListener('click', async () => {
         
         // Refresh project info to show updated video_path
         if (currentProjectId && projectManager && gcs_path) {
-            const updatedProject = await projectManager.getProject(currentProjectId);
-            if (updatedProject && updatedProject.video_path) {
-                document.getElementById('info-video-path').textContent = updatedProject.video_path;
+            console.log('Refreshing project view...');
+            try {
+                const updatedProject = await projectManager.getProject(currentProjectId);
+                console.log('Updated project:', updatedProject);
+                if (updatedProject && updatedProject.video_path) {
+                    const videoPathElement = document.getElementById('info-video-path');
+                    if (videoPathElement) {
+                        videoPathElement.textContent = updatedProject.video_path;
+                        console.log('Video path updated in UI:', updatedProject.video_path);
+                    } else {
+                        console.warn('Video path element not found');
+                    }
+                }
+            } catch (error) {
+                console.error('Error refreshing project view:', error);
             }
         }
         
