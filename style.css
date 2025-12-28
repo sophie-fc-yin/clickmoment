@@ -41,6 +41,21 @@ h1 {
     color: #222;
 }
 
+.logo {
+    height: 40px;
+    width: auto;
+    display: block;
+}
+
+.landing-logo {
+    max-height: 120px;
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0 auto 25px;
+}
+
 h2 {
     font-size: 18px;
     margin-bottom: 15px;
@@ -373,12 +388,6 @@ h3 {
     margin: 0 auto;
 }
 
-.landing-title {
-    font-size: 48px;
-    font-weight: 700;
-    color: #222;
-    margin-bottom: 15px;
-}
 
 .landing-subtitle {
     font-size: 24px;
