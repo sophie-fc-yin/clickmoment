@@ -579,22 +579,46 @@ analyzeBtn.addEventListener('click', async () => {
         console.log('Got signed URL for GCS path:', gcs_path);
 
         // Step 2: Upload file directly to GCS using signed URL (bypasses Cloud Run 32MB limit)
-        updateStatus('Uploading video to storage...', 'info');
         console.log('Uploading file:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
         
-        const gcsUploadResponse = await fetch(signed_url, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': file.type
-            },
-            body: file
+        // Use XMLHttpRequest for upload progress tracking
+        const uploadPromise = new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            
+            // Track upload progress
+            xhr.upload.addEventListener('progress', (e) => {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    const uploadedMB = (e.loaded / 1024 / 1024).toFixed(2);
+                    const totalMB = (e.total / 1024 / 1024).toFixed(2);
+                    updateStatus(`Uploading video to storage... ${percentComplete.toFixed(1)}% (${uploadedMB} MB / ${totalMB} MB)`, 'info');
+                }
+            });
+            
+            xhr.addEventListener('load', () => {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(xhr);
+                } else {
+                    reject(new Error(`Failed to upload to GCS: ${xhr.statusText} (${xhr.status})`));
+                }
+            });
+            
+            xhr.addEventListener('error', () => {
+                reject(new Error('Network error during upload'));
+            });
+            
+            xhr.addEventListener('abort', () => {
+                reject(new Error('Upload was aborted'));
+            });
+            
+            xhr.open('PUT', signed_url);
+            xhr.setRequestHeader('Content-Type', file.type);
+            xhr.send(file);
         });
-
-        if (!gcsUploadResponse.ok) {
-            throw new Error(`Failed to upload to GCS: ${gcsUploadResponse.statusText}`);
-        }
-
+        
+        await uploadPromise;
         console.log('File uploaded to GCS successfully');
+        updateStatus('Upload complete! Saving metadata...', 'info');
         console.log('GCS path:', gcs_path);
         console.log('Current project ID:', currentProjectId);
         console.log('Project manager:', projectManager);
