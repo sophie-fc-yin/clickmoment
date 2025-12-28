@@ -630,23 +630,15 @@ analyzeBtn.addEventListener('click', async () => {
         jsonOutput.textContent = JSON.stringify(successResult, null, 2);
         updateStatus('Video uploaded successfully!', 'success');
         
-        // Refresh project info to show updated video_path
-        if (currentProjectId && projectManager && gcs_path) {
-            console.log('Refreshing project view...');
-            try {
-                const updatedProject = await projectManager.getProject(currentProjectId);
-                console.log('Updated project:', updatedProject);
-                if (updatedProject && updatedProject.video_path) {
-                    const videoPathElement = document.getElementById('info-video-path');
-                    if (videoPathElement) {
-                        videoPathElement.textContent = updatedProject.video_path;
-                        console.log('Video path updated in UI:', updatedProject.video_path);
-                    } else {
-                        console.warn('Video path element not found');
-                    }
-                }
-            } catch (error) {
-                console.error('Error refreshing project view:', error);
+        // Update the UI directly with the gcs_path we just saved
+        if (gcs_path) {
+            console.log('Updating video path in UI...');
+            const videoPathElement = document.getElementById('info-video-path');
+            if (videoPathElement) {
+                videoPathElement.textContent = gcs_path;
+                console.log('Video path updated in UI:', gcs_path);
+            } else {
+                console.warn('Video path element (#info-video-path) not found in DOM');
             }
         }
         
