@@ -569,11 +569,14 @@ analyzeBtn.addEventListener('click', async () => {
         
         console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
         
-        const uploadResponse = await fetch(apiUrl, {
-            method: 'POST',
-            headers: headers,
-            body: formData
-        }).catch(err => {
+        let uploadResponse;
+        try {
+            uploadResponse = await fetch(apiUrl, {
+                method: 'POST',
+                headers: headers,
+                body: formData
+            });
+        } catch (err) {
             console.error('Fetch error details:', {
                 message: err.message,
                 name: err.name,
@@ -582,19 +585,32 @@ analyzeBtn.addEventListener('click', async () => {
             console.error('API URL attempted:', apiUrl);
             console.error('Request origin:', window.location.origin);
             
-            // More specific error message
-            if (err.message.includes('Failed to fetch') || err.message.includes('network')) {
-                throw new Error(`CORS or Network Error: The backend at ${API_BASE_URL} is not allowing requests from ${window.location.origin}. Check your FastAPI backend CORS settings - it needs to allow your Vercel domain. Common fix: Add your Vercel domain to the CORS allowed origins in your FastAPI backend.`);
+            // Check if it's a network error (no response) vs actual CORS
+            if (err.message.includes('Failed to fetch') || err.name === 'TypeError') {
+                // This could be CORS, network issue, or backend not running
+                throw new Error(`Network Error: Unable to reach backend at ${API_BASE_URL}. This could be:\n1. Backend service is down or crashing (check Cloud Run logs)\n2. CORS not configured (but OPTIONS preflight should fail first)\n3. Network connectivity issue\n\nCheck Cloud Run service status and logs.`);
             }
             throw new Error(`Network error: ${err.message}`);
-        });
+        }
 
         if (!uploadResponse.ok) {
             const errorText = await uploadResponse.text();
             console.error('API error response:', errorText);
+            console.error('Response status:', uploadResponse.status);
+            console.error('Response headers:', Object.fromEntries(uploadResponse.headers.entries()));
+            
+            // Check if CORS headers are present
+            const corsHeader = uploadResponse.headers.get('Access-Control-Allow-Origin');
+            if (!corsHeader && uploadResponse.status !== 413) {
+                console.warn('No CORS header in error response - backend may have crashed before sending headers');
+            }
             
             if (uploadResponse.status === 413) {
-                throw new Error(`File too large (${uploadResponse.status}): The video file exceeds the server's size limit. Please try a smaller file or compress the video.`);
+                throw new Error(`File too large (${uploadResponse.status}): The video file (${(file.size / 1024 / 1024).toFixed(2)} MB) exceeds the server's size limit. Please try a smaller file or compress the video.`);
+            }
+            
+            if (uploadResponse.status === 500 || uploadResponse.status === 502 || uploadResponse.status === 503) {
+                throw new Error(`Backend Error (${uploadResponse.status}): The backend service may be crashing or not responding. Check Cloud Run logs: ${errorText || uploadResponse.statusText}`);
             }
             
             throw new Error(`Failed to upload video (${uploadResponse.status}): ${errorText || uploadResponse.statusText}`);
