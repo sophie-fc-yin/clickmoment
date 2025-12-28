@@ -42,16 +42,15 @@ h1 {
 }
 
 .logo {
-    height: 32px;
-    width: auto;
-    max-width: 200px;
+    width: 180px;
+    height: auto;
     display: block;
 }
 
 .landing-logo {
-    height: 80px;
-    width: auto;
-    max-width: 600px;
+    width: 400px;
+    max-width: 100%;
+    height: auto;
     display: block;
     margin: 0 auto 25px;
 }
@@ -507,13 +506,12 @@ h3 {
 
 @media (max-width: 768px) {
     .logo {
-        height: 28px;
-        max-width: 160px;
+        width: 140px;
     }
     
     .landing-logo {
-        height: 60px;
-        max-width: 90%;
+        width: 90%;
+        max-width: 320px;
     }
     
     .landing-subtitle {
