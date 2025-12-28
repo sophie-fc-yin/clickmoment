@@ -548,87 +548,60 @@ analyzeBtn.addEventListener('click', async () => {
     }
 
     try {
-        // Step 1: Upload video directly to backend
-        updateStatus('Uploading video...', 'info');
         const authHeaders = await getAuthHeaders();
-        const apiUrl = `${API_BASE_URL}/videos/upload`;
-        console.log('Calling API:', apiUrl);
-        console.log('Request origin:', window.location.origin);
-        console.log('Auth headers:', authHeaders);
         
-        // Create FormData with file, user_id, and project_id
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('user_id', currentUser.id);
-        if (currentProjectId) {
-            formData.append('project_id', currentProjectId);
-        }
+        // Step 1: Get signed URL from backend (small request < 1MB, no file size limit)
+        updateStatus('Requesting upload URL...', 'info');
+        const signedUrlEndpoint = `${API_BASE_URL}/get-upload-url`;
+        console.log('Requesting signed URL from:', signedUrlEndpoint);
         
-        // For FormData, don't manually set Content-Type - browser will set it with boundary
-        // But we still need the Authorization header
-        const headers = {};
-        if (authHeaders && authHeaders.Authorization) {
-            headers['Authorization'] = authHeaders.Authorization;
-        }
-        
-        console.log('Uploading file:', file.name, 'Size:', file.size, 'bytes');
-        
-        let uploadResponse;
-        try {
-            uploadResponse = await fetch(apiUrl, {
-                method: 'POST',
-                headers: headers,
-                body: formData
-            });
-        } catch (err) {
-            console.error('Fetch error details:', {
-                message: err.message,
-                name: err.name,
-                stack: err.stack
-            });
-            console.error('API URL attempted:', apiUrl);
-            console.error('Request origin:', window.location.origin);
-            
-            // Check if it's a network error (no response) vs actual CORS
-            if (err.message.includes('Failed to fetch') || err.name === 'TypeError') {
-                // This could be CORS, network issue, or backend not running
-                throw new Error(`Network Error: Unable to reach backend at ${API_BASE_URL}. This could be:\n1. Backend service is down or crashing (check Cloud Run logs)\n2. CORS not configured (but OPTIONS preflight should fail first)\n3. Network connectivity issue\n\nCheck Cloud Run service status and logs.`);
-            }
-            throw new Error(`Network error: ${err.message}`);
+        const signedUrlResponse = await fetch(signedUrlEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders
+            },
+            body: JSON.stringify({
+                filename: file.name,
+                content_type: file.type,
+                user_id: currentUser.id,
+                project_id: currentProjectId || undefined
+            })
+        });
+
+        if (!signedUrlResponse.ok) {
+            const errorText = await signedUrlResponse.text();
+            console.error('Failed to get signed URL:', errorText);
+            throw new Error(`Failed to get upload URL (${signedUrlResponse.status}): ${errorText || signedUrlResponse.statusText}`);
         }
 
-        if (!uploadResponse.ok) {
-            const errorText = await uploadResponse.text();
-            console.error('API error response:', errorText);
-            console.error('Response status:', uploadResponse.status);
-            console.error('Response headers:', Object.fromEntries(uploadResponse.headers.entries()));
-            
-            // Check if CORS headers are present
-            const corsHeader = uploadResponse.headers.get('Access-Control-Allow-Origin');
-            if (!corsHeader && uploadResponse.status !== 413) {
-                console.warn('No CORS header in error response - backend may have crashed before sending headers');
-            }
-            
-            if (uploadResponse.status === 413) {
-                throw new Error(`File too large (${uploadResponse.status}): The video file (${(file.size / 1024 / 1024).toFixed(2)} MB) exceeds the server's size limit. Please try a smaller file or compress the video.`);
-            }
-            
-            if (uploadResponse.status === 500 || uploadResponse.status === 502 || uploadResponse.status === 503) {
-                throw new Error(`Backend Error (${uploadResponse.status}): The backend service may be crashing or not responding. Check Cloud Run logs: ${errorText || uploadResponse.statusText}`);
-            }
-            
-            throw new Error(`Failed to upload video (${uploadResponse.status}): ${errorText || uploadResponse.statusText}`);
+        const { signed_url, gcs_path } = await signedUrlResponse.json();
+        console.log('Got signed URL for GCS path:', gcs_path);
+
+        // Step 2: Upload file directly to GCS using signed URL (bypasses Cloud Run 32MB limit)
+        updateStatus('Uploading video to storage...', 'info');
+        console.log('Uploading file:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+        
+        const gcsUploadResponse = await fetch(signed_url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': file.type
+            },
+            body: file
+        });
+
+        if (!gcsUploadResponse.ok) {
+            throw new Error(`Failed to upload to GCS: ${gcsUploadResponse.statusText}`);
         }
 
-        const result = await uploadResponse.json();
-        const gcs_path = result.gcs_path || result.file_path || result.path;
+        console.log('File uploaded to GCS successfully');
         
-        // Step 4: Save video_path to project in Supabase
+        // Step 3: Save video_path to project in Supabase
         if (currentProjectId && projectManager && gcs_path) {
             await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
         }
 
-        // Step 5: Display success and refresh project view to show video_path
+        // Step 4: Display success and refresh project view to show video_path
         const successResult = {
             message: 'Video uploaded successfully',
             gcs_path: gcs_path,
@@ -646,13 +619,6 @@ analyzeBtn.addEventListener('click', async () => {
             }
         }
         
-        // Refresh project info to show updated video_path
-        if (currentProjectId && projectManager) {
-            const updatedProject = await projectManager.getProject(currentProjectId);
-            if (updatedProject && updatedProject.video_path) {
-                document.getElementById('info-video-path').textContent = updatedProject.video_path;
-            }
-        }
         
     } catch (error) {
         updateStatus(`Error: ${error.message}`, 'error');
