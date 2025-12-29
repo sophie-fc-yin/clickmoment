@@ -629,6 +629,54 @@ h3 {
     font-style: italic;
 }
 
+.who-its-for-section {
+    max-width: 800px;
+    margin: 100px auto;
+    padding: 0 30px;
+    text-align: center;
+}
+
+.who-its-for-intro {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 24px;
+    font-weight: 500;
+}
+
+.who-its-for-list {
+    list-style: none;
+    padding: 0;
+    margin: 32px auto;
+    text-align: left;
+    max-width: 500px;
+}
+
+.who-its-for-list li {
+    font-size: 18px;
+    color: #555;
+    line-height: 1.8;
+    padding: 12px 0;
+    position: relative;
+    padding-left: 28px;
+}
+
+.who-its-for-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #666;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.who-its-for-conclusion {
+    font-size: 20px;
+    color: #333;
+    line-height: 1.7;
+    margin-top: 48px;
+    font-weight: 500;
+}
+
 .landing-how-it-works {
     margin: 100px 0;
     padding: 0 20px;
@@ -784,6 +832,29 @@ h3 {
     .differentiation-tagline {
         font-size: 20px;
         margin-top: 40px;
+    }
+    
+    .who-its-for-section {
+        margin: 60px auto;
+        padding: 0 20px;
+    }
+    
+    .who-its-for-intro,
+    .who-its-for-conclusion {
+        font-size: 18px;
+    }
+    
+    .who-its-for-list {
+        margin: 24px auto;
+    }
+    
+    .who-its-for-list li {
+        font-size: 16px;
+        padding: 10px 0;
+    }
+    
+    .who-its-for-conclusion {
+        margin-top: 32px;
     }
     
     .landing-how-it-works {
