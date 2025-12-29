@@ -26,9 +26,9 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    padding: 8px 0;
+    padding: 6px 0;
     border-bottom: 1px solid #eee;
-    height: 64px;
+    height: 68px;
     box-sizing: border-box;
 }
 
