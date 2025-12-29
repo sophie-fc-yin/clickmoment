@@ -429,12 +429,17 @@ h3 {
 
 /* Landing Page Styles */
 .landing-hero {
-    text-align: center;
-    padding: 100px 20px 80px;
+    text-align: left;
+    padding: 120px 20px 100px;
     max-width: 900px;
     margin: 0 auto;
     animation: fadeInUp 0.8s ease-out;
     position: relative;
+}
+
+.landing-hero .landing-cta {
+    text-align: center;
+    margin-top: 56px;
 }
 
 @keyframes fadeInUp {
@@ -452,33 +457,33 @@ h3 {
     font-size: clamp(42px, 6vw, 72px);
     font-weight: 700;
     color: #111827;
-    margin-bottom: 40px;
-    line-height: 1.1;
+    margin-bottom: 32px;
+    line-height: 1.15;
     letter-spacing: -0.04em;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    opacity: 1;
-    transition: opacity 0.3s ease;
+    max-width: 800px;
 }
 
 .landing-title br {
     display: block;
+    margin-top: 8px;
+}
+
+.landing-title-emphasis {
+    color: #FF7A59;
+    font-weight: 700;
 }
 
 .landing-description {
     font-size: clamp(18px, 2.5vw, 22px);
     color: #4B5563;
-    line-height: 1.75;
-    margin-bottom: 64px;
-    max-width: 680px;
-    margin-left: auto;
-    margin-right: auto;
+    line-height: 1.8;
+    margin-bottom: 0;
+    max-width: 600px;
     font-weight: 400;
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
-.landing-cta {
-    margin-top: 48px;
-}
 
 .btn-large {
     padding: 18px 48px;
@@ -520,67 +525,74 @@ h3 {
 }
 
 .reality-check-section {
-    max-width: 800px;
-    margin: 80px auto;
-    padding: 80px 50px;
-    text-align: center;
+    max-width: 1200px;
+    margin: 100px auto;
+    padding: 0 30px;
     background: #FFFFFF;
     border-radius: 0;
     position: relative;
-    opacity: 0.9;
+}
+
+.reality-check-content {
+    max-width: 560px;
+    margin: 0 auto;
+    text-align: left;
 }
 
 .reality-check-title {
     font-size: clamp(36px, 4.5vw, 48px);
     font-weight: 700;
     color: #111827;
-    margin-bottom: 40px;
+    margin-bottom: 64px;
     letter-spacing: -0.03em;
     line-height: 1.2;
+    text-align: left;
+    max-width: 560px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .reality-check-copy {
     font-size: clamp(18px, 2.2vw, 22px);
-    color: #4B5563;
-    line-height: 1.75;
-    margin-bottom: 32px;
+    color: #111827;
+    line-height: 1.8;
+    margin-bottom: 48px;
     font-weight: 400;
 }
 
 .reality-check-list {
     list-style: none;
     padding: 0;
-    margin: 48px 0;
+    margin: 0 0 56px 0;
     text-align: left;
-    max-width: 520px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .reality-check-list li {
-    font-size: clamp(17px, 2vw, 20px);
+    font-size: clamp(18px, 2.2vw, 22px);
     color: #4B5563;
     line-height: 1.9;
-    padding: 12px 0;
+    padding: 16px 0;
     position: relative;
-    padding-left: 32px;
+    padding-left: 0;
+    font-weight: 400;
 }
 
 .reality-check-list li::before {
-    content: "—";
-    position: absolute;
-    left: 0;
-    color: #FF7A59;
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 1.9;
+    content: "";
+    display: none;
+}
+
+.reality-check-emphasis {
+    color: #111827;
+    font-weight: 600;
+    font-size: clamp(20px, 2.4vw, 24px);
 }
 
 .reality-check-conclusion {
     font-size: clamp(18px, 2.2vw, 22px);
-    color: #4B5563;
-    line-height: 1.75;
-    margin-top: 48px;
+    color: #111827;
+    line-height: 1.8;
+    margin-top: 0;
     font-weight: 500;
 }
 
@@ -598,11 +610,9 @@ h3 {
     margin-bottom: 64px;
     letter-spacing: -0.03em;
     line-height: 1.2;
+    max-width: 800px;
 }
 
-.attention-demo-section .section-title {
-    text-align: center;
-}
 
 .feature-cards-container {
     display: grid;
@@ -666,134 +676,6 @@ h3 {
     font-size: 14px;
 }
 
-.attention-demo-section {
-    max-width: 1200px;
-    margin: 100px auto;
-    padding: 0 30px;
-    background: #FFFFFF;
-}
-
-.attention-demo-container {
-    margin-top: 64px;
-}
-
-.attention-frame {
-    position: relative;
-    width: 100%;
-    max-width: 900px;
-    margin: 0 auto;
-    aspect-ratio: 16 / 9;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
-    overflow: hidden;
-    border-radius: 4px;
-    animation: fadeIn 0.8s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-.attention-focal-area {
-    position: absolute;
-    top: 30%;
-    left: 35%;
-    width: 30%;
-    height: 40%;
-    background: #FF7A59;
-    opacity: 0.12;
-    border: 2px solid #FF7A59;
-    border-radius: 4px;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 2;
-    animation: focalPulse 3s ease-in-out infinite;
-}
-
-@keyframes focalPulse {
-    0%, 100% {
-        opacity: 0.12;
-    }
-    50% {
-        opacity: 0.18;
-    }
-}
-
-.attention-frame:hover .attention-focal-area {
-    opacity: 0.22;
-    transform: scale(1.03);
-    box-shadow: 0 0 0 6px rgba(255, 122, 89, 0.08);
-}
-
-.attention-label {
-    position: absolute;
-    font-size: 12px;
-    font-weight: 600;
-    color: #FF7A59;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 4px 8px;
-    border-radius: 3px;
-    white-space: nowrap;
-    pointer-events: none;
-}
-
-.attention-label:first-child {
-    top: -24px;
-    left: 10px;
-}
-
-.attention-label:last-child {
-    bottom: -24px;
-    right: 10px;
-}
-
-.attention-periphery {
-    position: absolute;
-    background: #E5E7EB;
-    opacity: 0.4;
-    transition: opacity 0.4s ease;
-}
-
-.attention-periphery:nth-child(2) {
-    top: 0;
-    left: 0;
-    width: 30%;
-    height: 25%;
-}
-
-.attention-periphery:nth-child(3) {
-    top: 0;
-    right: 0;
-    width: 35%;
-    height: 30%;
-}
-
-.attention-periphery:nth-child(4) {
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 30%;
-}
-
-.attention-frame:hover .attention-periphery {
-    opacity: 0.2;
-}
-
-.attention-demo-caption {
-    margin-top: 32px;
-    text-align: center;
-    font-size: 16px;
-    color: #4B5563;
-    font-style: italic;
-    max-width: 600px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
-}
 
 .differentiation-section {
     max-width: 1000px;
@@ -835,13 +717,23 @@ h3 {
 }
 
 .comparison-title {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 600;
     color: #111827;
     margin-bottom: 32px;
     letter-spacing: -0.01em;
     position: relative;
     padding-bottom: 16px;
+}
+
+.comparison-column:first-child .comparison-title {
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.comparison-column:last-child .comparison-title {
+    color: #111827;
+    font-weight: 700;
 }
 
 .comparison-column:last-child .comparison-title::after {
@@ -862,49 +754,79 @@ h3 {
 
 .comparison-list li {
     font-size: clamp(17px, 2vw, 19px);
-    color: #4B5563;
     line-height: 1.85;
-    padding: 16px 0;
+    padding: 14px 0;
     position: relative;
-    padding-left: 36px;
+    padding-left: 0;
+}
+
+.comparison-column:first-child .comparison-list li {
+    color: #6B7280;
+}
+
+.comparison-column:last-child .comparison-list li {
+    color: #111827;
+    font-weight: 500;
 }
 
 .comparison-list li::before {
     content: "→";
     position: absolute;
-    left: 0;
+    left: -24px;
     color: #FF7A59;
-    font-size: 20px;
+    font-size: 18px;
     font-weight: 400;
     line-height: 1.85;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.comparison-column:last-child .comparison-list li::before {
+    opacity: 1;
 }
 
 .differentiation-tagline {
     font-size: clamp(22px, 2.8vw, 28px);
-    font-weight: 600;
-    color: #111827;
+    font-weight: 400;
+    color: #4B5563;
     margin-top: 80px;
-    line-height: 1.5;
+    line-height: 1.6;
     font-style: italic;
     letter-spacing: -0.01em;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}
+
+.differentiation-emphasis {
+    color: #111827;
+    font-weight: 600;
+    font-style: normal;
 }
 
 .who-its-for-section {
-    max-width: 800px;
+    max-width: 1200px;
     margin: 80px auto;
-    padding: 60px 40px;
-    text-align: center;
+    padding: 0 30px;
+    text-align: left;
     background: #FFFFFF;
     border-radius: 0;
     position: relative;
+}
+
+.who-its-for-section .section-title {
+    text-align: left;
+    max-width: 600px;
 }
 
 .who-its-for-intro {
     font-size: clamp(18px, 2.2vw, 22px);
     color: #4B5563;
     margin-bottom: 32px;
-    font-weight: 500;
-    line-height: 1.6;
+    font-weight: 400;
+    line-height: 1.7;
+    max-width: 600px;
 }
 
 .who-its-for-list {
@@ -936,10 +858,11 @@ h3 {
 
 .who-its-for-conclusion {
     font-size: clamp(18px, 2.2vw, 22px);
-    color: #4B5563;
-    line-height: 1.75;
-    margin-top: 56px;
+    color: #111827;
+    line-height: 1.8;
+    margin-top: 0;
     font-weight: 500;
+    max-width: 600px;
 }
 
 .landing-how-it-works {
@@ -1018,12 +941,25 @@ h3 {
 }
 
 .landing-footer {
-    text-align: center;
+    text-align: left;
     padding: 100px 20px;
     background: #FFFFFF;
     margin-top: 80px;
     border-radius: 0;
     position: relative;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.landing-footer .footer-title {
+    text-align: left;
+    max-width: 700px;
+}
+
+.landing-footer .landing-cta {
+    text-align: left;
+    margin-top: 40px;
 }
 
 .footer-title {
@@ -1041,6 +977,8 @@ h3 {
     margin-top: 32px;
     line-height: 1.7;
     font-weight: 400;
+    max-width: 600px;
+    text-align: left;
 }
 
 @media (max-width: 768px) {
@@ -1058,8 +996,12 @@ h3 {
     }
     
     .reality-check-section {
-        margin: 60px auto;
-        padding: 60px 28px;
+        margin: 80px auto;
+        padding: 0 20px;
+    }
+    
+    .reality-check-content {
+        max-width: 100%;
     }
     
     .reality-check-list {
@@ -1074,29 +1016,6 @@ h3 {
     .section-title {
         margin-bottom: 48px;
         text-align: left;
-    }
-    
-    .attention-demo-section {
-        margin: 80px auto;
-        padding: 0 20px;
-    }
-    
-    .attention-demo-section .section-title {
-        text-align: center;
-    }
-    
-    .attention-frame {
-        max-width: 100%;
-    }
-    
-    .attention-focal-area {
-        width: 35%;
-        height: 45%;
-    }
-    
-    .attention-demo-caption {
-        font-size: 14px;
-        margin-top: 24px;
     }
     
     .feature-cards-container {
