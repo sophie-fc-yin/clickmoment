@@ -51,13 +51,6 @@ h1 {
     padding: 0;
 }
 
-.landing-logo {
-    height: 150px;
-    width: auto;
-    max-width: 100%;
-    display: block;
-    margin: 0 auto 32px;
-}
 
 h2 {
     font-size: 18px;
@@ -393,10 +386,10 @@ h3 {
 
 
 .landing-subtitle {
-    font-size: 24px;
-    color: #666;
-    margin-bottom: 18px;
-    font-weight: 500;
+    font-size: 32px;
+    color: #222;
+    margin-bottom: 20px;
+    font-weight: 600;
 }
 
 .landing-description {
@@ -524,12 +517,6 @@ h3 {
     
     .landing-hero {
         padding: 30px 20px;
-    }
-    
-    .landing-logo {
-        height: 100px;
-        max-width: 90%;
-        margin-bottom: 25px;
     }
     
     .landing-subtitle {
