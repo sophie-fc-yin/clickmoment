@@ -730,17 +730,25 @@ h3 {
 
 .landing-footer {
     text-align: center;
-    padding: 80px 20px;
+    padding: 100px 20px;
     background-color: #fafafa;
     margin-top: 100px;
     border-radius: 0;
 }
 
-.landing-footer p {
-    font-size: 24px;
-    font-weight: 600;
+.footer-title {
+    font-size: 40px;
+    font-weight: 700;
     color: #000;
-    margin-bottom: 32px;
+    margin-bottom: 40px;
+    letter-spacing: -0.02em;
+}
+
+.footer-tagline {
+    font-size: 20px;
+    color: #666;
+    margin-top: 24px;
+    line-height: 1.6;
 }
 
 @media (max-width: 768px) {
@@ -875,8 +883,14 @@ h3 {
         margin-top: 60px;
     }
     
-    .landing-footer p {
-        font-size: 20px;
+    .footer-title {
+        font-size: 32px;
+        margin-bottom: 32px;
+    }
+    
+    .footer-tagline {
+        font-size: 18px;
+        margin-top: 20px;
     }
 }
 
