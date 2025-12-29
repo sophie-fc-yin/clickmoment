@@ -26,8 +26,9 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    padding: 4px 0;
+    padding: 0;
     border-bottom: 1px solid #eee;
+    min-height: 50px;
 }
 
 #auth-section {
@@ -42,8 +43,8 @@ h1 {
 }
 
 .logo {
-    width: 220px;
-    height: auto;
+    height: 48px;
+    width: auto;
     display: block;
     flex-shrink: 0;
 }
@@ -507,11 +508,11 @@ h3 {
 
 @media (max-width: 768px) {
     header {
-        padding: 4px 0;
+        min-height: 45px;
     }
     
     .logo {
-        width: 180px;
+        height: 40px;
     }
     
     .landing-hero {
