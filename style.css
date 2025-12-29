@@ -430,7 +430,7 @@ h3 {
 /* Landing Page Styles */
 .landing-hero {
     text-align: center;
-    padding: 160px 20px 120px;
+    padding: 100px 20px 80px;
     max-width: 900px;
     margin: 0 auto;
     animation: fadeInUp 0.8s ease-out;
@@ -456,6 +456,8 @@ h3 {
     line-height: 1.1;
     letter-spacing: -0.04em;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    opacity: 1;
+    transition: opacity 0.3s ease;
 }
 
 .landing-title br {
@@ -471,6 +473,7 @@ h3 {
     margin-left: auto;
     margin-right: auto;
     font-weight: 400;
+    opacity: 0.85;
 }
 
 .landing-cta {
@@ -518,12 +521,13 @@ h3 {
 
 .reality-check-section {
     max-width: 800px;
-    margin: 160px auto;
-    padding: 100px 50px;
+    margin: 80px auto;
+    padding: 80px 50px;
     text-align: center;
     background: #FFFFFF;
     border-radius: 0;
     position: relative;
+    opacity: 0.9;
 }
 
 .reality-check-title {
@@ -582,7 +586,7 @@ h3 {
 
 .what-clickmoment-section {
     max-width: 1200px;
-    margin: 160px auto;
+    margin: 80px auto;
     padding: 0 30px;
 }
 
@@ -594,6 +598,10 @@ h3 {
     margin-bottom: 64px;
     letter-spacing: -0.03em;
     line-height: 1.2;
+}
+
+.attention-demo-section .section-title {
+    text-align: center;
 }
 
 .feature-cards-container {
@@ -608,11 +616,19 @@ h3 {
     border-radius: 8px;
     text-align: left;
     border: 1px solid #E5E7EB;
-    transition: border-color 0.2s ease;
+    transition: all 0.3s ease;
+    opacity: 0.95;
 }
 
 .feature-card:hover {
     border-color: #FF7A59;
+    opacity: 1;
+    transform: translateY(-2px);
+}
+
+.feature-card:nth-child(2) {
+    opacity: 1;
+    border-color: #E5E7EB;
 }
 
 .feature-icon {
@@ -650,10 +666,139 @@ h3 {
     font-size: 14px;
 }
 
+.attention-demo-section {
+    max-width: 1200px;
+    margin: 100px auto;
+    padding: 0 30px;
+    background: #FFFFFF;
+}
+
+.attention-demo-container {
+    margin-top: 64px;
+}
+
+.attention-frame {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    aspect-ratio: 16 / 9;
+    background: #F9FAFB;
+    border: 1px solid #E5E7EB;
+    overflow: hidden;
+    border-radius: 4px;
+    animation: fadeIn 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.attention-focal-area {
+    position: absolute;
+    top: 30%;
+    left: 35%;
+    width: 30%;
+    height: 40%;
+    background: #FF7A59;
+    opacity: 0.12;
+    border: 2px solid #FF7A59;
+    border-radius: 4px;
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+    animation: focalPulse 3s ease-in-out infinite;
+}
+
+@keyframes focalPulse {
+    0%, 100% {
+        opacity: 0.12;
+    }
+    50% {
+        opacity: 0.18;
+    }
+}
+
+.attention-frame:hover .attention-focal-area {
+    opacity: 0.22;
+    transform: scale(1.03);
+    box-shadow: 0 0 0 6px rgba(255, 122, 89, 0.08);
+}
+
+.attention-label {
+    position: absolute;
+    font-size: 12px;
+    font-weight: 600;
+    color: #FF7A59;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 4px 8px;
+    border-radius: 3px;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.attention-label:first-child {
+    top: -24px;
+    left: 10px;
+}
+
+.attention-label:last-child {
+    bottom: -24px;
+    right: 10px;
+}
+
+.attention-periphery {
+    position: absolute;
+    background: #E5E7EB;
+    opacity: 0.4;
+    transition: opacity 0.4s ease;
+}
+
+.attention-periphery:nth-child(2) {
+    top: 0;
+    left: 0;
+    width: 30%;
+    height: 25%;
+}
+
+.attention-periphery:nth-child(3) {
+    top: 0;
+    right: 0;
+    width: 35%;
+    height: 30%;
+}
+
+.attention-periphery:nth-child(4) {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+}
+
+.attention-frame:hover .attention-periphery {
+    opacity: 0.2;
+}
+
+.attention-demo-caption {
+    margin-top: 32px;
+    text-align: center;
+    font-size: 16px;
+    color: #4B5563;
+    font-style: italic;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+}
+
 .differentiation-section {
     max-width: 1000px;
-    margin: 160px auto;
-    padding: 100px 50px;
+    margin: 80px auto;
+    padding: 80px 50px;
     text-align: center;
     background: #FFFFFF;
     border-radius: 0;
@@ -746,8 +891,8 @@ h3 {
 
 .who-its-for-section {
     max-width: 800px;
-    margin: 160px auto;
-    padding: 80px 40px;
+    margin: 80px auto;
+    padding: 60px 40px;
     text-align: center;
     background: #FFFFFF;
     border-radius: 0;
@@ -798,15 +943,13 @@ h3 {
 }
 
 .landing-how-it-works {
-    margin: 160px 0;
-    padding: 80px 40px;
+    margin: 80px auto;
+    padding: 60px 40px;
     text-align: center;
     background: #FFFFFF;
     border-radius: 0;
     position: relative;
     max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .landing-how-it-works h2 {
@@ -876,9 +1019,9 @@ h3 {
 
 .landing-footer {
     text-align: center;
-    padding: 140px 20px;
+    padding: 100px 20px;
     background: #FFFFFF;
-    margin-top: 160px;
+    margin-top: 80px;
     border-radius: 0;
     position: relative;
 }
@@ -911,12 +1054,12 @@ h3 {
     }
     
     .landing-hero {
-        padding: 120px 20px 100px;
+        padding: 80px 20px 60px;
     }
     
     .reality-check-section {
-        margin: 120px auto;
-        padding: 80px 28px;
+        margin: 60px auto;
+        padding: 60px 28px;
     }
     
     .reality-check-list {
@@ -924,13 +1067,36 @@ h3 {
     }
     
     .what-clickmoment-section {
-        margin: 120px auto;
+        margin: 60px auto;
         padding: 0 20px;
     }
     
     .section-title {
         margin-bottom: 48px;
         text-align: left;
+    }
+    
+    .attention-demo-section {
+        margin: 80px auto;
+        padding: 0 20px;
+    }
+    
+    .attention-demo-section .section-title {
+        text-align: center;
+    }
+    
+    .attention-frame {
+        max-width: 100%;
+    }
+    
+    .attention-focal-area {
+        width: 35%;
+        height: 45%;
+    }
+    
+    .attention-demo-caption {
+        font-size: 14px;
+        margin-top: 24px;
     }
     
     .feature-cards-container {
@@ -943,14 +1109,14 @@ h3 {
     }
     
     .differentiation-section {
-        margin: 120px auto;
-        padding: 80px 28px;
+        margin: 60px auto;
+        padding: 60px 28px;
     }
     
     .comparison-grid {
         grid-template-columns: 1fr;
         gap: 32px;
-        margin: 60px 0;
+        margin: 40px 0;
     }
     
     .comparison-column {
@@ -958,8 +1124,8 @@ h3 {
     }
     
     .who-its-for-section {
-        margin: 120px auto;
-        padding: 80px 28px;
+        margin: 60px auto;
+        padding: 60px 28px;
     }
     
     .who-its-for-list {
@@ -967,8 +1133,8 @@ h3 {
     }
     
     .landing-how-it-works {
-        margin: 120px 20px;
-        padding: 80px 28px;
+        margin: 60px 20px;
+        padding: 60px 28px;
     }
     
     .steps {
@@ -983,8 +1149,8 @@ h3 {
     }
     
     .landing-footer {
-        padding: 120px 20px;
-        margin-top: 120px;
+        padding: 80px 20px;
+        margin-top: 60px;
     }
     
     .btn-large {
