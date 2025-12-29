@@ -48,7 +48,7 @@ header:hover {
 }
 
 .logo {
-    height: 44px;
+    height: 32px;
     width: auto;
     display: block;
     flex-shrink: 0;
@@ -81,15 +81,6 @@ header:hover {
 h1 {
     font-size: 24px;
     color: #222;
-}
-
-.logo {
-    height: 52px;
-    width: auto;
-    display: block;
-    flex-shrink: 0;
-    margin: 0;
-    padding: 0;
 }
 
 
@@ -916,7 +907,7 @@ h3 {
     }
     
     .logo {
-        height: 36px;
+        height: 28px;
     }
     
     .landing-hero {
