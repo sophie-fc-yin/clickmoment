@@ -26,7 +26,7 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    padding: 8px 0;
+    padding: 4px 0;
     border-bottom: 1px solid #eee;
 }
 
@@ -42,13 +42,12 @@ h1 {
 }
 
 .logo {
-    width: 300px;
-    height: auto;
+    height: 52px;
+    width: auto;
     display: block;
     flex-shrink: 0;
     margin: 0;
     padding: 0;
-    max-width: none;
 }
 
 .landing-logo {
@@ -510,11 +509,11 @@ h3 {
 
 @media (max-width: 768px) {
     header {
-        padding: 6px 0;
+        padding: 3px 0;
     }
     
     .logo {
-        width: 220px;
+        height: 42px;
     }
     
     .landing-hero {
