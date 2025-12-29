@@ -570,6 +570,65 @@ h3 {
     font-style: italic;
 }
 
+.differentiation-section {
+    max-width: 1000px;
+    margin: 100px auto;
+    padding: 0 30px;
+    text-align: center;
+}
+
+.comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin: 60px 0;
+    text-align: left;
+}
+
+.comparison-column {
+    padding: 0;
+}
+
+.comparison-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 24px;
+}
+
+.comparison-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.comparison-list li {
+    font-size: 18px;
+    color: #555;
+    line-height: 1.8;
+    padding: 12px 0;
+    position: relative;
+    padding-left: 28px;
+}
+
+.comparison-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #666;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.differentiation-tagline {
+    font-size: 24px;
+    font-weight: 600;
+    color: #000;
+    margin-top: 60px;
+    line-height: 1.6;
+    font-style: italic;
+}
+
 .landing-how-it-works {
     margin: 100px 0;
     padding: 0 20px;
@@ -699,6 +758,32 @@ h3 {
     
     .feature-card {
         padding: 32px 24px;
+    }
+    
+    .differentiation-section {
+        margin: 60px auto;
+        padding: 0 20px;
+    }
+    
+    .comparison-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        margin: 40px 0;
+    }
+    
+    .comparison-title {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .comparison-list li {
+        font-size: 16px;
+        padding: 10px 0;
+    }
+    
+    .differentiation-tagline {
+        font-size: 20px;
+        margin-top: 40px;
     }
     
     .landing-how-it-works {
