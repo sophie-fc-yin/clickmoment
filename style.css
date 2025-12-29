@@ -1296,6 +1296,24 @@ h3,
 
 .who-its-for-content {
     max-width: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    position: relative;
+    padding-left: 28px;
+}
+
+.who-its-for-content::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 6px;
+    width: 6px;
+    height: 140px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, var(--accent), rgba(79, 125, 255, 0.6));
+    box-shadow: 0 10px 24px rgba(255, 106, 61, 0.3);
 }
 
 .who-its-for-visual {
@@ -1309,6 +1327,7 @@ h3,
     align-items: center;
     gap: 24px;
     margin-bottom: 20px;
+    align-self: flex-start;
 }
 
 .creator-type {
@@ -1369,6 +1388,8 @@ h3,
     max-width: none;
     margin-bottom: 24px;
     font-size: clamp(40px, 4.6vw, 64px);
+    align-self: flex-start;
+    line-height: 1.1;
 }
 
 .who-its-for-intro {
@@ -1378,6 +1399,26 @@ h3,
     font-weight: 400;
     line-height: 1.6;
     max-width: none;
+    align-self: flex-start;
+}
+
+.who-its-for-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.metric-chip {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-weight: 600;
+    background: rgba(18, 19, 26, 0.06);
+    color: var(--ink);
+    border: 1px solid var(--line);
 }
 
 .who-its-for-panel {
@@ -1387,6 +1428,20 @@ h3,
     border: 1px solid var(--line);
     box-shadow: 0 24px 50px rgba(18, 19, 26, 0.12);
     max-width: 720px;
+    position: relative;
+    overflow: hidden;
+}
+
+.who-its-for-panel::after {
+    content: "";
+    position: absolute;
+    right: -40px;
+    top: -40px;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(79, 125, 255, 0.18), transparent 70%);
+    pointer-events: none;
 }
 
 .who-its-for-list {
@@ -1843,6 +1898,14 @@ h3,
     .who-its-for-visual {
         order: -1;
         justify-content: flex-start;
+    }
+
+    .who-its-for-content {
+        padding-left: 0;
+    }
+
+    .who-its-for-content::before {
+        display: none;
     }
 
     .who-its-for-showcase {
