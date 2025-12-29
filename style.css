@@ -40,7 +40,8 @@ header {
     width: 100%;
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(229, 226, 222, 0.8);
+    border-bottom: none;
+    box-shadow: 0 8px 24px rgba(18, 19, 26, 0.06);
     padding: 0;
     margin: 0;
     position: sticky;
@@ -50,7 +51,7 @@ header {
 }
 
 header:hover {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 12px 28px rgba(18, 19, 26, 0.08);
 }
 
 .header-container {
@@ -799,7 +800,7 @@ h3,
 .reality-check-copy {
     font-size: clamp(18px, 2.2vw, 22px);
     color: var(--ink);
-    line-height: 1.8;
+    line-height: 1.65;
     margin-bottom: 48px;
     font-weight: 400;
 }
@@ -814,8 +815,8 @@ h3,
 .reality-check-list li {
     font-size: clamp(18px, 2.2vw, 22px);
     color: #4b5160;
-    line-height: 1.9;
-    padding: 16px 0;
+    line-height: 1.7;
+    padding: 12px 0;
     position: relative;
     padding-left: 0;
     font-weight: 400;
@@ -835,7 +836,7 @@ h3,
 .reality-check-conclusion {
     font-size: clamp(18px, 2.2vw, 22px);
     color: var(--ink);
-    line-height: 1.8;
+    line-height: 1.65;
     margin-top: 0;
     font-weight: 500;
 }
@@ -980,7 +981,7 @@ h3,
 
 .differentiation-section {
     margin: 0;
-    padding: 140px 30px;
+    padding: 120px 30px 90px;
     text-align: center;
     background: #f9f6f2;
     border-radius: 0;
@@ -1228,7 +1229,7 @@ h3,
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    padding: 60px 0 0 0;
+    padding: 40px 0 0 0;
     border-top: 1px solid rgba(18, 19, 26, 0.08);
 }
 
@@ -1238,28 +1239,37 @@ h3,
     font-style: normal;
 }
 
+.section-divider {
+    height: 72px;
+    background: linear-gradient(180deg, rgba(18, 19, 26, 0.06), transparent);
+    border-bottom: 1px solid rgba(18, 19, 26, 0.06);
+}
+
 .who-its-for-section {
     margin: 0;
-    padding: 120px 30px;
+    padding: 90px 30px 120px;
     text-align: left;
     background: linear-gradient(120deg, #ffffff 0%, #f4f7ff 50%, #fff0e4 100%);
     border-radius: 0;
     position: relative;
 }
 
-.who-its-for-section .who-its-for-visual,
-.who-its-for-section .section-title,
-.who-its-for-section .who-its-for-intro,
-.who-its-for-section .who-its-for-list,
-.who-its-for-section .who-its-for-conclusion {
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+.who-its-for-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 64px;
+    align-items: start;
+}
+
+.who-its-for-content {
+    max-width: 640px;
 }
 
 .who-its-for-visual {
-    margin-bottom: 64px;
     display: flex;
+    align-items: flex-start;
     justify-content: center;
 }
 
@@ -1267,6 +1277,7 @@ h3,
     display: flex;
     align-items: center;
     gap: 24px;
+    margin-bottom: 20px;
 }
 
 .creator-type {
@@ -1289,9 +1300,8 @@ h3,
 
 .persona-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 16px;
-    margin-top: 32px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
 }
 
 .persona-card {
@@ -1326,22 +1336,22 @@ h3,
 .who-its-for-section .section-title {
     text-align: left;
     max-width: 600px;
-    margin-bottom: 48px;
+    margin-bottom: 28px;
 }
 
 .who-its-for-intro {
     font-size: clamp(18px, 2.2vw, 22px);
     color: #4b5160;
-    margin-bottom: 32px;
+    margin-bottom: 20px;
     font-weight: 400;
-    line-height: 1.7;
+    line-height: 1.6;
     max-width: 600px;
 }
 
 .who-its-for-list {
     list-style: none;
     padding: 0;
-    margin: 48px auto;
+    margin: 24px 0 32px;
     text-align: left;
     max-width: 520px;
 }
@@ -1349,8 +1359,8 @@ h3,
 .who-its-for-list li {
     font-size: clamp(17px, 2vw, 20px);
     color: #4b5160;
-    line-height: 1.85;
-    padding: 14px 0;
+    line-height: 1.7;
+    padding: 10px 0;
     position: relative;
     padding-left: 32px;
 }
@@ -1368,7 +1378,7 @@ h3,
 .who-its-for-conclusion {
     font-size: clamp(18px, 2.2vw, 22px);
     color: var(--ink);
-    line-height: 1.8;
+    line-height: 1.65;
     margin-top: 0;
     font-weight: 500;
     max-width: 600px;
@@ -1580,6 +1590,10 @@ h3,
     .who-its-for-section {
         padding: 100px 20px;
     }
+
+    .section-divider {
+        height: 48px;
+    }
     
     .landing-how-it-works {
         padding: 100px 20px;
@@ -1647,6 +1661,15 @@ h3,
     
     .who-its-for-list {
         margin: 40px auto;
+    }
+
+    .who-its-for-grid {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+
+    .who-its-for-visual {
+        order: -1;
     }
     
     .landing-how-it-works {
