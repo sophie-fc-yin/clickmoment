@@ -24,9 +24,9 @@ body {
 header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 30px;
-    padding: 4px 0;
+    align-items: flex-start;
+    margin-bottom: 0;
+    padding: 20px 0 15px 0;
     border-bottom: 1px solid #eee;
 }
 
@@ -34,6 +34,7 @@ header {
     display: flex;
     gap: 10px;
     align-items: center;
+    padding-top: 8px;
 }
 
 h1 {
@@ -42,8 +43,8 @@ h1 {
 }
 
 .logo {
-    height: 52px;
-    width: auto;
+    width: 180px;
+    height: auto;
     display: block;
     flex-shrink: 0;
     margin: 0;
@@ -509,11 +510,16 @@ h3 {
 
 @media (max-width: 768px) {
     header {
-        padding: 3px 0;
+        padding: 15px 0 12px 0;
+        align-items: center;
+    }
+    
+    #auth-section {
+        padding-top: 0;
     }
     
     .logo {
-        height: 42px;
+        width: 140px;
     }
     
     .landing-hero {
