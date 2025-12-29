@@ -26,10 +26,8 @@ header {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 30px;
-    padding: 6px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #eee;
-    height: 68px;
-    box-sizing: border-box;
 }
 
 #auth-section {
@@ -44,12 +42,13 @@ h1 {
 }
 
 .logo {
-    height: 56px;
-    width: auto;
+    width: 250px;
+    height: auto;
     display: block;
     flex-shrink: 0;
     margin: 0;
     padding: 0;
+    max-width: none;
 }
 
 .landing-logo {
@@ -511,12 +510,11 @@ h3 {
 
 @media (max-width: 768px) {
     header {
-        height: 56px;
-        padding: 6px 0;
+        padding: 8px 0;
     }
     
     .logo {
-        height: 48px;
+        width: 200px;
     }
     
     .landing-hero {
