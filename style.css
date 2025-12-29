@@ -29,6 +29,17 @@ header {
     justify-content: space-between;
     align-items: center;
     height: 68px;
+    box-sizing: border-box;
+}
+
+.logo {
+    height: 52px;
+    width: auto;
+    display: block;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
 }
 
 .container {
@@ -44,6 +55,7 @@ header {
     display: flex;
     gap: 10px;
     align-items: center;
+    height: 100%;
 }
 
 h1 {
