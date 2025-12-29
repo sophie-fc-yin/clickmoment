@@ -430,12 +430,19 @@ h3 {
 /* Landing Page Styles */
 .landing-hero {
     text-align: left;
-    padding: 160px 20px 140px;
-    max-width: 900px;
-    margin: 0 auto;
+    padding: 160px 30px 140px;
+    margin: 0;
     animation: fadeInUp 0.8s ease-out;
     position: relative;
     background: #FFFFFF;
+}
+
+.landing-hero .landing-title,
+.landing-hero .landing-description,
+.landing-hero .landing-cta {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .landing-hero .landing-cta {
@@ -526,12 +533,50 @@ h3 {
 }
 
 .reality-check-section {
-    max-width: 100%;
     margin: 0;
     padding: 120px 30px;
-    background: #F5F5F5;
+    background: #F9FAFB;
     border-radius: 0;
     position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.reality-check-visual {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.reality-check-diagram {
+    position: relative;
+    width: 200px;
+    height: 120px;
+}
+
+.diagram-frame {
+    width: 100%;
+    height: 100%;
+    border: 2px solid #E5E7EB;
+    border-radius: 4px;
+    background: #FFFFFF;
+    position: relative;
+}
+
+.diagram-question-mark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 48px;
+    color: #9CA3AF;
+    font-weight: 300;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .reality-check-content {
@@ -600,11 +645,17 @@ h3 {
 }
 
 .what-clickmoment-section {
-    max-width: 100%;
     margin: 0;
     padding: 140px 30px;
     background: #FFFFFF;
     position: relative;
+}
+
+.what-clickmoment-section .section-title,
+.what-clickmoment-section .feature-cards-container {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .what-clickmoment-section::before {
@@ -615,6 +666,17 @@ h3 {
     right: 0;
     height: 1px;
     background: linear-gradient(90deg, transparent, #E5E7EB, transparent);
+}
+
+.what-clickmoment-section::after {
+    content: '';
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 60px;
+    background: #E5E7EB;
 }
 
 .section-title {
@@ -664,12 +726,19 @@ h3 {
 }
 
 .feature-icon {
-    font-size: 32px;
-    margin-bottom: 20px;
-    display: block;
-    line-height: 1;
-    filter: grayscale(0.3);
-    opacity: 0.8;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #111827;
+    opacity: 0.7;
+}
+
+.feature-card:nth-child(2) .feature-icon {
+    color: #FF7A59;
+    opacity: 1;
 }
 
 .feature-card h3 {
@@ -700,19 +769,81 @@ h3 {
 
 
 .differentiation-section {
-    max-width: 100%;
     margin: 0;
     padding: 140px 30px;
     text-align: center;
-    background: #F5F5F5;
+    background: #F9FAFB;
     border-radius: 0;
     position: relative;
+}
+
+.differentiation-section .section-title,
+.differentiation-section .comparison-visual,
+.differentiation-section .comparison-grid,
+.differentiation-section .differentiation-tagline {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .differentiation-section .section-title {
     text-align: center;
     max-width: 100%;
     margin-bottom: 80px;
+}
+
+.comparison-visual {
+    margin-bottom: 80px;
+    display: flex;
+    justify-content: center;
+}
+
+.comparison-flow {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.flow-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 32px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.flow-quiet {
+    background: #F5F5F5;
+    color: #6B7280;
+}
+
+.flow-strong {
+    background: #FF7A59;
+    color: #FFFFFF;
+}
+
+.flow-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.flow-quiet .flow-icon {
+    color: #9CA3AF;
+}
+
+.flow-strong .flow-icon {
+    color: #FFFFFF;
+}
+
+.flow-arrow {
+    font-size: 24px;
+    color: #9CA3AF;
+    font-weight: 300;
 }
 
 .comparison-grid {
@@ -839,13 +970,52 @@ h3 {
 }
 
 .who-its-for-section {
-    max-width: 100%;
     margin: 0;
     padding: 120px 30px;
     text-align: left;
-    background: #FFFFFF;
+    background: #F9FAFB;
     border-radius: 0;
     position: relative;
+}
+
+.who-its-for-section .who-its-for-visual,
+.who-its-for-section .section-title,
+.who-its-for-section .who-its-for-intro,
+.who-its-for-section .who-its-for-list,
+.who-its-for-section .who-its-for-conclusion {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.who-its-for-visual {
+    margin-bottom: 64px;
+    display: flex;
+    justify-content: center;
+}
+
+.creator-types {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.creator-type {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+    letter-spacing: -0.02em;
+}
+
+.creator-type-quiet {
+    color: #9CA3AF;
+    font-weight: 400;
+}
+
+.creator-type-divider {
+    font-size: 24px;
+    color: #FF7A59;
+    font-weight: 300;
 }
 
 .who-its-for-section .section-title {
@@ -906,7 +1076,13 @@ h3 {
     background: #FEF5F0;
     border-radius: 0;
     position: relative;
-    max-width: 100%;
+}
+
+.landing-how-it-works h2,
+.landing-how-it-works .steps {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .landing-how-it-works h2 {
@@ -928,35 +1104,35 @@ h3 {
 
 .step {
     text-align: center;
-    padding: 24px;
+    padding: 32px 24px;
     border-radius: 12px;
-    transition: transform 0.3s ease, background-color 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
 .step:hover {
     transform: translateY(-4px);
-    background-color: #f8fafc;
 }
 
-.step-number {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: #FF7A59;
-    color: white;
-    font-size: 28px;
-    font-weight: 700;
+.step-icon {
+    width: 56px;
+    height: 56px;
+    margin: 0 auto 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 0 auto 28px;
-    box-shadow: 0 2px 8px rgba(255, 122, 89, 0.2);
+    background: #FF7A59;
+    color: white;
+    border-radius: 12px;
     transition: all 0.2s ease;
 }
 
-.step:hover .step-number {
+.step:hover .step-icon {
     background: #F56A48;
-    box-shadow: 0 4px 12px rgba(255, 122, 89, 0.3);
+    transform: scale(1.05);
+}
+
+.step-number {
+    display: none;
 }
 
 .step h3 {
@@ -969,9 +1145,11 @@ h3 {
 
 .step p {
     color: #4B5563;
-    line-height: 1.75;
-    font-size: 17px;
+    line-height: 1.7;
+    font-size: 16px;
     font-weight: 400;
+    max-width: 280px;
+    margin: 0 auto;
 }
 
 .landing-footer {
@@ -981,8 +1159,15 @@ h3 {
     margin-top: 0;
     border-radius: 0;
     position: relative;
-    max-width: 100%;
     border-top: 1px solid #E5E7EB;
+}
+
+.landing-footer .footer-title,
+.landing-footer .landing-cta,
+.landing-footer .footer-tagline {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .landing-footer .footer-title {
@@ -1030,6 +1215,38 @@ h3 {
     
     .reality-check-section {
         padding: 100px 20px;
+        grid-template-columns: 1fr;
+        gap: 60px;
+    }
+    
+    .reality-check-visual {
+        order: -1;
+    }
+    
+    .reality-check-diagram {
+        width: 150px;
+        height: 90px;
+    }
+    
+    .diagram-question-mark {
+        font-size: 36px;
+    }
+    
+    .comparison-visual {
+        margin-bottom: 60px;
+    }
+    
+    .comparison-flow {
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .flow-arrow {
+        transform: rotate(90deg);
+    }
+    
+    .flow-item {
+        padding: 16px 24px;
     }
     
     .what-clickmoment-section {
