@@ -6,6 +6,8 @@
     --accent: #ff6a3d;
     --accent-deep: #e64e2e;
     --accent-glow: rgba(255, 106, 61, 0.2);
+    --line: rgba(18, 19, 26, 0.08);
+    --line-faint: rgba(18, 19, 26, 0.04);
     --cloud: #f8f7f4;
     --cream: #fff4ee;
     --sand: #fdeee3;
@@ -41,7 +43,7 @@ header {
     background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(10px);
     border-bottom: none;
-    box-shadow: 0 8px 24px rgba(18, 19, 26, 0.06);
+    box-shadow: none;
     padding: 0;
     margin: 0;
     position: sticky;
@@ -51,13 +53,13 @@ header {
 }
 
 header:hover {
-    box-shadow: 0 12px 28px rgba(18, 19, 26, 0.08);
+    box-shadow: none;
 }
 
 .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 30px;
+    max-width: 100%;
+    margin: 0;
+    padding: 0 6vw;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -81,8 +83,8 @@ header:hover {
 }
 
 .container {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
     background: transparent;
     padding: 0;
     border-radius: 0;
@@ -459,10 +461,13 @@ h3,
 /* Landing Page Styles */
 .landing-hero {
     text-align: left;
-    padding: 140px 30px 120px;
+    padding: 140px 6vw 120px;
     margin: 0;
     position: relative;
-    background: linear-gradient(135deg, #fff7f0 0%, #ffffff 55%, #f4f7ff 100%);
+    background-image:
+        linear-gradient(135deg, #fff7f0 0%, #ffffff 55%, #f4f7ff 100%),
+        repeating-linear-gradient(90deg, transparent 0 72px, var(--line-faint) 72px 73px),
+        repeating-linear-gradient(0deg, transparent 0 72px, var(--line-faint) 72px 73px);
     overflow: hidden;
 }
 
@@ -493,8 +498,8 @@ h3,
 }
 
 .hero-grid {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
     gap: 64px;
@@ -617,6 +622,22 @@ h3,
     font-weight: 500;
 }
 
+.visual-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--line);
+    box-shadow: 0 12px 24px rgba(18, 19, 26, 0.1);
+}
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -700,17 +721,19 @@ h3,
 
 .reality-check-section {
     margin: 0;
-    padding: 120px 30px;
-    background: linear-gradient(120deg, #f5f7ff 0%, #ffffff 45%, #fff1e8 100%);
+    padding: 120px 6vw;
+    background-image:
+        linear-gradient(120deg, #f5f7ff 0%, #ffffff 45%, #fff1e8 100%),
+        repeating-linear-gradient(90deg, transparent 0 96px, var(--line-faint) 96px 97px);
     border-radius: 0;
     position: relative;
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 80px;
     align-items: center;
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .reality-check-visual {
@@ -843,16 +866,18 @@ h3,
 
 .what-clickmoment-section {
     margin: 0;
-    padding: 140px 30px;
-    background: #ffffff;
+    padding: 140px 6vw;
+    background-image:
+        linear-gradient(180deg, #ffffff 0%, #ffffff 100%),
+        repeating-linear-gradient(0deg, transparent 0 88px, var(--line-faint) 88px 89px);
     position: relative;
 }
 
 .what-clickmoment-section .section-title,
 .what-clickmoment-section .feature-cards-container {
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .what-clickmoment-section::before {
@@ -981,9 +1006,12 @@ h3,
 
 .differentiation-section {
     margin: 0;
-    padding: 120px 30px 90px;
+    padding: 120px 6vw 90px;
     text-align: center;
-    background: #f9f6f2;
+    background-image:
+        linear-gradient(180deg, #f9f6f2 0%, #f9f6f2 100%),
+        repeating-linear-gradient(90deg, transparent 0 88px, var(--line-faint) 88px 89px),
+        repeating-linear-gradient(0deg, transparent 0 88px, var(--line-faint) 88px 89px);
     border-radius: 0;
     position: relative;
 }
@@ -992,9 +1020,9 @@ h3,
 .differentiation-section .comparison-visual,
 .differentiation-section .comparison-grid,
 .differentiation-section .differentiation-tagline {
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .differentiation-section .section-title {
@@ -1122,9 +1150,9 @@ h3,
     gap: 80px;
     margin: 0 0 100px 0;
     text-align: left;
-    max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .comparison-column {
@@ -1241,22 +1269,24 @@ h3,
 
 .section-divider {
     height: 72px;
-    background: linear-gradient(180deg, rgba(18, 19, 26, 0.06), transparent);
-    border-bottom: 1px solid rgba(18, 19, 26, 0.06);
+    background: linear-gradient(180deg, rgba(18, 19, 26, 0.08), transparent);
+    border-bottom: 1px solid var(--line);
 }
 
 .who-its-for-section {
     margin: 0;
-    padding: 90px 30px 120px;
+    padding: 90px 6vw 120px;
     text-align: left;
-    background: linear-gradient(120deg, #ffffff 0%, #f4f7ff 50%, #fff0e4 100%);
+    background-image:
+        linear-gradient(120deg, #ffffff 0%, #f4f7ff 50%, #fff0e4 100%),
+        repeating-linear-gradient(90deg, transparent 0 96px, var(--line-faint) 96px 97px);
     border-radius: 0;
     position: relative;
 }
 
 .who-its-for-grid {
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
     gap: 64px;
@@ -1386,18 +1416,20 @@ h3,
 
 .landing-how-it-works {
     margin: 0;
-    padding: 140px 30px;
+    padding: 140px 6vw;
     text-align: center;
-    background: linear-gradient(120deg, #fff2e8 0%, #fffaf6 100%);
+    background-image:
+        linear-gradient(120deg, #fff2e8 0%, #fffaf6 100%),
+        repeating-linear-gradient(0deg, transparent 0 88px, var(--line-faint) 88px 89px);
     border-radius: 0;
     position: relative;
 }
 
 .landing-how-it-works h2,
 .landing-how-it-works .steps {
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
 }
 
 .landing-how-it-works h2 {
@@ -1469,30 +1501,36 @@ h3,
 
 .landing-footer {
     text-align: left;
-    padding: 160px 30px;
-    background: #ffffff;
+    padding: 160px 6vw;
+    background-image:
+        linear-gradient(180deg, #ffffff 0%, #ffffff 100%),
+        repeating-linear-gradient(90deg, transparent 0 96px, var(--line-faint) 96px 97px);
     margin-top: 0;
     border-radius: 0;
     position: relative;
-    border-top: 1px solid rgba(18, 19, 26, 0.08);
+    border-top: 1px solid var(--line);
 }
 
-.landing-footer .footer-title,
-.landing-footer .landing-cta,
-.landing-footer .footer-tagline {
-    max-width: 1400px;
-    margin-left: auto;
-    margin-right: auto;
+.footer-grid {
+    max-width: none;
+    margin: 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+    gap: 64px;
+    align-items: center;
 }
 
-.landing-footer .footer-title {
-    text-align: left;
-    max-width: 700px;
+.footer-content {
+    max-width: 640px;
 }
 
-.landing-footer .landing-cta {
-    text-align: left;
-    margin-top: 40px;
+.footer-eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 12px;
+    color: #5b5f66;
+    margin-bottom: 18px;
+    font-weight: 600;
 }
 
 .footer-title {
@@ -1507,11 +1545,81 @@ h3,
 .footer-tagline {
     font-size: clamp(18px, 2.2vw, 20px);
     color: #4b5160;
-    margin-top: 32px;
+    margin-top: 0;
+    margin-bottom: 32px;
     line-height: 1.7;
     font-weight: 400;
     max-width: 600px;
     text-align: left;
+}
+
+.footer-cta-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.footer-pills {
+    margin-top: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.footer-pills span {
+    padding: 8px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(18, 19, 26, 0.12);
+    font-size: 13px;
+    color: var(--ink);
+    background: rgba(18, 19, 26, 0.03);
+}
+
+.footer-visual {
+    display: grid;
+    gap: 18px;
+}
+
+.footer-card {
+    background: #0f1118;
+    color: rgba(255, 255, 255, 0.85);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--shadow-soft);
+}
+
+.footer-card-main {
+    min-height: 220px;
+}
+
+.footer-card-side {
+    min-height: 140px;
+    background: #151826;
+}
+
+.footer-card-header,
+.footer-card-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.footer-card-body {
+    margin: 32px 0;
+    height: 120px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 106, 61, 0.25), rgba(79, 125, 255, 0.2));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.75);
 }
 
 @media (max-width: 768px) {
@@ -1691,6 +1799,16 @@ h3,
     .landing-footer {
         padding: 80px 20px;
         margin-top: 60px;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 36px;
+    }
+
+    .footer-cta-row {
+        flex-direction: column;
+        align-items: stretch;
     }
     
     .btn-large {
