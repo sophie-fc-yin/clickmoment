@@ -257,23 +257,49 @@
         <!-- Landing Page (shown when not logged in) -->
         <main id="landing-page" style="display: block;">
             <div class="landing-hero">
-                <h1 class="landing-title">
-                    Stop Guessing Your Thumbnails.<br>
-                    <span class="landing-title-emphasis">See Which Moments Actually Stand Out.</span>
-                </h1>
-                <p class="landing-description">
-                    ClickMoment analyzes your video itself — frames, expressions, motion, and visual intensity — to surface moments that naturally capture attention.
-                </p>
-                <div class="landing-cta">
-                    <button id="landing-login-btn" class="btn btn-primary btn-large">Analyze a Video →</button>
+                <div class="hero-grid">
+                    <div class="hero-content">
+                        <p class="hero-eyebrow">For creators who care about attention, not templates.</p>
+                        <h1 class="landing-title">
+                            Stop Guessing Your Thumbnails.<br>
+                            <span class="landing-title-emphasis">See Which Moments Actually Stand Out.</span>
+                        </h1>
+                        <p class="landing-description">
+                            ClickMoment analyzes your video itself — frames, expressions, motion, and visual intensity — to surface moments that naturally capture attention.
+                        </p>
+                        <div class="hero-actions">
+                            <button id="landing-login-btn" class="btn btn-primary btn-large">Analyze a Video →</button>
+                            <button class="btn btn-ghost">Watch a 45s demo</button>
+                        </div>
+                        <p class="hero-note">No templates. No replacement. Just clearer creative direction.</p>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="visual-card visual-card-primary">
+                            <div class="visual-frame">
+                                <div class="frame-placeholder">Hero image placeholder</div>
+                                <div class="attention-overlay"></div>
+                            </div>
+                            <div class="visual-caption">Top attention moments highlighted</div>
+                        </div>
+                        <div class="visual-card visual-card-secondary">
+                            <div class="thumbnail-strip">
+                                <div class="thumbnail-slot">Frame</div>
+                                <div class="thumbnail-slot">Frame</div>
+                                <div class="thumbnail-slot">Frame</div>
+                            </div>
+                            <div class="visual-caption">Choose the direction, not the template</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div class="reality-check-section">
                 <div class="reality-check-visual">
-                    <div class="reality-check-diagram">
-                        <div class="diagram-frame"></div>
-                        <div class="diagram-question-mark">?</div>
+                    <div class="frame-stack">
+                        <div class="frame-stack-item">Image placeholder</div>
+                        <div class="frame-stack-item">Image placeholder</div>
+                        <div class="frame-stack-item frame-stack-highlight">Image placeholder</div>
+                        <div class="frame-badge">Highest attention</div>
                     </div>
                 </div>
                 <div class="reality-check-content">
@@ -307,6 +333,7 @@
                                 <circle cx="12" cy="12" r="2"></circle>
                             </svg>
                         </div>
+                        <div class="feature-media">Image placeholder</div>
                         <h3>Video-Native Attention Signals</h3>
                         <p>We analyze your video at the moment level — surfacing frames with strong visual contrast, motion, and expressive intensity.</p>
                         <p class="feature-tagline">Nothing random. Nothing generated.</p>
@@ -319,6 +346,7 @@
                                 <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44L21.5 13.5a2.5 2.5 0 0 0 0-3L16.96 2.06A2.5 2.5 0 0 0 14.5 2Z"></path>
                             </svg>
                         </div>
+                        <div class="feature-media">Image placeholder</div>
                         <h3>Attention, Not Aesthetics</h3>
                         <p>Instead of copying trends, ClickMoment highlights moments that visually stand out on their own.</p>
                         <p class="feature-tagline">You still decide how it should look.</p>
@@ -331,6 +359,7 @@
                                 <circle cx="12" cy="12" r="3"></circle>
                             </svg>
                         </div>
+                        <div class="feature-media">Image placeholder</div>
                         <h3>Creative Control Stays With You</h3>
                         <p>No auto-thumbnails. No forced styles.<br>You see the signals — you choose what to emphasize.</p>
                     </div>
@@ -361,6 +390,19 @@
                             <span>Your Footage</span>
                         </div>
                     </div>
+                    <div class="signal-panel">
+                        <div class="signal-header">
+                            <span>Attention Signals</span>
+                            <span class="signal-pill">High</span>
+                        </div>
+                        <div class="signal-bars">
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                            <div class="signal-bar"></div>
+                        </div>
+                        <div class="signal-caption">Add chart or scan image here</div>
+                    </div>
                 </div>
                 <div class="comparison-grid">
                     <div class="comparison-column">
@@ -389,6 +431,20 @@
                         <div class="creator-type">Video</div>
                         <div class="creator-type-divider">≠</div>
                         <div class="creator-type creator-type-quiet">Template</div>
+                    </div>
+                    <div class="persona-grid">
+                        <div class="persona-card">
+                            <div class="persona-media">Image placeholder</div>
+                            <p>Story-driven creators</p>
+                        </div>
+                        <div class="persona-card">
+                            <div class="persona-media">Image placeholder</div>
+                            <p>Explainers and educators</p>
+                        </div>
+                        <div class="persona-card">
+                            <div class="persona-media">Image placeholder</div>
+                            <p>Solo editors</p>
+                        </div>
                     </div>
                 </div>
                 <h2 class="section-title">Built for Creators Who Think in Videos, Not Templates</h2>
@@ -536,4 +592,3 @@
     </noscript>
 </body>
 </html>
-
