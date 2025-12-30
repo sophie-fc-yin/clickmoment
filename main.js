@@ -232,6 +232,18 @@ async function showProjectView(projectId) {
             : '-';
         document.getElementById('info-notes').textContent = project.notes || '-';
         
+        // Display video path (shortened for display)
+        const videoPathDisplay = document.getElementById('info-video-path');
+        if (project.video_path && project.video_path !== '-') {
+            // Show just the filename for readability
+            const filename = project.video_path.split('/').pop();
+            videoPathDisplay.textContent = filename;
+            videoPathDisplay.title = project.video_path; // Full path on hover
+        } else {
+            videoPathDisplay.textContent = 'No video uploaded yet';
+            videoPathDisplay.title = '';
+        }
+        
         // Check if video_path exists - determines UI state
         const hasVideo = project.video_path && project.video_path !== '-';
         
@@ -754,7 +766,16 @@ async function handleVideoUpload(file) {
                 console.error('Error updating project:', updateResult.error);
                 throw new Error('Failed to save video to project');
             }
-            console.log('video_path saved successfully');
+            console.log('video_path saved successfully to Supabase:', gcs_path);
+            
+            // Update the video path display in project details
+            const videoPathDisplay = document.getElementById('info-video-path');
+            if (videoPathDisplay) {
+                const filename = gcs_path.split('/').pop();
+                videoPathDisplay.textContent = filename;
+                videoPathDisplay.title = gcs_path; // Full path on hover
+                console.log('Updated video path display on page');
+            }
         }
 
         // Step 4: Transition to analysis state

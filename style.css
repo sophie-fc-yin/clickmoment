@@ -673,6 +673,21 @@ h3,
     margin-right: 8px;
 }
 
+.video-path-display {
+    font-family: 'SF Mono', 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    color: var(--signal);
+    background: rgba(255, 87, 34, 0.08);
+    padding: 4px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: help;
+}
+
 @media (max-width: 768px) {
     .project-info {
         grid-template-columns: 1fr;
