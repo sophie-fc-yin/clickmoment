@@ -162,6 +162,20 @@ h2 {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
+/* Subtle text button for tertiary actions */
+.btn-subtle {
+    background: transparent;
+    color: var(--ink-soft);
+    border: none;
+    box-shadow: none;
+    padding: 10px 16px;
+}
+
+.btn-subtle:hover {
+    color: var(--ink);
+    background: rgba(18, 19, 26, 0.04);
+}
+
 .upload-section {
     margin-bottom: 32px;
     padding: 24px;

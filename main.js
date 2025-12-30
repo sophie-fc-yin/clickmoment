@@ -336,7 +336,7 @@ async function renderProjectsList() {
                     <p class="project-meta">Analyses: ${analyses.length}</p>
                     <p class="project-meta">Platform: ${escapeHtml(project.platform || 'youtube')}</p>
                     <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
-                    <button class="btn btn-secondary delete-project-btn" data-project-id="${project.id}">Delete</button>
+                    <button class="btn btn-ghost delete-project-btn" data-project-id="${project.id}">Delete</button>
                 `;
                 projectsList.appendChild(projectCard);
             }
