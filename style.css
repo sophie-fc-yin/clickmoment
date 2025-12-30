@@ -640,11 +640,10 @@ h3,
     gap: 32px;
     margin-bottom: 48px;
     padding: 32px;
-    background: linear-gradient(135deg, rgba(255, 247, 240, 0.5) 0%, rgba(255, 255, 255, 0.6) 100%);
+    background: linear-gradient(135deg, rgba(255, 247, 240, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
     border-radius: 20px;
     border: 1px solid rgba(255, 106, 61, 0.12);
     box-shadow: 0 4px 20px rgba(255, 106, 61, 0.06);
-    backdrop-filter: blur(10px);
 }
 
 .info-section {
@@ -745,11 +744,10 @@ h3,
     text-align: center;
     margin-bottom: 64px;
     padding: 48px 40px;
-    background: linear-gradient(135deg, rgba(255, 247, 240, 0.6) 0%, rgba(255, 255, 255, 0.7) 100%);
+    background: linear-gradient(135deg, rgba(255, 247, 240, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
     border-radius: 20px;
     border: 1px solid rgba(255, 106, 61, 0.12);
     box-shadow: 0 4px 20px rgba(255, 106, 61, 0.08);
-    backdrop-filter: blur(10px);
 }
 
 .decision-title {
@@ -779,13 +777,12 @@ h3,
 }
 
 .verdict-card {
-    background: linear-gradient(135deg, rgba(255, 247, 240, 0.5) 0%, rgba(255, 255, 255, 0.6) 100%);
+    background: linear-gradient(135deg, rgba(255, 247, 240, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
     border-radius: 20px;
     padding: 32px;
     border: 2px solid transparent;
     transition: all 0.3s ease;
     box-shadow: 0 4px 20px rgba(255, 106, 61, 0.06);
-    backdrop-filter: blur(10px);
     animation: fadeInUp 0.8s ease-out;
     animation-fill-mode: both;
 }
@@ -1128,10 +1125,9 @@ h3,
     margin-bottom: 48px;
     padding: 64px 40px;
     border-radius: 20px;
-    background: linear-gradient(135deg, rgba(255, 247, 240, 0.6) 0%, rgba(255, 255, 255, 0.7) 100%);
+    background: linear-gradient(135deg, rgba(255, 247, 240, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
     border: 1px solid rgba(255, 106, 61, 0.12);
     box-shadow: 0 4px 20px rgba(255, 106, 61, 0.08);
-    backdrop-filter: blur(10px);
     max-width: 1200px;
     margin-left: auto;
     margin-right: auto;
@@ -1193,10 +1189,9 @@ h3,
 .video-player-container {
     padding: 32px;
     border-radius: 20px;
-    background: linear-gradient(135deg, rgba(255, 247, 240, 0.6) 0%, rgba(255, 255, 255, 0.7) 100%);
+    background: linear-gradient(135deg, rgba(255, 247, 240, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
     border: 1px solid rgba(255, 106, 61, 0.12);
     box-shadow: 0 4px 20px rgba(255, 106, 61, 0.08);
-    backdrop-filter: blur(10px);
 }
 
 .project-video {
