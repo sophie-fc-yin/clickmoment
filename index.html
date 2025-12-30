@@ -442,6 +442,42 @@
                     <button id="decision-done-btn" class="btn btn-primary btn-large">I've made my choice</button>
                 </div>
 
+                <!-- Post-Decision Confirmation (Hidden by default) -->
+                <div id="decision-confirmation" class="decision-confirmation" style="display: none;">
+                    <div class="confirmation-content">
+                        <div class="confirmation-header">
+                            <span class="confirmation-check">✓</span>
+                            <h3 class="confirmation-title">Choice noted</h3>
+                            <p class="confirmation-subtitle" id="confirmation-choice-text">You chose the Safe direction.</p>
+                        </div>
+
+                        <div class="confirmation-actions">
+                            <!-- Option A: Use This Frame -->
+                            <div class="confirmation-option">
+                                <button id="confirm-use-frame" class="btn-ghost btn-option">
+                                    <span class="option-title">Use this frame as a starting point</span>
+                                    <span class="option-hint">Download or jump to this moment</span>
+                                </button>
+                            </div>
+
+                            <!-- Option B: Design Around This Moment -->
+                            <div class="confirmation-option">
+                                <button id="confirm-design-around" class="btn-ghost btn-option">
+                                    <span class="option-title">Design around this moment</span>
+                                    <span class="option-hint" id="design-hint-text">See timing and context</span>
+                                </button>
+                            </div>
+
+                            <!-- Option C: I'll Handle It Myself -->
+                            <div class="confirmation-option">
+                                <button id="confirm-dismiss" class="btn-subtle btn-option">
+                                    <span class="option-title">I'll handle it myself</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Technical Details (Collapsed) -->
                 <div class="technical-details-toggle">
                     <button id="toggle-technical-details-btn" class="btn-text-toggle">

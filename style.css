@@ -757,6 +757,8 @@ h3,
     box-shadow: 0 4px 20px rgba(255, 106, 61, 0.06);
     animation: fadeInUp 0.8s ease-out;
     animation-fill-mode: both;
+    cursor: pointer;
+    position: relative;
 }
 
 .verdict-card:nth-child(1) { animation-delay: 0.2s; }
@@ -766,6 +768,42 @@ h3,
 .verdict-card:hover {
     transform: translateY(-6px);
     box-shadow: var(--shadow-strong);
+}
+
+/* Selected state for verdict cards */
+.verdict-card-selected {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 32px rgba(255, 106, 61, 0.2);
+}
+
+.verdict-card-selected::before {
+    content: '✓ Selected';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: var(--accent);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 8px rgba(255, 106, 61, 0.3);
+}
+
+.verdict-card-safe.verdict-card-selected {
+    border-color: rgba(34, 197, 94, 0.7);
+    box-shadow: 0 8px 32px rgba(34, 197, 94, 0.25);
+}
+
+.verdict-card-bold.verdict-card-selected {
+    border-color: rgba(251, 191, 36, 0.7);
+    box-shadow: 0 8px 32px rgba(251, 191, 36, 0.25);
+}
+
+.verdict-card-avoid.verdict-card-selected {
+    border-color: rgba(239, 68, 68, 0.7);
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.25);
 }
 
 .verdict-card-safe {
@@ -958,6 +996,120 @@ h3,
     margin-bottom: 64px;
     animation: fadeInUp 0.8s ease-out 0.6s;
     animation-fill-mode: both;
+}
+
+/* Post-Decision Confirmation */
+.decision-confirmation {
+    margin: 48px auto 64px;
+    max-width: 700px;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.confirmation-content {
+    background: linear-gradient(135deg, rgba(255, 247, 240, 0.9) 0%, rgba(255, 255, 255, 0.95) 100%);
+    border: 1px solid rgba(255, 106, 61, 0.15);
+    border-radius: 16px;
+    padding: 40px 36px;
+    box-shadow: 0 4px 20px rgba(255, 106, 61, 0.08);
+}
+
+.confirmation-header {
+    text-align: center;
+    margin-bottom: 36px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(18, 19, 26, 0.08);
+}
+
+.confirmation-check {
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    line-height: 48px;
+    border-radius: 50%;
+    background: rgba(76, 175, 80, 0.12);
+    color: #4CAF50;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.confirmation-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--ink);
+    margin: 0 0 8px 0;
+    letter-spacing: -0.02em;
+}
+
+.confirmation-subtitle {
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin: 0;
+    font-weight: 500;
+}
+
+.confirmation-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.confirmation-option {
+    width: 100%;
+}
+
+.btn-option {
+    width: 100%;
+    text-align: left;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-option .option-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    display: block;
+}
+
+.btn-option .option-hint {
+    font-size: 13px;
+    color: var(--ink-light);
+    font-weight: 400;
+    display: block;
+}
+
+.btn-option:hover .option-title {
+    color: var(--accent);
+}
+
+.btn-ghost.btn-option {
+    border: 1px solid rgba(18, 19, 26, 0.12);
+    background: white;
+}
+
+.btn-ghost.btn-option:hover {
+    border-color: rgba(255, 106, 61, 0.3);
+    background: rgba(255, 247, 240, 0.5);
+    transform: translateY(-1px);
+}
+
+.btn-subtle.btn-option {
+    background: transparent;
+    color: var(--ink-soft);
+}
+
+.btn-subtle.btn-option:hover {
+    background: rgba(18, 19, 26, 0.04);
+}
+
+.btn-subtle.btn-option .option-title {
+    color: var(--ink-soft);
+    font-weight: 500;
 }
 
 /* Technical Details (Collapsed) */

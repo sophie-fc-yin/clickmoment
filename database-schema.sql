@@ -53,10 +53,21 @@ CREATE TABLE IF NOT EXISTS analyses (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Decisions table (stores user's post-analysis choices)
+CREATE TABLE IF NOT EXISTS decisions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    chosen_category TEXT NOT NULL CHECK (chosen_category IN ('safe', 'bold', 'avoid')),
+    frame_id TEXT,
+    timestamp NUMERIC,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE channel_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE analyses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE decisions ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for channel_profiles
 CREATE POLICY "Users can view their own channel profile"
@@ -105,6 +116,27 @@ CREATE POLICY "Users can insert analyses for their projects"
         EXISTS (
             SELECT 1 FROM projects
             WHERE projects.id = analyses.project_id
+            AND projects.user_id = auth.uid()
+        )
+    );
+
+-- RLS Policies for decisions
+CREATE POLICY "Users can view decisions for their projects"
+    ON decisions FOR SELECT
+    USING (
+        EXISTS (
+            SELECT 1 FROM projects
+            WHERE projects.id = decisions.project_id
+            AND projects.user_id = auth.uid()
+        )
+    );
+
+CREATE POLICY "Users can insert decisions for their projects"
+    ON decisions FOR INSERT
+    WITH CHECK (
+        EXISTS (
+            SELECT 1 FROM projects
+            WHERE projects.id = decisions.project_id
             AND projects.user_id = auth.uid()
         )
     );

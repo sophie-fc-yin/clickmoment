@@ -1133,13 +1133,174 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Track selected verdict choice
+let selectedVerdictData = null;
+
+// Make verdict cards selectable
+document.addEventListener('click', (e) => {
+    const verdictCard = e.target.closest('.verdict-card');
+    if (verdictCard) {
+        // Remove previous selection
+        document.querySelectorAll('.verdict-card').forEach(card => {
+            card.classList.remove('verdict-card-selected');
+        });
+        
+        // Mark this card as selected
+        verdictCard.classList.add('verdict-card-selected');
+        
+        // Store selection data
+        const verdictType = verdictCard.getAttribute('data-verdict-type');
+        const frameElement = verdictCard.querySelector('.verdict-frame img');
+        const explanationElement = verdictCard.querySelector('.verdict-explanation');
+        const timestampLink = verdictCard.querySelector('.verdict-timestamp-link');
+        
+        selectedVerdictData = {
+            type: verdictType,
+            frame_url: frameElement ? frameElement.src : null,
+            frame_id: frameElement ? frameElement.getAttribute('data-frame-id') : null,
+            timestamp: timestampLink ? timestampLink.getAttribute('data-timestamp') : null,
+            explanation: explanationElement ? explanationElement.textContent : '',
+            label: verdictCard.querySelector('.verdict-label').textContent
+        };
+        
+        console.log('Verdict selected:', selectedVerdictData);
+    }
+});
+
 // Decision done button handler
 const decisionDoneBtn = document.getElementById('decision-done-btn');
+const decisionConfirmation = document.getElementById('decision-confirmation');
+const confirmationChoiceText = document.getElementById('confirmation-choice-text');
+
 if (decisionDoneBtn) {
-    decisionDoneBtn.addEventListener('click', () => {
-        updateStatus('Choice recorded. You can continue editing or return to projects.', 'success');
-        // Optionally scroll to top or provide other feedback
+    decisionDoneBtn.addEventListener('click', async () => {
+        // Check if user selected a verdict
+        if (!selectedVerdictData) {
+            alert('Please select one of the three options above before proceeding.');
+            return;
+        }
+        
+        // 1️⃣ Persist the decision silently
+        try {
+            const decision = {
+                project_id: currentProject.id,
+                chosen_category: selectedVerdictData.type,
+                frame_id: selectedVerdictData.frame_id,
+                timestamp: selectedVerdictData.timestamp,
+                created_at: new Date().toISOString()
+            };
+            
+            console.log('Saving decision:', decision);
+            
+            // Save to Supabase (silent, no user feedback)
+            const { error } = await supabase
+                .from('decisions')
+                .insert([decision]);
+            
+            if (error) {
+                console.error('Error saving decision:', error);
+                // Continue anyway - don't block the user experience
+            } else {
+                console.log('Decision saved successfully');
+            }
+        } catch (err) {
+            console.error('Error in decision persistence:', err);
+            // Continue anyway - this is non-critical
+        }
+        
+        // 2️⃣ Show confirmation panel with appropriate copy
+        const labelMap = {
+            'safe': 'Safe / Defensible',
+            'bold': 'High-Variance / Bold',
+            'avoid': 'Avoid / Common Pitfall'
+        };
+        
+        confirmationChoiceText.textContent = `You chose the ${labelMap[selectedVerdictData.type] || selectedVerdictData.label} direction.`;
+        
+        // Hide the CTA button and show confirmation
+        decisionDoneBtn.style.display = 'none';
+        decisionConfirmation.style.display = 'block';
+        
+        // Smooth scroll to confirmation
+        decisionConfirmation.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+}
+
+// 3️⃣ Confirmation Option Handlers
+
+// Option A: Use This Frame
+const confirmUseFrameBtn = document.getElementById('confirm-use-frame');
+if (confirmUseFrameBtn) {
+    confirmUseFrameBtn.addEventListener('click', () => {
+        if (!selectedVerdictData || !selectedVerdictData.frame_url) {
+            alert('No frame available to use.');
+            return;
+        }
+        
+        // Create download link for the frame
+        const link = document.createElement('a');
+        link.href = selectedVerdictData.frame_url;
+        link.download = `frame-${selectedVerdictData.type}-${Date.now()}.jpg`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show timestamp info
+        if (selectedVerdictData.timestamp) {
+            const timestampFormatted = formatTimestamp(selectedVerdictData.timestamp);
+            updateStatus(`Frame downloaded. Timestamp: ${timestampFormatted}`, 'success');
+        } else {
+            updateStatus('Frame downloaded successfully.', 'success');
+        }
+        
+        console.log('Frame downloaded:', selectedVerdictData.frame_url);
+    });
+}
+
+// Option B: Design Around This Moment
+const confirmDesignAroundBtn = document.getElementById('confirm-design-around');
+if (confirmDesignAroundBtn) {
+    confirmDesignAroundBtn.addEventListener('click', () => {
+        if (!selectedVerdictData) {
+            return;
+        }
+        
+        // Show timestamp and context
+        const timestampFormatted = selectedVerdictData.timestamp 
+            ? formatTimestamp(selectedVerdictData.timestamp) 
+            : 'Not available';
+        
+        // Create a simple alert with design context
+        const contextMessage = `Design Context:\n\n` +
+            `Timestamp: ${timestampFormatted}\n\n` +
+            `${selectedVerdictData.explanation}\n\n` +
+            `Tip: Use this moment as your creative anchor point.`;
+        
+        alert(contextMessage);
+        
+        // Optionally seek to the timestamp in video
+        if (selectedVerdictData.timestamp && projectVideo) {
+            seekVideoTo(parseFloat(selectedVerdictData.timestamp));
+        }
+        
+        console.log('Design context shown for:', selectedVerdictData);
+    });
+}
+
+// Option C: I'll Handle It Myself
+const confirmDismissBtn = document.getElementById('confirm-dismiss');
+if (confirmDismissBtn) {
+    confirmDismissBtn.addEventListener('click', () => {
+        // Simply dismiss the confirmation and return control
+        decisionConfirmation.style.display = 'none';
+        
+        // Optionally show subtle success message
+        updateStatus('Your choice has been noted. You\'re all set.', 'success');
+        
+        // Scroll to top smoothly
         window.scrollTo({ top: 0, behavior: 'smooth' });
+        
+        console.log('User chose to handle it themselves');
     });
 }
 
