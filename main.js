@@ -222,19 +222,19 @@ async function showProjectView(projectId) {
     console.log('showProjectView called with projectId:', projectId);
     
     try {
-        projectsView.style.display = 'none';
-        createProjectView.style.display = 'none';
-        editProjectView.style.display = 'none';
-        projectView.style.display = 'block';
-        profileView.style.display = 'none';
-        currentProjectId = projectId;
-        
+    projectsView.style.display = 'none';
+    createProjectView.style.display = 'none';
+    editProjectView.style.display = 'none';
+    projectView.style.display = 'block';
+    profileView.style.display = 'none';
+    currentProjectId = projectId;
+    
         console.log('Fetching project data...');
-        const project = await projectManager.getProject(projectId);
+    const project = await projectManager.getProject(projectId);
         console.log('Project data received:', project);
         
-        if (project) {
-            projectTitle.textContent = project.name;
+    if (project) {
+        projectTitle.textContent = project.name;
         
         // Display project info
         document.getElementById('info-platform').textContent = project.platform || '-';
@@ -305,9 +305,9 @@ async function showProjectView(projectId) {
         }
         
         // Reset form and UI state
-        videoInput.value = '';
+    videoInput.value = '';
         jsonOutput.textContent = 'No analysis yet.';
-        updateStatus('');
+    updateStatus('');
         
         // Project details are always visible (no toggle)
         
@@ -462,8 +462,14 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
 // Update status text
 function updateStatus(message, type = 'info') {
+    const statusSection = document.querySelector('.status-section');
     statusText.textContent = message;
     statusText.className = `status-${type}`;
+    
+    // Hide status section when empty
+    if (statusSection) {
+        statusSection.style.display = message ? 'block' : 'none';
+    }
 }
 
 // Reset form
@@ -566,13 +572,13 @@ createProjectForm.addEventListener('submit', async (e) => {
     console.log('Creating project with data:', projectData);
     
     try {
-        // Create new project
-        const result = await projectManager.createProject(projectData);
+    // Create new project
+    const result = await projectManager.createProject(projectData);
         console.log('Project creation result:', result);
         
-        if (result.error) {
+    if (result.error) {
             console.error('Error creating project:', result.error);
-            alert('Error creating project: ' + result.error.message);
+        alert('Error creating project: ' + result.error.message);
         } else if (result.data) {
             console.log('Project created successfully with ID:', result.data.id);
             
@@ -580,7 +586,7 @@ createProjectForm.addEventListener('submit', async (e) => {
             createProjectForm.reset();
             
             // Show the newly created project
-            await showProjectView(result.data.id);
+        await showProjectView(result.data.id);
         } else {
             console.error('Unexpected result format:', result);
             alert('Error: Unexpected response from server');
@@ -656,28 +662,28 @@ profileForm.addEventListener('submit', async (e) => {
             submitBtn.textContent = 'Saving...';
         }
         
-        const formData = new FormData(e.target);
-        const profileData = {
-            stage: formData.get('stage') || null,
-            subscriber_count: formData.get('subscriber_count') ? parseInt(formData.get('subscriber_count')) : null,
-            content_niche: formData.get('content_niche') || null,
-            upload_frequency: formData.get('upload_frequency') || null,
-            growth_goal: formData.get('growth_goal') || null,
-        };
+    const formData = new FormData(e.target);
+    const profileData = {
+        stage: formData.get('stage') || null,
+        subscriber_count: formData.get('subscriber_count') ? parseInt(formData.get('subscriber_count')) : null,
+        content_niche: formData.get('content_niche') || null,
+        upload_frequency: formData.get('upload_frequency') || null,
+        growth_goal: formData.get('growth_goal') || null,
+    };
         
         console.log('Saving profile data:', profileData);
-        
-        const result = await profileManager.saveProfile(currentUser.id, profileData);
+    
+    const result = await profileManager.saveProfile(currentUser.id, profileData);
         console.log('Profile save result:', result);
         
-        if (result.error) {
+    if (result.error) {
             console.error('Error saving profile:', result.error);
-            alert('Error saving profile: ' + result.error.message);
+        alert('Error saving profile: ' + result.error.message);
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = originalBtnText;
             }
-        } else {
+    } else {
             console.log('Profile saved successfully to Supabase');
             // Show success message
             if (submitBtn) {
@@ -687,7 +693,7 @@ profileForm.addEventListener('submit', async (e) => {
             
             // Wait a moment to show success, then go to projects
             setTimeout(async () => {
-                await showProjectsView();
+        await showProjectsView();
                 // Reset button for next time
                 if (submitBtn) {
                     submitBtn.disabled = false;
@@ -975,9 +981,9 @@ async function handleVideoUpload(file) {
         // Step 3: Save video_path to project (THIS LOCKS THE VIDEO)
         if (currentProjectId && projectManager && gcs_path) {
             console.log('Saving video_path to project...');
-            const updateResult = await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
-            if (updateResult.error) {
-                console.error('Error updating project:', updateResult.error);
+                const updateResult = await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
+                if (updateResult.error) {
+                    console.error('Error updating project:', updateResult.error);
                 throw new Error('Failed to save video to project');
             }
             console.log('video_path saved successfully to Supabase:', gcs_path);
