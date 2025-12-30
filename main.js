@@ -159,9 +159,19 @@ async function updateUI() {
     }
 }
 
+// Helper function to stop video playback
+function stopVideoPlayback() {
+    if (projectVideo && !projectVideo.paused) {
+        projectVideo.pause();
+        projectVideo.currentTime = 0; // Reset to beginning
+        console.log('Video stopped');
+    }
+}
+
 // Show projects list view
 async function showProjectsView() {
     console.log('showProjectsView called - switching to projects list view');
+    stopVideoPlayback(); // Stop any playing video
     projectsView.style.display = 'block';
     createProjectView.style.display = 'none';
     editProjectView.style.display = 'none';
@@ -175,6 +185,7 @@ async function showProjectsView() {
 
 // Show create project view
 function showCreateProjectView() {
+    stopVideoPlayback(); // Stop any playing video
     projectsView.style.display = 'none';
     createProjectView.style.display = 'block';
     editProjectView.style.display = 'none';
@@ -472,6 +483,7 @@ function resetForm() {
 
 // Show profile view
 async function showProfileView() {
+    stopVideoPlayback(); // Stop any playing video
     projectsView.style.display = 'none';
     createProjectView.style.display = 'none';
     editProjectView.style.display = 'none';
