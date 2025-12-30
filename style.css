@@ -721,7 +721,7 @@ h3,
 
 .reality-check-section {
     margin: 0;
-    padding: 100px 6vw;
+    padding: 80px 6vw;
     background-image:
         linear-gradient(120deg, #f5f7ff 0%, #ffffff 45%, #fff1e8 100%),
         repeating-linear-gradient(90deg, transparent 0 96px, var(--line-faint) 96px 97px);
@@ -805,10 +805,6 @@ h3,
     text-align: left;
 }
 
-.reality-check-pause {
-    margin: 36px 0;
-    padding: 20px 0;
-}
 
 .reality-check-title {
     font-size: clamp(36px, 4.5vw, 48px);
@@ -823,44 +819,21 @@ h3,
 .reality-check-copy {
     font-size: clamp(18px, 2.2vw, 22px);
     color: var(--ink);
-    line-height: 1.65;
-    margin-bottom: 28px;
+    line-height: 1.7;
+    margin-bottom: 20px;
     font-weight: 400;
-}
-
-.reality-check-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 56px 0;
-    text-align: left;
-}
-
-.reality-check-list li {
-    font-size: clamp(18px, 2.2vw, 22px);
-    color: #4b5160;
-    line-height: 1.6;
-    padding: 8px 0;
-    position: relative;
-    padding-left: 0;
-    font-weight: 400;
-}
-
-.reality-check-list li::before {
-    content: "";
-    display: none;
 }
 
 .reality-check-emphasis {
     color: var(--ink);
     font-weight: 600;
-    font-size: clamp(20px, 2.4vw, 24px);
 }
 
 .reality-check-conclusion {
     font-size: clamp(18px, 2.2vw, 22px);
     color: var(--ink);
-    line-height: 1.65;
-    margin-top: 12px;
+    line-height: 1.7;
+    margin-top: 0;
     font-weight: 500;
 }
 
@@ -1147,7 +1120,7 @@ h3,
 .comparison-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 48px;
+    gap: 24px;
     margin: 0 0 64px 0;
     text-align: left;
     max-width: none;
@@ -1214,8 +1187,8 @@ h3,
 
 .comparison-list li {
     font-size: clamp(17px, 2vw, 19px);
-    line-height: 1.65;
-    padding: 10px 0;
+    line-height: 1.5;
+    padding: 6px 0;
     position: relative;
     padding-left: 0;
 }
@@ -1524,11 +1497,10 @@ h3,
     left: -20px;
     background: linear-gradient(140deg, rgba(255, 106, 61, 0.7), rgba(79, 125, 255, 0.5));
 }
-}
 
 .landing-how-it-works {
     margin: 0;
-    padding: 140px 6vw;
+    padding: 140px max(6vw, 24px);
     text-align: left;
     background-image:
         linear-gradient(120deg, #fff2e8 0%, #fffaf6 100%),
