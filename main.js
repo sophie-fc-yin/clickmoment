@@ -364,7 +364,6 @@ async function renderProjectsList() {
                 projectCard.innerHTML = `
                     <h3>${escapeHtml(project.name)}</h3>
                     <p class="project-meta">Created: ${new Date(project.created_at).toLocaleDateString()}</p>
-                    <p class="project-meta">Analyses: ${analyses.length}</p>
                     <p class="project-meta">Platform: ${escapeHtml(project.platform || 'youtube')}</p>
                     <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
                     <button class="btn btn-ghost delete-project-btn" data-project-id="${project.id}">Delete</button>
