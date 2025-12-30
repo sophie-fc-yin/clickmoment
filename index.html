@@ -231,7 +231,15 @@
                 <h2 id="project-title">Project</h2>
                 <button id="edit-project-btn" class="btn btn-secondary">Edit Project</button>
             </div>
-            <div id="project-info" class="project-info">
+
+            <!-- Collapsible Project Details -->
+            <div class="project-details-toggle">
+                <button id="toggle-project-details-btn" class="btn-text-toggle">
+                    <span class="toggle-icon">▶</span>
+                    View project details
+                </button>
+            </div>
+            <div id="project-info" class="project-info project-info-collapsed">
                 <div class="info-section">
                     <h4>Target Settings</h4>
                     <p><strong>Platform:</strong> <span id="info-platform">-</span></p>
@@ -250,6 +258,7 @@
                     <p><strong>Video Path:</strong> <span id="info-video-path" style="word-break: break-all; font-family: monospace; font-size: 12px;">-</span></p>
                 </div>
             </div>
+
             <div class="upload-section">
                 <h3>Upload Video</h3>
                 <input type="file" id="video-input" accept="video/*" />
@@ -260,9 +269,108 @@
                 <p id="status-text"></p>
             </div>
 
-            <div class="output-section">
-                <h3>Analysis Result</h3>
-                <pre id="json-output">No video uploaded yet.</pre>
+            <!-- Decision Support Section (shown after upload) -->
+            <div id="decision-section" class="decision-section" style="display: none;">
+                <div class="decision-header">
+                    <h2 class="decision-title">Thumbnail check before upload</h2>
+                    <p class="decision-subtitle">Here's what looks safe — and what creators often regret</p>
+                </div>
+
+                <!-- Three Verdict Cards -->
+                <div class="verdict-cards-container">
+                    <!-- Safe Card -->
+                    <div class="verdict-card verdict-card-safe">
+                        <div class="verdict-badge">
+                            <span class="verdict-icon">🟢</span>
+                            <span class="verdict-label">Safe / Defensible</span>
+                        </div>
+                        <div class="verdict-frame" id="verdict-frame-safe">
+                            <div class="frame-placeholder-text">Frame preview</div>
+                        </div>
+                        <p class="verdict-explanation" id="verdict-explanation-safe">
+                            Clear expression, strong contrast at a glance.
+                        </p>
+                        <button class="verdict-toggle" data-target="safe">
+                            <span class="toggle-icon">▼</span> Why?
+                        </button>
+                        <div class="verdict-details verdict-details-collapsed" id="verdict-details-safe">
+                            <ul>
+                                <li>Face reads clearly even at thumbnail size</li>
+                                <li>Expression is direct and unambiguous</li>
+                                <li>High contrast makes it stand out in a feed</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Bold/High-Variance Card -->
+                    <div class="verdict-card verdict-card-bold">
+                        <div class="verdict-badge">
+                            <span class="verdict-icon">🟡</span>
+                            <span class="verdict-label">High-Variance / Bold</span>
+                        </div>
+                        <div class="verdict-frame" id="verdict-frame-bold">
+                            <div class="frame-placeholder-text">Frame preview</div>
+                        </div>
+                        <p class="verdict-explanation" id="verdict-explanation-bold">
+                            Emotional peak mid-video — more expressive, less predictable.
+                        </p>
+                        <button class="verdict-toggle" data-target="bold">
+                            <span class="toggle-icon">▼</span> Why?
+                        </button>
+                        <div class="verdict-details verdict-details-collapsed" id="verdict-details-bold">
+                            <ul>
+                                <li>Stronger emotion, but may feel unfamiliar</li>
+                                <li>Works if your audience expects surprise or intensity</li>
+                                <li>Higher risk, potentially higher reward</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Avoid Card -->
+                    <div class="verdict-card verdict-card-avoid">
+                        <div class="verdict-badge">
+                            <span class="verdict-icon">🔴</span>
+                            <span class="verdict-label">Avoid / Common Pitfall</span>
+                        </div>
+                        <div class="verdict-frame" id="verdict-frame-avoid">
+                            <div class="frame-placeholder-text">Frame preview</div>
+                        </div>
+                        <p class="verdict-explanation" id="verdict-explanation-avoid">
+                            Mid-blink or unclear expression — easy to miss at a glance.
+                        </p>
+                        <button class="verdict-toggle" data-target="avoid">
+                            <span class="toggle-icon">▼</span> Why?
+                        </button>
+                        <div class="verdict-details verdict-details-collapsed" id="verdict-details-avoid">
+                            <ul>
+                                <li>Expression is ambiguous or transitional</li>
+                                <li>Face may be too small or obscured</li>
+                                <li>Common regret: "I didn't realize it looked unclear"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confidence Reinforcement -->
+                <div class="confidence-line">
+                    <p>You're not choosing what's "right" — you're choosing the kind of bet you're making.</p>
+                </div>
+
+                <!-- Primary CTA -->
+                <div class="decision-cta">
+                    <button id="decision-done-btn" class="btn btn-primary btn-large">I've made my choice</button>
+                </div>
+
+                <!-- Technical Details (Collapsed) -->
+                <div class="technical-details-toggle">
+                    <button id="toggle-technical-details-btn" class="btn-text-toggle">
+                        <span class="toggle-icon">▶</span>
+                        View technical details (debug)
+                    </button>
+                </div>
+                <div id="technical-details" class="technical-details technical-details-collapsed">
+                    <pre id="json-output">No results yet.</pre>
+                </div>
             </div>
         </main>
 

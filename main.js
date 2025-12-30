@@ -217,11 +217,35 @@ async function showProjectView(projectId) {
         document.getElementById('info-video-path').textContent = project.video_path || '-';
     }
     
-    // Reset form
+    // Reset form and UI state
     videoInput.value = '';
     analyzeBtn.disabled = true;
     jsonOutput.textContent = 'No video uploaded yet.';
     updateStatus('');
+    
+    // Hide decision section (will be shown after upload/analysis)
+    const decisionSection = document.getElementById('decision-section');
+    if (decisionSection) {
+        decisionSection.style.display = 'none';
+    }
+    
+    // Ensure project details are collapsed by default
+    const projectInfoElement = document.getElementById('project-info');
+    const toggleProjectDetailsBtnElement = document.getElementById('toggle-project-details-btn');
+    if (projectInfoElement && toggleProjectDetailsBtnElement) {
+        projectInfoElement.classList.add('project-info-collapsed');
+        toggleProjectDetailsBtnElement.classList.remove('expanded');
+        toggleProjectDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View project details';
+    }
+    
+    // Ensure technical details are collapsed
+    const technicalDetailsElement = document.getElementById('technical-details');
+    const toggleTechnicalDetailsBtnElement = document.getElementById('toggle-technical-details-btn');
+    if (technicalDetailsElement && toggleTechnicalDetailsBtnElement) {
+        technicalDetailsElement.classList.add('technical-details-collapsed');
+        toggleTechnicalDetailsBtnElement.classList.remove('expanded');
+        toggleTechnicalDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View technical details (debug)';
+    }
 }
 
 // Render projects list
@@ -655,8 +679,7 @@ analyzeBtn.addEventListener('click', async () => {
             filename: file.name,
             size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
         };
-        jsonOutput.textContent = JSON.stringify(successResult, null, 2);
-        updateStatus('Video uploaded successfully!', 'success');
+        updateStatus('Video uploaded successfully! Analyzing...', 'success');
         
         // Update the UI directly with the gcs_path we just saved
         if (gcs_path) {
@@ -670,6 +693,10 @@ analyzeBtn.addEventListener('click', async () => {
             }
         }
         
+        // Show decision section with mock data
+        // TODO: Replace with actual analysis results when backend is integrated
+        showDecisionSection(successResult);
+        updateStatus('Analysis complete! Review the thumbnail choices below.', 'success');
         
     } catch (error) {
         updateStatus(`Error: ${error.message}`, 'error');
@@ -691,6 +718,91 @@ projectsList.addEventListener('click', async (e) => {
         }
     }
 });
+
+// Toggle project details visibility
+const toggleProjectDetailsBtn = document.getElementById('toggle-project-details-btn');
+const projectInfo = document.getElementById('project-info');
+if (toggleProjectDetailsBtn && projectInfo) {
+    toggleProjectDetailsBtn.addEventListener('click', () => {
+        if (projectInfo.classList.contains('project-info-collapsed')) {
+            projectInfo.classList.remove('project-info-collapsed');
+            toggleProjectDetailsBtn.classList.add('expanded');
+            toggleProjectDetailsBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide project details';
+        } else {
+            projectInfo.classList.add('project-info-collapsed');
+            toggleProjectDetailsBtn.classList.remove('expanded');
+            toggleProjectDetailsBtn.innerHTML = '<span class="toggle-icon">▶</span> View project details';
+        }
+    });
+}
+
+// Toggle technical details visibility
+const toggleTechnicalDetailsBtn = document.getElementById('toggle-technical-details-btn');
+const technicalDetails = document.getElementById('technical-details');
+if (toggleTechnicalDetailsBtn && technicalDetails) {
+    toggleTechnicalDetailsBtn.addEventListener('click', () => {
+        if (technicalDetails.classList.contains('technical-details-collapsed')) {
+            technicalDetails.classList.remove('technical-details-collapsed');
+            toggleTechnicalDetailsBtn.classList.add('expanded');
+            toggleTechnicalDetailsBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide technical details';
+        } else {
+            technicalDetails.classList.add('technical-details-collapsed');
+            toggleTechnicalDetailsBtn.classList.remove('expanded');
+            toggleTechnicalDetailsBtn.innerHTML = '<span class="toggle-icon">▶</span> View technical details (debug)';
+        }
+    });
+}
+
+// Toggle verdict card details
+document.addEventListener('click', (e) => {
+    if (e.target.classList.contains('verdict-toggle') || e.target.parentElement?.classList.contains('verdict-toggle')) {
+        const button = e.target.classList.contains('verdict-toggle') ? e.target : e.target.parentElement;
+        const target = button.getAttribute('data-target');
+        const detailsElement = document.getElementById(`verdict-details-${target}`);
+        
+        if (detailsElement) {
+            if (detailsElement.classList.contains('verdict-details-collapsed')) {
+                detailsElement.classList.remove('verdict-details-collapsed');
+                button.classList.add('expanded');
+                button.innerHTML = '<span class="toggle-icon">▲</span> Hide';
+            } else {
+                detailsElement.classList.add('verdict-details-collapsed');
+                button.classList.remove('expanded');
+                button.innerHTML = '<span class="toggle-icon">▼</span> Why?';
+            }
+        }
+    }
+});
+
+// Decision done button handler
+const decisionDoneBtn = document.getElementById('decision-done-btn');
+if (decisionDoneBtn) {
+    decisionDoneBtn.addEventListener('click', () => {
+        updateStatus('Choice recorded. You can continue editing or return to projects.', 'success');
+        // Optionally scroll to top or provide other feedback
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}
+
+// Show decision section with mock data (for demonstration)
+// In production, this would be called after receiving analysis results from the API
+function showDecisionSection(analysisResult) {
+    const decisionSection = document.getElementById('decision-section');
+    if (decisionSection) {
+        decisionSection.style.display = 'block';
+        
+        // TODO: In production, populate verdict cards with actual analysis data
+        // For now, this is a placeholder structure
+        
+        // Update technical details with raw result
+        if (analysisResult) {
+            const technicalJsonOutput = document.getElementById('json-output');
+            if (technicalJsonOutput) {
+                technicalJsonOutput.textContent = JSON.stringify(analysisResult, null, 2);
+            }
+        }
+    }
+}
 
 // Initialize on load
 initAuth();
