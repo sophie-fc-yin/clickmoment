@@ -203,16 +203,22 @@ async function showEditProjectView(projectId) {
 
 // Show project detail view
 async function showProjectView(projectId) {
-    projectsView.style.display = 'none';
-    createProjectView.style.display = 'none';
-    editProjectView.style.display = 'none';
-    projectView.style.display = 'block';
-    profileView.style.display = 'none';
-    currentProjectId = projectId;
+    console.log('showProjectView called with projectId:', projectId);
     
-    const project = await projectManager.getProject(projectId);
-    if (project) {
-        projectTitle.textContent = project.name;
+    try {
+        projectsView.style.display = 'none';
+        createProjectView.style.display = 'none';
+        editProjectView.style.display = 'none';
+        projectView.style.display = 'block';
+        profileView.style.display = 'none';
+        currentProjectId = projectId;
+        
+        console.log('Fetching project data...');
+        const project = await projectManager.getProject(projectId);
+        console.log('Project data received:', project);
+        
+        if (project) {
+            projectTitle.textContent = project.name;
         
         // Display project info
         document.getElementById('info-platform').textContent = project.platform || '-';
@@ -256,38 +262,44 @@ async function showProjectView(projectId) {
                 decisionSection.style.display = 'none';
             }
         }
-    }
-    
-    // Reset form and UI state
-    videoInput.value = '';
-    jsonOutput.textContent = 'No analysis yet.';
-    updateStatus('');
-    
-    // Ensure project details are expanded by default
-    const projectInfoElement = document.getElementById('project-info');
-    const toggleProjectDetailsBtnElement = document.getElementById('toggle-project-details-btn');
-    if (projectInfoElement && toggleProjectDetailsBtnElement) {
-        projectInfoElement.classList.remove('project-info-collapsed');
-        toggleProjectDetailsBtnElement.classList.add('expanded');
-        toggleProjectDetailsBtnElement.innerHTML = '<span class="toggle-icon">▼</span> Hide project details';
-    }
-    
-    // Ensure technical details are collapsed
-    const technicalDetailsElement = document.getElementById('technical-details');
-    const toggleTechnicalDetailsBtnElement = document.getElementById('toggle-technical-details-btn');
-    if (technicalDetailsElement && toggleTechnicalDetailsBtnElement) {
-        technicalDetailsElement.classList.add('technical-details-collapsed');
-        toggleTechnicalDetailsBtnElement.classList.remove('expanded');
-        toggleTechnicalDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View technical details (debug)';
-    }
-    
-    // Ensure video player is expanded by default when shown
-    const videoPlayerContainer = document.getElementById('video-player-container');
-    const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
-    if (videoPlayerContainer && toggleVideoPlayerBtn) {
-        videoPlayerContainer.classList.remove('video-player-collapsed');
-        toggleVideoPlayerBtn.classList.add('expanded');
-        toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
+        }
+        
+        // Reset form and UI state
+        videoInput.value = '';
+        jsonOutput.textContent = 'No analysis yet.';
+        updateStatus('');
+        
+        // Ensure project details are expanded by default
+        const projectInfoElement = document.getElementById('project-info');
+        const toggleProjectDetailsBtnElement = document.getElementById('toggle-project-details-btn');
+        if (projectInfoElement && toggleProjectDetailsBtnElement) {
+            projectInfoElement.classList.remove('project-info-collapsed');
+            toggleProjectDetailsBtnElement.classList.add('expanded');
+            toggleProjectDetailsBtnElement.innerHTML = '<span class="toggle-icon">▼</span> Hide project details';
+        }
+        
+        // Ensure technical details are collapsed
+        const technicalDetailsElement = document.getElementById('technical-details');
+        const toggleTechnicalDetailsBtnElement = document.getElementById('toggle-technical-details-btn');
+        if (technicalDetailsElement && toggleTechnicalDetailsBtnElement) {
+            technicalDetailsElement.classList.add('technical-details-collapsed');
+            toggleTechnicalDetailsBtnElement.classList.remove('expanded');
+            toggleTechnicalDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View technical details (debug)';
+        }
+        
+        // Ensure video player is expanded by default when shown
+        const videoPlayerContainer = document.getElementById('video-player-container');
+        const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
+        if (videoPlayerContainer && toggleVideoPlayerBtn) {
+            videoPlayerContainer.classList.remove('video-player-collapsed');
+            toggleVideoPlayerBtn.classList.add('expanded');
+            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
+        }
+        
+        console.log('showProjectView completed successfully');
+    } catch (error) {
+        console.error('Error in showProjectView:', error);
+        alert('Error loading project: ' + error.message);
     }
 }
 
@@ -493,6 +505,13 @@ cancelEditProjectFormBtn.addEventListener('click', async () => {
 
 createProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    if (!projectManager) {
+        console.error('Project manager not initialized');
+        alert('Error: Project manager not initialized. Please refresh the page.');
+        return;
+    }
+    
     const formData = new FormData(e.target);
     
     // Parse brand colors from comma-separated string
@@ -513,12 +532,26 @@ createProjectForm.addEventListener('submit', async (e) => {
         notes: formData.get('notes') || null,
     };
     
-    // Create new project
-    const result = await projectManager.createProject(projectData);
-    if (result.error) {
-        alert('Error creating project: ' + result.error.message);
-    } else {
-        await showProjectView(result.data.id);
+    console.log('Creating project with data:', projectData);
+    
+    try {
+        // Create new project
+        const result = await projectManager.createProject(projectData);
+        console.log('Project creation result:', result);
+        
+        if (result.error) {
+            console.error('Error creating project:', result.error);
+            alert('Error creating project: ' + result.error.message);
+        } else if (result.data) {
+            console.log('Project created successfully, showing project view');
+            await showProjectView(result.data.id);
+        } else {
+            console.error('Unexpected result format:', result);
+            alert('Error: Unexpected response from server');
+        }
+    } catch (error) {
+        console.error('Exception during project creation:', error);
+        alert('Error creating project: ' + error.message);
     }
 });
 
