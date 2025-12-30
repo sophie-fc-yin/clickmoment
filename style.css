@@ -248,9 +248,9 @@ h2 {
 #edit-project-view,
 #project-view,
 #profile-view {
-    padding: 120px max(6vw, 28px) 140px;
-    max-width: 1400px;
-    margin: 0 auto;
+    padding: 120px 0 140px;
+    width: 100%;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -266,7 +266,7 @@ h2 {
 #edit-project-view > *,
 #project-view > *,
 #profile-view > * {
-    width: 100%;
+    width: calc(100% - max(6vw, 28px) * 2);
     max-width: 1100px;
     margin-left: auto;
     margin-right: auto;
