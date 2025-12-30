@@ -367,9 +367,9 @@ h2 {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 36px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid rgba(18, 19, 26, 0.08);
+    margin-bottom: 24px;
+    padding-bottom: 0;
+    border-bottom: none;
 }
 
 .project-header h2 {
@@ -379,8 +379,26 @@ h2 {
 
 h3 {
     font-size: 16px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
+    margin-top: 28px;
+    color: var(--ink);
+    font-weight: 600;
+}
+
+/* Form section description text */
+.form-section-description {
+    font-size: 14px;
     color: var(--ink-soft);
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.form-helper-text {
+    display: block;
+    margin-top: 6px;
+    color: var(--ink-soft);
+    font-size: 12px;
+    line-height: 1.4;
 }
 
 h1,
