@@ -161,13 +161,16 @@ async function updateUI() {
 
 // Show projects list view
 async function showProjectsView() {
+    console.log('showProjectsView called - switching to projects list view');
     projectsView.style.display = 'block';
     createProjectView.style.display = 'none';
     editProjectView.style.display = 'none';
     projectView.style.display = 'none';
     profileView.style.display = 'none';
     currentProjectId = null;
+    console.log('Refreshing projects list...');
     await renderProjectsList();
+    console.log('Projects list refresh complete');
 }
 
 // Show create project view
@@ -327,6 +330,7 @@ let isRendering = false;
 let renderRequested = false;
 async function renderProjectsList() {
     if (!projectManager || !projectsList) {
+        console.warn('Cannot render projects list: projectManager or projectsList not available');
         return;
     }
     
@@ -341,7 +345,9 @@ async function renderProjectsList() {
     renderRequested = false;
     
     try {
+        console.log('Fetching projects from database...');
         const projects = await projectManager.getProjects();
+        console.log(`Found ${projects.length} projects:`, projects.map(p => ({ id: p.id, name: p.name })));
         
         // Clear existing content completely
         while (projectsList.firstChild) {
@@ -350,9 +356,11 @@ async function renderProjectsList() {
         projectsList.innerHTML = '';
         
         if (projects.length === 0) {
+            console.log('No projects found, showing empty state');
             noProjects.style.display = 'block';
             projectsList.style.display = 'none';
         } else {
+            console.log('Rendering project cards...');
             noProjects.style.display = 'none';
             projectsList.style.display = 'grid';
             
@@ -561,7 +569,12 @@ createProjectForm.addEventListener('submit', async (e) => {
             console.error('Error creating project:', result.error);
             alert('Error creating project: ' + result.error.message);
         } else if (result.data) {
-            console.log('Project created successfully, showing project view');
+            console.log('Project created successfully with ID:', result.data.id);
+            
+            // Reset the form
+            createProjectForm.reset();
+            
+            // Show the newly created project
             await showProjectView(result.data.id);
         } else {
             console.error('Unexpected result format:', result);
