@@ -77,5 +77,64 @@ export class ProfileManager {
             return { data };
         }
     }
+
+    // Check if user can perform analysis (under limit or is tester)
+    async canUserAnalyze(userId) {
+        try {
+            const { data, error } = await supabase.rpc('can_user_analyze', {
+                user_uuid: userId
+            });
+            
+            if (error) {
+                console.error('Error checking analysis limit:', error);
+                return { canAnalyze: false, error };
+            }
+            
+            return { canAnalyze: data, error: null };
+        } catch (error) {
+            console.error('Exception checking analysis limit:', error);
+            return { canAnalyze: false, error };
+        }
+    }
+
+    // Increment analysis count for user
+    async incrementAnalysisCount(userId) {
+        try {
+            const { error } = await supabase.rpc('increment_analysis_count', {
+                user_uuid: userId
+            });
+            
+            if (error) {
+                console.error('Error incrementing analysis count:', error);
+                return { error };
+            }
+            
+            console.log('Analysis count incremented for user:', userId);
+            return { error: null };
+        } catch (error) {
+            console.error('Exception incrementing analysis count:', error);
+            return { error };
+        }
+    }
+
+    // Get remaining analyses for user
+    async getRemainingAnalyses(userId) {
+        try {
+            const { data, error } = await supabase.rpc('get_remaining_analyses', {
+                user_uuid: userId
+            });
+            
+            if (error) {
+                console.error('Error getting remaining analyses:', error);
+                return { remaining: null, error };
+            }
+            
+            // -1 indicates unlimited (tester)
+            return { remaining: data, isUnlimited: data === -1, error: null };
+        } catch (error) {
+            console.error('Exception getting remaining analyses:', error);
+            return { remaining: null, error };
+        }
+    }
 }
 

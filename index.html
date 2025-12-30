@@ -106,6 +106,15 @@
             <div class="profile-intro">
                 <p><strong>Help us understand your channel.</strong> Fill in these details to help us provide better thumbnail recommendations tailored to your content and audience.</p>
             </div>
+            
+            <!-- Usage Stats -->
+            <div id="usage-stats" class="usage-stats" style="display: none;">
+                <div class="usage-stats-content">
+                    <span class="usage-label">Analyses Remaining:</span>
+                    <span id="remaining-analyses" class="usage-count">50</span>
+                </div>
+            </div>
+            
             <form id="profile-form" class="profile-form">
                 <div class="form-group">
                     <label for="profile-stage">Channel Stage</label>
@@ -234,13 +243,7 @@
                 <button id="edit-project-btn" class="btn btn-ghost">Edit Project</button>
             </div>
 
-            <!-- Collapsible Project Details -->
-            <div class="project-details-toggle">
-                <button id="toggle-project-details-btn" class="btn-text-toggle expanded">
-                    <span class="toggle-icon">▼</span>
-                    Hide project details
-                </button>
-            </div>
+            <!-- Project Details -->
             <div id="project-info" class="project-info">
                 <div class="info-section">
                     <h4>Target Settings</h4>

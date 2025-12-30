@@ -10,6 +10,11 @@ CREATE TABLE IF NOT EXISTS channel_profiles (
     content_niche TEXT CHECK (char_length(content_niche) <= 100),
     upload_frequency TEXT CHECK (char_length(upload_frequency) <= 50),
     growth_goal TEXT CHECK (char_length(growth_goal) <= 100),
+    
+    -- Usage tracking
+    analyses_used INTEGER DEFAULT 0 CHECK (analyses_used >= 0),
+    is_tester BOOLEAN DEFAULT FALSE,
+    
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     UNIQUE(user_id)
@@ -119,4 +124,78 @@ CREATE TRIGGER update_channel_profiles_updated_at BEFORE UPDATE ON channel_profi
 
 CREATE TRIGGER update_projects_updated_at BEFORE UPDATE ON projects
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Add usage tracking columns to existing channel_profiles table (if already created)
+-- Run these ONLY if you already have the table without these columns:
+-- ALTER TABLE channel_profiles ADD COLUMN IF NOT EXISTS analyses_used INTEGER DEFAULT 0 CHECK (analyses_used >= 0);
+-- ALTER TABLE channel_profiles ADD COLUMN IF NOT EXISTS is_tester BOOLEAN DEFAULT FALSE;
+
+-- Function to check if user can perform analysis
+CREATE OR REPLACE FUNCTION can_user_analyze(user_uuid UUID)
+RETURNS BOOLEAN AS $$
+DECLARE
+    profile_record RECORD;
+    analysis_limit INTEGER := 50;
+BEGIN
+    -- Get user profile
+    SELECT analyses_used, is_tester INTO profile_record
+    FROM channel_profiles
+    WHERE user_id = user_uuid;
+    
+    -- If no profile exists, create one and allow analysis
+    IF NOT FOUND THEN
+        INSERT INTO channel_profiles (user_id) VALUES (user_uuid);
+        RETURN TRUE;
+    END IF;
+    
+    -- Testers have unlimited analyses
+    IF profile_record.is_tester THEN
+        RETURN TRUE;
+    END IF;
+    
+    -- Check if under limit
+    RETURN profile_record.analyses_used < analysis_limit;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to increment analysis count
+CREATE OR REPLACE FUNCTION increment_analysis_count(user_uuid UUID)
+RETURNS VOID AS $$
+BEGIN
+    -- Ensure profile exists
+    INSERT INTO channel_profiles (user_id, analyses_used)
+    VALUES (user_uuid, 1)
+    ON CONFLICT (user_id) 
+    DO UPDATE SET 
+        analyses_used = channel_profiles.analyses_used + 1,
+        updated_at = NOW();
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to get user's remaining analyses
+CREATE OR REPLACE FUNCTION get_remaining_analyses(user_uuid UUID)
+RETURNS INTEGER AS $$
+DECLARE
+    used_count INTEGER;
+    is_tester_flag BOOLEAN;
+    analysis_limit INTEGER := 50;
+BEGIN
+    SELECT analyses_used, is_tester INTO used_count, is_tester_flag
+    FROM channel_profiles
+    WHERE user_id = user_uuid;
+    
+    -- If no profile, user has full limit
+    IF NOT FOUND THEN
+        RETURN analysis_limit;
+    END IF;
+    
+    -- Testers have unlimited (return -1 to indicate unlimited)
+    IF is_tester_flag THEN
+        RETURN -1;
+    END IF;
+    
+    -- Return remaining
+    RETURN GREATEST(0, analysis_limit - used_count);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 

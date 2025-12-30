@@ -309,14 +309,7 @@ async function showProjectView(projectId) {
         jsonOutput.textContent = 'No analysis yet.';
         updateStatus('');
         
-        // Ensure project details are expanded by default
-        const projectInfoElement = document.getElementById('project-info');
-        const toggleProjectDetailsBtnElement = document.getElementById('toggle-project-details-btn');
-        if (projectInfoElement && toggleProjectDetailsBtnElement) {
-            projectInfoElement.classList.remove('project-info-collapsed');
-            toggleProjectDetailsBtnElement.classList.add('expanded');
-            toggleProjectDetailsBtnElement.innerHTML = '<span class="toggle-icon">▼</span> Hide project details';
-        }
+        // Project details are always visible (no toggle)
         
         // Ensure technical details are collapsed
         const technicalDetailsElement = document.getElementById('technical-details');
@@ -999,7 +992,30 @@ async function handleVideoUpload(file) {
             }
         }
 
-        // Step 4: Transition to analysis state
+        // Step 4: Check usage limit before analysis
+        if (profileManager && currentUser) {
+            console.log('Checking analysis usage limit...');
+            const limitCheck = await profileManager.canUserAnalyze(currentUser.id);
+            
+            if (limitCheck.error) {
+                console.error('Error checking usage limit:', limitCheck.error);
+                updateStatus('Error checking usage limit. Please try again.', 'error');
+                uploadProgressSection.style.display = 'none';
+                return;
+            }
+            
+            if (!limitCheck.canAnalyze) {
+                console.log('User has reached analysis limit');
+                uploadProgressSection.style.display = 'none';
+                alert('You\'ve reached your limit of 50 analyses.\n\nUpgrade your account for unlimited analyses.');
+                updateStatus('Analysis limit reached', 'error');
+                return;
+            }
+            
+            console.log('Usage limit check passed, proceeding with analysis');
+        }
+        
+        // Step 5: Transition to analysis state
         // Hide upload progress
         uploadProgressSection.style.display = 'none';
         
@@ -1023,6 +1039,12 @@ async function handleVideoUpload(file) {
         const decisionSection = document.getElementById('decision-section');
         if (decisionSection) {
             decisionSection.style.display = 'none';
+        }
+        
+        // Increment analysis count (user is starting analysis)
+        if (profileManager && currentUser) {
+            await profileManager.incrementAnalysisCount(currentUser.id);
+            console.log('Analysis count incremented');
         }
         
         console.log('Starting analysis...');
@@ -1064,23 +1086,6 @@ projectsList.addEventListener('click', async (e) => {
         }
     }
 });
-
-// Toggle project details visibility
-const toggleProjectDetailsBtn = document.getElementById('toggle-project-details-btn');
-const projectInfo = document.getElementById('project-info');
-if (toggleProjectDetailsBtn && projectInfo) {
-    toggleProjectDetailsBtn.addEventListener('click', () => {
-        if (projectInfo.classList.contains('project-info-collapsed')) {
-            projectInfo.classList.remove('project-info-collapsed');
-            toggleProjectDetailsBtn.classList.add('expanded');
-            toggleProjectDetailsBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide project details';
-        } else {
-            projectInfo.classList.add('project-info-collapsed');
-            toggleProjectDetailsBtn.classList.remove('expanded');
-            toggleProjectDetailsBtn.innerHTML = '<span class="toggle-icon">▶</span> View project details';
-        }
-    });
-}
 
 // Toggle technical details visibility
 const toggleTechnicalDetailsBtn = document.getElementById('toggle-technical-details-btn');
