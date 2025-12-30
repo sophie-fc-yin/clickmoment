@@ -50,6 +50,7 @@ const analysisProgressSection = document.getElementById('analysis-progress-secti
 const videoPlayerSection = document.getElementById('video-player-section');
 const projectVideo = document.getElementById('project-video');
 const videoSource = document.getElementById('video-source');
+const videoLoadingState = document.getElementById('video-loading-state');
 
 // Initialize auth state
 async function initAuth() {
@@ -254,9 +255,9 @@ async function showProjectView(projectId) {
             analysisProgressSection.style.display = 'none';
             videoPlayerSection.style.display = 'block';
             
-            // Load video into player (TODO: get signed URL for playback)
-            // For now, just show that video exists
+            // Load video into player with signed URL
             console.log('Project has video:', project.video_path);
+            await loadVideoIntoPlayer(project.video_path);
             
             // TODO: Check if analysis exists in database
             // const analysis = await fetch(`${API_BASE_URL}/analysis/${currentProjectId}`);
@@ -660,6 +661,93 @@ videoInput.addEventListener('change', async (e) => {
     }
 });
 
+// Get signed URL for video playback
+async function getVideoPlaybackUrl(gcsPath) {
+    try {
+        const authHeaders = await getAuthHeaders();
+        const response = await fetch(`${API_BASE_URL}/get-video-url`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders
+            },
+            body: JSON.stringify({
+                gcs_path: gcsPath
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Failed to get video URL:', errorText);
+            throw new Error(`Failed to get video URL (${response.status})`);
+        }
+
+        const { signed_url } = await response.json();
+        console.log('Got signed URL for video playback');
+        return signed_url;
+    } catch (error) {
+        console.error('Error getting video playback URL:', error);
+        return null;
+    }
+}
+
+// Load video into player with loading state
+async function loadVideoIntoPlayer(gcsPath) {
+    if (!gcsPath || !videoLoadingState || !projectVideo || !videoSource) {
+        console.warn('Missing video elements or path');
+        return false;
+    }
+    
+    try {
+        // Show loading state
+        videoLoadingState.style.display = 'block';
+        projectVideo.style.display = 'none';
+        
+        // Get signed URL
+        console.log('Getting playback URL for video...');
+        const playbackUrl = await getVideoPlaybackUrl(gcsPath);
+        
+        if (!playbackUrl) {
+            console.error('Could not get playback URL');
+            videoLoadingState.style.display = 'none';
+            return false;
+        }
+        
+        // Set video source
+        videoSource.src = playbackUrl;
+        
+        // Wait for video to be ready
+        return new Promise((resolve) => {
+            const onCanPlay = () => {
+                console.log('Video loaded and ready for playback');
+                videoLoadingState.style.display = 'none';
+                projectVideo.style.display = 'block';
+                projectVideo.removeEventListener('canplay', onCanPlay);
+                projectVideo.removeEventListener('error', onError);
+                resolve(true);
+            };
+            
+            const onError = (e) => {
+                console.error('Error loading video:', e);
+                videoLoadingState.style.display = 'none';
+                projectVideo.style.display = 'block';
+                projectVideo.removeEventListener('canplay', onCanPlay);
+                projectVideo.removeEventListener('error', onError);
+                resolve(false);
+            };
+            
+            projectVideo.addEventListener('canplay', onCanPlay, { once: true });
+            projectVideo.addEventListener('error', onError, { once: true });
+            projectVideo.load();
+        });
+    } catch (error) {
+        console.error('Error loading video:', error);
+        videoLoadingState.style.display = 'none';
+        projectVideo.style.display = 'block';
+        return false;
+    }
+}
+
 // Handle video upload
 async function handleVideoUpload(file) {
     if (!file) {
@@ -784,9 +872,9 @@ async function handleVideoUpload(file) {
         
         // Show video player with uploaded video
         videoPlayerSection.style.display = 'block';
-        // TODO: Load actual video with signed URL
-        // videoSource.src = signedPlaybackUrl;
-        // projectVideo.load();
+        
+        // Load video into player (with loading state)
+        await loadVideoIntoPlayer(gcs_path);
         
         // Show analysis in progress
         analysisProgressSection.style.display = 'block';
