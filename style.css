@@ -163,20 +163,26 @@ h2 {
 }
 
 .upload-section {
-    margin-bottom: 30px;
+    margin-bottom: 32px;
+    padding: 24px;
+    border-radius: 16px;
+    background: white;
+    border: 1px solid rgba(18, 19, 26, 0.08);
+    box-shadow: 0 16px 36px rgba(18, 19, 26, 0.08);
 }
 
 #video-input {
     display: block;
-    margin-bottom: 15px;
-    padding: 8px;
+    margin-bottom: 16px;
+    padding: 10px 12px;
     width: 100%;
     border: 1px solid rgba(18, 19, 26, 0.12);
-    border-radius: 4px;
+    border-radius: 10px;
+    background: #fbfbfd;
 }
 
 .status-section {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     min-height: 24px;
 }
 
@@ -202,7 +208,12 @@ h2 {
 }
 
 .output-section {
-    margin-top: 30px;
+    margin-top: 32px;
+    padding: 24px;
+    border-radius: 16px;
+    background: white;
+    border: 1px solid rgba(18, 19, 26, 0.08);
+    box-shadow: 0 16px 36px rgba(18, 19, 26, 0.08);
 }
 
 #json-output {
