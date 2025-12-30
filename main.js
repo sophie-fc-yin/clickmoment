@@ -258,9 +258,16 @@ async function showProjectView(projectId) {
             analysisProgressSection.style.display = 'none';
             videoPlayerSection.style.display = 'block';
             
-            // Load video into player with signed URL
+            // Load video into player with signed URL immediately
             console.log('Project has video:', project.video_path);
-            await loadVideoIntoPlayer(project.video_path);
+            console.log('Loading video stream for immediate playback...');
+            const videoLoaded = await loadVideoIntoPlayer(project.video_path);
+            
+            if (videoLoaded) {
+                console.log('Video stream is ready and available for playback');
+            } else {
+                console.warn('Video could not be loaded, but continuing...');
+            }
             
             // TODO: Check if analysis exists in database
             // const analysis = await fetch(`${API_BASE_URL}/analysis/${currentProjectId}`);
@@ -711,6 +718,15 @@ async function loadVideoIntoPlayer(gcsPath) {
     }
     
     try {
+        // Ensure video player container is expanded
+        const videoPlayerContainer = document.getElementById('video-player-container');
+        const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
+        if (videoPlayerContainer && toggleVideoPlayerBtn) {
+            videoPlayerContainer.classList.remove('video-player-collapsed');
+            toggleVideoPlayerBtn.classList.add('expanded');
+            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
+        }
+        
         // Show loading state
         videoLoadingState.style.display = 'block';
         projectVideo.style.display = 'none';
@@ -727,13 +743,25 @@ async function loadVideoIntoPlayer(gcsPath) {
         
         // Set video source
         videoSource.src = playbackUrl;
+        console.log('Video source set, starting load...');
         
         // Wait for video to be ready
         return new Promise((resolve) => {
-            const onCanPlay = () => {
-                console.log('Video loaded and ready for playback');
+            const onLoadedMetadata = () => {
+                console.log('Video metadata loaded, ready for playback');
                 videoLoadingState.style.display = 'none';
                 projectVideo.style.display = 'block';
+                projectVideo.removeEventListener('loadedmetadata', onLoadedMetadata);
+                projectVideo.removeEventListener('canplay', onCanPlay);
+                projectVideo.removeEventListener('error', onError);
+                resolve(true);
+            };
+            
+            const onCanPlay = () => {
+                console.log('Video can play, ready for playback');
+                videoLoadingState.style.display = 'none';
+                projectVideo.style.display = 'block';
+                projectVideo.removeEventListener('loadedmetadata', onLoadedMetadata);
                 projectVideo.removeEventListener('canplay', onCanPlay);
                 projectVideo.removeEventListener('error', onError);
                 resolve(true);
@@ -743,13 +771,18 @@ async function loadVideoIntoPlayer(gcsPath) {
                 console.error('Error loading video:', e);
                 videoLoadingState.style.display = 'none';
                 projectVideo.style.display = 'block';
+                projectVideo.removeEventListener('loadedmetadata', onLoadedMetadata);
                 projectVideo.removeEventListener('canplay', onCanPlay);
                 projectVideo.removeEventListener('error', onError);
                 resolve(false);
             };
             
+            // Listen for both metadata and canplay - whichever comes first
+            projectVideo.addEventListener('loadedmetadata', onLoadedMetadata, { once: true });
             projectVideo.addEventListener('canplay', onCanPlay, { once: true });
             projectVideo.addEventListener('error', onError, { once: true });
+            
+            // Start loading
             projectVideo.load();
         });
     } catch (error) {
@@ -885,8 +918,15 @@ async function handleVideoUpload(file) {
         // Show video player with uploaded video
         videoPlayerSection.style.display = 'block';
         
-        // Load video into player (with loading state)
-        await loadVideoIntoPlayer(gcs_path);
+        // Load video into player (with loading state) and ensure it's ready
+        console.log('Loading video into player for immediate playback...');
+        const videoLoaded = await loadVideoIntoPlayer(gcs_path);
+        
+        if (videoLoaded) {
+            console.log('Video is ready for streaming');
+            // Scroll to video player so user sees it immediately
+            videoPlayerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
         
         // Show analysis in progress
         analysisProgressSection.style.display = 'block';
