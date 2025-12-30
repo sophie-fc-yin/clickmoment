@@ -20,11 +20,20 @@ export class ProfileManager {
 
     // Create or update channel profile
     async saveProfile(userId, profileData) {
-        const { data: existing } = await supabase
+        console.log('saveProfile called with userId:', userId);
+        console.log('Profile data to save:', profileData);
+        
+        const { data: existing, error: checkError } = await supabase
             .from('channel_profiles')
             .select('id')
             .eq('user_id', userId)
             .single();
+        
+        if (checkError && checkError.code !== 'PGRST116') {
+            console.error('Error checking existing profile:', checkError);
+        }
+        
+        console.log('Existing profile:', existing ? 'Found' : 'Not found');
         
         const profileToSave = {
             user_id: userId,
@@ -37,6 +46,7 @@ export class ProfileManager {
         
         if (existing) {
             // Update existing profile
+            console.log('Updating existing profile with:', profileToSave);
             const { data, error } = await supabase
                 .from('channel_profiles')
                 .update(profileToSave)
@@ -48,9 +58,11 @@ export class ProfileManager {
                 console.error('Error updating profile:', error);
                 return { error };
             }
+            console.log('Profile updated successfully:', data);
             return { data };
         } else {
             // Insert new profile
+            console.log('Creating new profile with:', profileToSave);
             const { data, error } = await supabase
                 .from('channel_profiles')
                 .insert(profileToSave)
@@ -61,6 +73,7 @@ export class ProfileManager {
                 console.error('Error creating profile:', error);
                 return { error };
             }
+            console.log('Profile created successfully:', data);
             return { data };
         }
     }

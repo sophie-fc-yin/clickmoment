@@ -645,21 +645,71 @@ backFromProfileBtn.addEventListener('click', () => {
 
 profileForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const profileData = {
-        stage: formData.get('stage') || null,
-        subscriber_count: formData.get('subscriber_count') ? parseInt(formData.get('subscriber_count')) : null,
-        content_niche: formData.get('content_niche') || null,
-        upload_frequency: formData.get('upload_frequency') || null,
-        growth_goal: formData.get('growth_goal') || null,
-    };
     
-    const result = await profileManager.saveProfile(currentUser.id, profileData);
-    if (result.error) {
-        alert('Error saving profile: ' + result.error.message);
-    } else {
-        // Profile saved successfully - go to projects view
-        await showProjectsView();
+    if (!profileManager || !currentUser) {
+        console.error('Profile manager or user not initialized');
+        alert('Error: Profile system not ready. Please refresh the page.');
+        return;
+    }
+    
+    // Get the submit button
+    const submitBtn = profileForm.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn ? submitBtn.textContent : '';
+    
+    try {
+        // Show loading state
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+        }
+        
+        const formData = new FormData(e.target);
+        const profileData = {
+            stage: formData.get('stage') || null,
+            subscriber_count: formData.get('subscriber_count') ? parseInt(formData.get('subscriber_count')) : null,
+            content_niche: formData.get('content_niche') || null,
+            upload_frequency: formData.get('upload_frequency') || null,
+            growth_goal: formData.get('growth_goal') || null,
+        };
+        
+        console.log('Saving profile data:', profileData);
+        
+        const result = await profileManager.saveProfile(currentUser.id, profileData);
+        console.log('Profile save result:', result);
+        
+        if (result.error) {
+            console.error('Error saving profile:', result.error);
+            alert('Error saving profile: ' + result.error.message);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
+            }
+        } else {
+            console.log('Profile saved successfully to Supabase');
+            // Show success message
+            if (submitBtn) {
+                submitBtn.textContent = '✓ Saved!';
+                submitBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+            }
+            
+            // Wait a moment to show success, then go to projects
+            setTimeout(async () => {
+                await showProjectsView();
+                // Reset button for next time
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalBtnText;
+                    submitBtn.style.background = '';
+                }
+            }, 1000);
+        }
+    } catch (error) {
+        console.error('Exception saving profile:', error);
+        alert('Error saving profile: ' + error.message);
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalBtnText;
+        }
     }
 });
 
