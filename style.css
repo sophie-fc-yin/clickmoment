@@ -1041,11 +1041,19 @@ h3,
 .video-selection-section h3 {
     text-align: center;
     font-size: clamp(24px, 3vw, 32px);
-    margin-bottom: 32px;
+    margin-bottom: 12px;
     margin-top: 0;
     color: var(--ink);
     font-weight: 600;
     letter-spacing: -0.02em;
+}
+
+.video-upload-hint {
+    text-align: center;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 0 0 32px 0;
+    font-style: italic;
 }
 
 .video-choice-buttons {

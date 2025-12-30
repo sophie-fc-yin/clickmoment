@@ -731,9 +731,51 @@ if (chooseFromLibraryBtn) {
 // Handle file selection
 videoInput.addEventListener('change', async (e) => {
     if (e.target.files.length > 0) {
-        await handleVideoUpload(e.target.files[0]);
+        const file = e.target.files[0];
+        
+        // Check video duration before upload
+        const duration = await getVideoDuration(file);
+        
+        if (duration === null) {
+            alert('Could not read video file. Please try a different file.');
+            videoInput.value = ''; // Reset input
+            return;
+        }
+        
+        // Hard limit: 15 minutes (900 seconds)
+        const maxDuration = 900; // 15 minutes in seconds
+        if (duration >= maxDuration) {
+            const durationMinutes = Math.floor(duration / 60);
+            const durationSeconds = Math.floor(duration % 60);
+            alert(`Video is too long (${durationMinutes}:${durationSeconds.toString().padStart(2, '0')}).\n\nMaximum allowed: 15 minutes.\n\nPlease upload a shorter video.`);
+            videoInput.value = ''; // Reset input
+            return;
+        }
+        
+        // Video is under 15 minutes, proceed with upload
+        await handleVideoUpload(file);
     }
 });
+
+// Get video duration from file
+function getVideoDuration(file) {
+    return new Promise((resolve) => {
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        
+        video.onloadedmetadata = function() {
+            window.URL.revokeObjectURL(video.src);
+            resolve(video.duration);
+        };
+        
+        video.onerror = function() {
+            window.URL.revokeObjectURL(video.src);
+            resolve(null);
+        };
+        
+        video.src = URL.createObjectURL(file);
+    });
+}
 
 // Get signed URL for video playback
 async function getVideoPlaybackUrl(gcsPath) {
