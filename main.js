@@ -263,13 +263,13 @@ async function showProjectView(projectId) {
     jsonOutput.textContent = 'No analysis yet.';
     updateStatus('');
     
-    // Ensure project details are collapsed by default
+    // Ensure project details are expanded by default
     const projectInfoElement = document.getElementById('project-info');
     const toggleProjectDetailsBtnElement = document.getElementById('toggle-project-details-btn');
     if (projectInfoElement && toggleProjectDetailsBtnElement) {
-        projectInfoElement.classList.add('project-info-collapsed');
-        toggleProjectDetailsBtnElement.classList.remove('expanded');
-        toggleProjectDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View project details';
+        projectInfoElement.classList.remove('project-info-collapsed');
+        toggleProjectDetailsBtnElement.classList.add('expanded');
+        toggleProjectDetailsBtnElement.innerHTML = '<span class="toggle-icon">▼</span> Hide project details';
     }
     
     // Ensure technical details are collapsed
@@ -281,13 +281,13 @@ async function showProjectView(projectId) {
         toggleTechnicalDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View technical details (debug)';
     }
     
-    // Ensure video player is collapsed by default
+    // Ensure video player is expanded by default when shown
     const videoPlayerContainer = document.getElementById('video-player-container');
     const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
     if (videoPlayerContainer && toggleVideoPlayerBtn) {
-        videoPlayerContainer.classList.add('video-player-collapsed');
-        toggleVideoPlayerBtn.classList.remove('expanded');
-        toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▶</span> View video';
+        videoPlayerContainer.classList.remove('video-player-collapsed');
+        toggleVideoPlayerBtn.classList.add('expanded');
+        toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
     }
 }
 

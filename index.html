@@ -234,12 +234,12 @@
 
             <!-- Collapsible Project Details -->
             <div class="project-details-toggle">
-                <button id="toggle-project-details-btn" class="btn-text-toggle">
-                    <span class="toggle-icon">▶</span>
-                    View project details
+                <button id="toggle-project-details-btn" class="btn-text-toggle expanded">
+                    <span class="toggle-icon">▼</span>
+                    Hide project details
                 </button>
             </div>
-            <div id="project-info" class="project-info project-info-collapsed">
+            <div id="project-info" class="project-info">
                 <div class="info-section">
                     <h4>Target Settings</h4>
                     <p><strong>Platform:</strong> <span id="info-platform">-</span></p>
@@ -300,12 +300,12 @@
             <!-- Collapsible Video Player (shown only after video selected) -->
             <div id="video-player-section" class="video-player-section" style="display: none;">
                 <div class="video-player-toggle">
-                    <button id="toggle-video-player-btn" class="btn-text-toggle">
-                        <span class="toggle-icon">▶</span>
-                        View video
+                    <button id="toggle-video-player-btn" class="btn-text-toggle expanded">
+                        <span class="toggle-icon">▼</span>
+                        Hide video
                     </button>
                 </div>
-                <div id="video-player-container" class="video-player-container video-player-collapsed">
+                <div id="video-player-container" class="video-player-container">
                     <video id="project-video" class="project-video" controls>
                         <source id="video-source" src="" type="video/mp4">
                         Your browser does not support the video tag.
