@@ -46,6 +46,7 @@ const chooseFromLibraryBtn = document.getElementById('choose-from-library-btn');
 const uploadProgressSection = document.getElementById('upload-progress-section');
 const uploadProgressText = document.getElementById('upload-progress-text');
 const uploadProgressBar = document.getElementById('upload-progress-bar');
+const analysisProgressSection = document.getElementById('analysis-progress-section');
 const videoPlayerSection = document.getElementById('video-player-section');
 const projectVideo = document.getElementById('project-video');
 const videoSource = document.getElementById('video-source');
@@ -238,13 +239,17 @@ async function showProjectView(projectId) {
             // Video already selected - hide selection UI, show player
             videoSelectionSection.style.display = 'none';
             uploadProgressSection.style.display = 'none';
+            analysisProgressSection.style.display = 'none';
             videoPlayerSection.style.display = 'block';
             
             // Load video into player (TODO: get signed URL for playback)
             // For now, just show that video exists
             console.log('Project has video:', project.video_path);
             
-            // TODO: Check if analysis exists and show results
+            // TODO: Check if analysis exists in database
+            // const analysis = await fetch(`${API_BASE_URL}/analysis/${currentProjectId}`);
+            // if (analysis.data) { show results } else { show analyzing state }
+            
             // For now, simulate that analysis is complete
             setTimeout(() => {
                 showMockDecisionSection(project.video_path);
@@ -254,6 +259,7 @@ async function showProjectView(projectId) {
             // No video yet - show selection UI
             videoSelectionSection.style.display = 'block';
             uploadProgressSection.style.display = 'none';
+            analysisProgressSection.style.display = 'none';
             videoPlayerSection.style.display = 'none';
             
             // Hide decision section
@@ -748,30 +754,51 @@ async function handleVideoUpload(file) {
                 console.error('Error updating project:', updateResult.error);
                 throw new Error('Failed to save video to project');
             }
+            console.log('video_path saved successfully');
         }
 
-        // Step 4: Hide progress, show analyzing state
+        // Step 4: Transition to analysis state
+        // Hide upload progress
         uploadProgressSection.style.display = 'none';
-        uploadProgressText.textContent = 'Analyzing frames...';
-        updateStatus('Analyzing frames...', 'info');
         
-        // Step 5: Show video player section
+        // Show video player with uploaded video
         videoPlayerSection.style.display = 'block';
+        // TODO: Load actual video with signed URL
+        // videoSource.src = signedPlaybackUrl;
+        // projectVideo.load();
+        
+        // Show analysis in progress
+        analysisProgressSection.style.display = 'block';
+        
+        // Hide decision section while analyzing
+        const decisionSection = document.getElementById('decision-section');
+        if (decisionSection) {
+            decisionSection.style.display = 'none';
+        }
+        
+        console.log('Starting analysis...');
+        updateStatus('Analysis in progress...', 'info');
         
         // TODO: Trigger actual analysis API call here
-        // For now, simulate analysis with mock data
+        // const analysisResult = await fetch(`${API_BASE_URL}/analyze`, { ... });
+        
+        // For now, simulate analysis with mock data (2-3 minutes in real scenario)
         setTimeout(() => {
+            console.log('Analysis complete, showing results');
+            analysisProgressSection.style.display = 'none';
             showMockDecisionSection(gcs_path);
             updateStatus('Analysis complete! Review the thumbnail choices below.', 'success');
-        }, 2000);
+        }, 3000); // Simulating 3 seconds, real analysis takes 2-3 minutes
         
     } catch (error) {
         updateStatus(`Error: ${error.message}`, 'error');
         console.error('Upload error:', error);
         
-        // Show selection UI again on error
+        // Reset to selection UI on error
         videoSelectionSection.style.display = 'block';
         uploadProgressSection.style.display = 'none';
+        analysisProgressSection.style.display = 'none';
+        videoPlayerSection.style.display = 'none';
     }
 }
 
