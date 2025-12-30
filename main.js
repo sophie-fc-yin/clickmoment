@@ -379,7 +379,11 @@ async function showProfileView() {
         if (profile) {
             document.getElementById('profile-stage').value = profile.stage || '';
             document.getElementById('profile-subscriber-count').value = profile.subscriber_count || '';
-            document.getElementById('profile-content-niche').value = profile.content_niche || '';
+            const contentNicheSelect = document.getElementById('profile-content-niche');
+            const savedNiche = profile.content_niche || 'general';
+            // Check if saved value exists in options, otherwise default to 'general'
+            const optionExists = Array.from(contentNicheSelect.options).some(opt => opt.value === savedNiche);
+            contentNicheSelect.value = optionExists ? savedNiche : 'general';
             document.getElementById('profile-upload-frequency').value = profile.upload_frequency || '';
             document.getElementById('profile-growth-goal').value = profile.growth_goal || '';
         }
