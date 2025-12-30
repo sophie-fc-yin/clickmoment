@@ -316,14 +316,7 @@ async function showProjectView(projectId) {
             toggleTechnicalDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View technical details (debug)';
         }
         
-        // Ensure video player is expanded by default when shown
-        const videoPlayerContainer = document.getElementById('video-player-container');
-        const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
-        if (videoPlayerContainer && toggleVideoPlayerBtn) {
-            videoPlayerContainer.classList.remove('video-player-collapsed');
-            toggleVideoPlayerBtn.classList.add('expanded');
-            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
-        }
+        // Video player is always visible when video exists (no toggle needed)
         
         console.log('showProjectView completed successfully');
     } catch (error) {
@@ -718,15 +711,6 @@ async function loadVideoIntoPlayer(gcsPath) {
     }
     
     try {
-        // Ensure video player container is expanded
-        const videoPlayerContainer = document.getElementById('video-player-container');
-        const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
-        if (videoPlayerContainer && toggleVideoPlayerBtn) {
-            videoPlayerContainer.classList.remove('video-player-collapsed');
-            toggleVideoPlayerBtn.classList.add('expanded');
-            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
-        }
-        
         // Show loading state
         videoLoadingState.style.display = 'block';
         projectVideo.style.display = 'none';
@@ -1011,22 +995,7 @@ if (toggleTechnicalDetailsBtn && technicalDetails) {
     });
 }
 
-// Toggle video player visibility
-const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
-const videoPlayerContainer = document.getElementById('video-player-container');
-if (toggleVideoPlayerBtn && videoPlayerContainer) {
-    toggleVideoPlayerBtn.addEventListener('click', () => {
-        if (videoPlayerContainer.classList.contains('video-player-collapsed')) {
-            videoPlayerContainer.classList.remove('video-player-collapsed');
-            toggleVideoPlayerBtn.classList.add('expanded');
-            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
-        } else {
-            videoPlayerContainer.classList.add('video-player-collapsed');
-            toggleVideoPlayerBtn.classList.remove('expanded');
-            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▶</span> View video';
-        }
-    });
-}
+// Video player is always visible - no toggle needed
 
 // Toggle verdict card details
 document.addEventListener('click', (e) => {
@@ -1141,18 +1110,7 @@ function updateVerdictCardTimestamps(verdictMoments) {
 
 // Seek video to specific timestamp
 function seekVideoTo(timestamp) {
-    // First, expand video player if collapsed
-    const videoPlayerContainer = document.getElementById('video-player-container');
-    const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
-    if (videoPlayerContainer && videoPlayerContainer.classList.contains('video-player-collapsed')) {
-        videoPlayerContainer.classList.remove('video-player-collapsed');
-        if (toggleVideoPlayerBtn) {
-            toggleVideoPlayerBtn.classList.add('expanded');
-            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
-        }
-    }
-    
-    // Seek video
+    // Video is always visible, just seek
     if (projectVideo) {
         projectVideo.currentTime = timestamp;
         projectVideo.play();
