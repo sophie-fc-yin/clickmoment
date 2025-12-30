@@ -33,12 +33,22 @@ const backFromProfileBtn = document.getElementById('back-from-profile-btn');
 const editProjectBtn = document.getElementById('edit-project-btn');
 const projectTitle = document.getElementById('project-title');
 const videoInput = document.getElementById('video-input');
-const analyzeBtn = document.getElementById('analyze-btn');
 const statusText = document.getElementById('status-text');
 const jsonOutput = document.getElementById('json-output');
 const createProjectForm = document.getElementById('create-project-form');
 const editProjectForm = document.getElementById('edit-project-form');
 const profileForm = document.getElementById('profile-form');
+
+// New video selection elements
+const videoSelectionSection = document.getElementById('video-selection-section');
+const uploadNewVideoBtn = document.getElementById('upload-new-video-btn');
+const chooseFromLibraryBtn = document.getElementById('choose-from-library-btn');
+const uploadProgressSection = document.getElementById('upload-progress-section');
+const uploadProgressText = document.getElementById('upload-progress-text');
+const uploadProgressBar = document.getElementById('upload-progress-bar');
+const videoPlayerSection = document.getElementById('video-player-section');
+const projectVideo = document.getElementById('project-video');
+const videoSource = document.getElementById('video-source');
 
 // Initialize auth state
 async function initAuth() {
@@ -214,20 +224,44 @@ async function showProjectView(projectId) {
             ? project.brand_colors.join(', ') 
             : '-';
         document.getElementById('info-notes').textContent = project.notes || '-';
-        document.getElementById('info-video-path').textContent = project.video_path || '-';
+        
+        // Check if video_path exists - determines UI state
+        const hasVideo = project.video_path && project.video_path !== '-';
+        
+        if (hasVideo) {
+            // Video already selected - hide selection UI, show player
+            videoSelectionSection.style.display = 'none';
+            uploadProgressSection.style.display = 'none';
+            videoPlayerSection.style.display = 'block';
+            
+            // Load video into player (TODO: get signed URL for playback)
+            // For now, just show that video exists
+            console.log('Project has video:', project.video_path);
+            
+            // TODO: Check if analysis exists and show results
+            // For now, simulate that analysis is complete
+            setTimeout(() => {
+                showMockDecisionSection(project.video_path);
+            }, 500);
+            
+        } else {
+            // No video yet - show selection UI
+            videoSelectionSection.style.display = 'block';
+            uploadProgressSection.style.display = 'none';
+            videoPlayerSection.style.display = 'none';
+            
+            // Hide decision section
+            const decisionSection = document.getElementById('decision-section');
+            if (decisionSection) {
+                decisionSection.style.display = 'none';
+            }
+        }
     }
     
     // Reset form and UI state
     videoInput.value = '';
-    analyzeBtn.disabled = true;
-    jsonOutput.textContent = 'No video uploaded yet.';
+    jsonOutput.textContent = 'No analysis yet.';
     updateStatus('');
-    
-    // Hide decision section (will be shown after upload/analysis)
-    const decisionSection = document.getElementById('decision-section');
-    if (decisionSection) {
-        decisionSection.style.display = 'none';
-    }
     
     // Ensure project details are collapsed by default
     const projectInfoElement = document.getElementById('project-info');
@@ -245,6 +279,15 @@ async function showProjectView(projectId) {
         technicalDetailsElement.classList.add('technical-details-collapsed');
         toggleTechnicalDetailsBtnElement.classList.remove('expanded');
         toggleTechnicalDetailsBtnElement.innerHTML = '<span class="toggle-icon">▶</span> View technical details (debug)';
+    }
+    
+    // Ensure video player is collapsed by default
+    const videoPlayerContainer = document.getElementById('video-player-container');
+    const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
+    if (videoPlayerContainer && toggleVideoPlayerBtn) {
+        videoPlayerContainer.classList.add('video-player-collapsed');
+        toggleVideoPlayerBtn.classList.remove('expanded');
+        toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▶</span> View video';
     }
 }
 
@@ -544,14 +587,30 @@ profileForm.addEventListener('submit', async (e) => {
     }
 });
 
-// Enable upload button when file is selected
-videoInput.addEventListener('change', (e) => {
-    analyzeBtn.disabled = !e.target.files.length;
+// Handle "Upload New Video" button click
+if (uploadNewVideoBtn) {
+    uploadNewVideoBtn.addEventListener('click', () => {
+        videoInput.click();
+    });
+}
+
+// Handle "Choose from Library" button click
+if (chooseFromLibraryBtn) {
+    chooseFromLibraryBtn.addEventListener('click', () => {
+        alert('Library feature coming soon! For now, please upload a new video.');
+        // TODO: Show modal with user's previously uploaded videos
+    });
+}
+
+// Handle file selection
+videoInput.addEventListener('change', async (e) => {
+    if (e.target.files.length > 0) {
+        await handleVideoUpload(e.target.files[0]);
+    }
 });
 
-// Upload and analyze handler
-analyzeBtn.addEventListener('click', async () => {
-    const file = videoInput.files[0];
+// Handle video upload
+async function handleVideoUpload(file) {
     if (!file) {
         updateStatus('Please select a video file', 'error');
         return;
@@ -562,8 +621,6 @@ analyzeBtn.addEventListener('click', async () => {
         return;
     }
     
-    // Note: With signed URL uploads, we upload directly to GCS, so no size limit from Cloud Run
-    // GCS can handle very large files (up to 5TB per object)
     console.log('File selected:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
 
     if (!API_BASE_URL || API_BASE_URL.trim() === '') {
@@ -576,10 +633,16 @@ analyzeBtn.addEventListener('click', async () => {
     }
 
     try {
+        // Hide selection UI, show progress
+        videoSelectionSection.style.display = 'none';
+        uploadProgressSection.style.display = 'block';
+        
         const authHeaders = await getAuthHeaders();
         
-        // Step 1: Get signed URL from backend (small request < 1MB, no file size limit)
-        updateStatus('Requesting upload URL...', 'info');
+        // Step 1: Get signed URL from backend
+        uploadProgressText.textContent = 'Requesting upload URL...';
+        uploadProgressBar.style.width = '0%';
+        
         const signedUrlEndpoint = `${API_BASE_URL}/get-upload-url`;
         console.log('Requesting signed URL from:', signedUrlEndpoint);
         
@@ -606,20 +669,19 @@ analyzeBtn.addEventListener('click', async () => {
         const { signed_url, gcs_path } = await signedUrlResponse.json();
         console.log('Got signed URL for GCS path:', gcs_path);
 
-        // Step 2: Upload file directly to GCS using signed URL (bypasses Cloud Run 32MB limit)
-        console.log('Uploading file:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+        // Step 2: Upload file directly to GCS with progress tracking
+        console.log('Uploading file:', file.name);
         
-        // Use XMLHttpRequest for upload progress tracking
         const uploadPromise = new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             
-            // Track upload progress
             xhr.upload.addEventListener('progress', (e) => {
                 if (e.lengthComputable) {
                     const percentComplete = (e.loaded / e.total) * 100;
                     const uploadedMB = (e.loaded / 1024 / 1024).toFixed(2);
                     const totalMB = (e.total / 1024 / 1024).toFixed(2);
-                    updateStatus(`Uploading video to storage... ${percentComplete.toFixed(1)}% (${uploadedMB} MB / ${totalMB} MB)`, 'info');
+                    uploadProgressText.textContent = `Uploading... ${percentComplete.toFixed(1)}% (${uploadedMB} MB / ${totalMB} MB)`;
+                    uploadProgressBar.style.width = `${percentComplete}%`;
                 }
             });
             
@@ -631,13 +693,8 @@ analyzeBtn.addEventListener('click', async () => {
                 }
             });
             
-            xhr.addEventListener('error', () => {
-                reject(new Error('Network error during upload'));
-            });
-            
-            xhr.addEventListener('abort', () => {
-                reject(new Error('Upload was aborted'));
-            });
+            xhr.addEventListener('error', () => reject(new Error('Network error during upload')));
+            xhr.addEventListener('abort', () => reject(new Error('Upload was aborted')));
             
             xhr.open('PUT', signed_url);
             xhr.setRequestHeader('Content-Type', file.type);
@@ -646,64 +703,44 @@ analyzeBtn.addEventListener('click', async () => {
         
         await uploadPromise;
         console.log('File uploaded to GCS successfully');
-        updateStatus('Upload complete! Saving metadata...', 'info');
-        console.log('GCS path:', gcs_path);
-        console.log('Current project ID:', currentProjectId);
-        console.log('Project manager:', projectManager);
         
-        // Step 3: Save video_path to project in Supabase
+        uploadProgressText.textContent = 'Upload complete! Saving...';
+        uploadProgressBar.style.width = '100%';
+        
+        // Step 3: Save video_path to project (THIS LOCKS THE VIDEO)
         if (currentProjectId && projectManager && gcs_path) {
             console.log('Saving video_path to project...');
-            try {
-                const updateResult = await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
-                console.log('Update result:', updateResult);
-                if (updateResult.error) {
-                    console.error('Error updating project:', updateResult.error);
-                }
-            } catch (error) {
-                console.error('Error saving video_path:', error);
+            const updateResult = await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
+            if (updateResult.error) {
+                console.error('Error updating project:', updateResult.error);
+                throw new Error('Failed to save video to project');
             }
-        } else {
-            console.warn('Cannot save video_path - missing:', {
-                currentProjectId: !!currentProjectId,
-                projectManager: !!projectManager,
-                gcs_path: !!gcs_path
-            });
         }
 
-        // Step 4: Display success and refresh project view to show video_path
-        console.log('Displaying success message...');
-        const successResult = {
-            message: 'Video uploaded successfully',
-            gcs_path: gcs_path,
-            filename: file.name,
-            size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
-        };
-        updateStatus('Video uploaded successfully! Analyzing...', 'success');
+        // Step 4: Hide progress, show analyzing state
+        uploadProgressSection.style.display = 'none';
+        uploadProgressText.textContent = 'Analyzing frames...';
+        updateStatus('Analyzing frames...', 'info');
         
-        // Update the UI directly with the gcs_path we just saved
-        if (gcs_path) {
-            console.log('Updating video path in UI...');
-            const videoPathElement = document.getElementById('info-video-path');
-            if (videoPathElement) {
-                videoPathElement.textContent = gcs_path;
-                console.log('Video path updated in UI:', gcs_path);
-            } else {
-                console.warn('Video path element (#info-video-path) not found in DOM');
-            }
-        }
+        // Step 5: Show video player section
+        videoPlayerSection.style.display = 'block';
         
-        // Show decision section with mock data
-        // TODO: Replace with actual analysis results when backend is integrated
-        showDecisionSection(successResult);
-        updateStatus('Analysis complete! Review the thumbnail choices below.', 'success');
+        // TODO: Trigger actual analysis API call here
+        // For now, simulate analysis with mock data
+        setTimeout(() => {
+            showMockDecisionSection(gcs_path);
+            updateStatus('Analysis complete! Review the thumbnail choices below.', 'success');
+        }, 2000);
         
     } catch (error) {
         updateStatus(`Error: ${error.message}`, 'error');
-        jsonOutput.textContent = `Error: ${error.message}`;
-        console.error('Analysis error:', error);
+        console.error('Upload error:', error);
+        
+        // Show selection UI again on error
+        videoSelectionSection.style.display = 'block';
+        uploadProgressSection.style.display = 'none';
     }
-});
+}
 
 // Event delegation for project list buttons (attached once)
 projectsList.addEventListener('click', async (e) => {
@@ -753,6 +790,23 @@ if (toggleTechnicalDetailsBtn && technicalDetails) {
     });
 }
 
+// Toggle video player visibility
+const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
+const videoPlayerContainer = document.getElementById('video-player-container');
+if (toggleVideoPlayerBtn && videoPlayerContainer) {
+    toggleVideoPlayerBtn.addEventListener('click', () => {
+        if (videoPlayerContainer.classList.contains('video-player-collapsed')) {
+            videoPlayerContainer.classList.remove('video-player-collapsed');
+            toggleVideoPlayerBtn.classList.add('expanded');
+            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
+        } else {
+            videoPlayerContainer.classList.add('video-player-collapsed');
+            toggleVideoPlayerBtn.classList.remove('expanded');
+            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▶</span> View video';
+        }
+    });
+}
+
 // Toggle verdict card details
 document.addEventListener('click', (e) => {
     if (e.target.classList.contains('verdict-toggle') || e.target.parentElement?.classList.contains('verdict-toggle')) {
@@ -785,23 +839,113 @@ if (decisionDoneBtn) {
 }
 
 // Show decision section with mock data (for demonstration)
-// In production, this would be called after receiving analysis results from the API
-function showDecisionSection(analysisResult) {
+function showMockDecisionSection(gcsPath) {
+    // Mock analysis results with timestamps
+    const mockResults = {
+        gcs_path: gcsPath,
+        verdict_moments: {
+            safe: { timestamp: 8.5, label: "Safe / Defensible" },
+            bold: { timestamp: 52.3, label: "High-Variance / Bold" },
+            avoid: { timestamp: 94.1, label: "Avoid / Common Pitfall" }
+        },
+        video_duration: 125.0 // mock duration in seconds
+    };
+    
     const decisionSection = document.getElementById('decision-section');
     if (decisionSection) {
         decisionSection.style.display = 'block';
         
-        // TODO: In production, populate verdict cards with actual analysis data
-        // For now, this is a placeholder structure
+        // Update technical details with mock result
+        const technicalJsonOutput = document.getElementById('json-output');
+        if (technicalJsonOutput) {
+            technicalJsonOutput.textContent = JSON.stringify(mockResults, null, 2);
+        }
         
-        // Update technical details with raw result
-        if (analysisResult) {
-            const technicalJsonOutput = document.getElementById('json-output');
-            if (technicalJsonOutput) {
-                technicalJsonOutput.textContent = JSON.stringify(analysisResult, null, 2);
+        // Render timeline markers
+        renderTimelineMarkers(mockResults.verdict_moments, mockResults.video_duration);
+        
+        // Show timestamp links on verdict cards
+        updateVerdictCardTimestamps(mockResults.verdict_moments);
+    }
+}
+
+// Render timeline markers on video player
+function renderTimelineMarkers(verdictMoments, videoDuration) {
+    const markersContainer = document.getElementById('video-timeline-markers');
+    if (!markersContainer) return;
+    
+    // Clear existing markers
+    markersContainer.innerHTML = '';
+    
+    // Create marker for each verdict
+    Object.entries(verdictMoments).forEach(([type, data]) => {
+        const marker = document.createElement('div');
+        marker.className = `timeline-marker timeline-marker-${type}`;
+        marker.setAttribute('data-verdict-type', type);
+        marker.setAttribute('data-time', formatTimestamp(data.timestamp));
+        marker.setAttribute('data-timestamp', data.timestamp);
+        marker.title = `${data.label} - ${formatTimestamp(data.timestamp)}`;
+        
+        // Position marker based on percentage of video duration
+        const position = (data.timestamp / videoDuration) * 100;
+        marker.style.left = `${position}%`;
+        
+        // Add click handler to seek video
+        marker.addEventListener('click', () => {
+            seekVideoTo(data.timestamp);
+        });
+        
+        markersContainer.appendChild(marker);
+    });
+}
+
+// Update verdict cards with timestamp links
+function updateVerdictCardTimestamps(verdictMoments) {
+    Object.entries(verdictMoments).forEach(([type, data]) => {
+        const timestampLink = document.querySelector(`.verdict-timestamp-link[data-verdict-type="${type}"]`);
+        if (timestampLink) {
+            const timestampText = timestampLink.querySelector('.timestamp-text');
+            if (timestampText) {
+                timestampText.textContent = formatTimestamp(data.timestamp);
             }
+            timestampLink.style.display = 'inline-flex';
+            
+            // Add click handler
+            timestampLink.addEventListener('click', () => {
+                seekVideoTo(data.timestamp);
+            });
+        }
+    });
+}
+
+// Seek video to specific timestamp
+function seekVideoTo(timestamp) {
+    // First, expand video player if collapsed
+    const videoPlayerContainer = document.getElementById('video-player-container');
+    const toggleVideoPlayerBtn = document.getElementById('toggle-video-player-btn');
+    if (videoPlayerContainer && videoPlayerContainer.classList.contains('video-player-collapsed')) {
+        videoPlayerContainer.classList.remove('video-player-collapsed');
+        if (toggleVideoPlayerBtn) {
+            toggleVideoPlayerBtn.classList.add('expanded');
+            toggleVideoPlayerBtn.innerHTML = '<span class="toggle-icon">▼</span> Hide video';
         }
     }
+    
+    // Seek video
+    if (projectVideo) {
+        projectVideo.currentTime = timestamp;
+        projectVideo.play();
+        
+        // Scroll to video player
+        videoPlayerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+// Format timestamp as MM:SS
+function formatTimestamp(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
 // Initialize on load

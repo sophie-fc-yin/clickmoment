@@ -253,20 +253,68 @@
                     <p><strong>Brand Colors:</strong> <span id="info-brand-colors">-</span></p>
                     <p><strong>Notes:</strong> <span id="info-notes">-</span></p>
                 </div>
-                <div class="info-section">
-                    <h4>Video</h4>
-                    <p><strong>Video Path:</strong> <span id="info-video-path" style="word-break: break-all; font-family: monospace; font-size: 12px;">-</span></p>
+            </div>
+
+            <!-- Video Selection Section (shown only if no video_path) -->
+            <div id="video-selection-section" class="video-selection-section">
+                <h3>Choose Video</h3>
+                <div class="video-choice-buttons">
+                    <button id="upload-new-video-btn" class="btn btn-primary btn-choice">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Upload New Video
+                    </button>
+                    <span class="choice-divider">OR</span>
+                    <button id="choose-from-library-btn" class="btn btn-secondary btn-choice">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                        Choose from Library
+                    </button>
+                </div>
+                
+                <!-- Hidden file input -->
+                <input type="file" id="video-input" accept="video/*" style="display: none;" />
+            </div>
+
+            <!-- Upload Progress Section -->
+            <div id="upload-progress-section" class="upload-progress-section" style="display: none;">
+                <div class="progress-content">
+                    <p id="upload-progress-text">Uploading video...</p>
+                    <div class="progress-bar-container">
+                        <div id="upload-progress-bar" class="progress-bar"></div>
+                    </div>
                 </div>
             </div>
 
-            <div class="upload-section">
-                <h3>Upload Video</h3>
-                <input type="file" id="video-input" accept="video/*" />
-                <button id="analyze-btn" class="btn btn-primary" disabled>Upload Video</button>
-            </div>
-
+            <!-- Status Section -->
             <div class="status-section">
                 <p id="status-text"></p>
+            </div>
+
+            <!-- Collapsible Video Player (shown only after video selected) -->
+            <div id="video-player-section" class="video-player-section" style="display: none;">
+                <div class="video-player-toggle">
+                    <button id="toggle-video-player-btn" class="btn-text-toggle">
+                        <span class="toggle-icon">▶</span>
+                        View video
+                    </button>
+                </div>
+                <div id="video-player-container" class="video-player-container video-player-collapsed">
+                    <video id="project-video" class="project-video" controls>
+                        <source id="video-source" src="" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="video-timeline-markers" id="video-timeline-markers">
+                        <!-- Markers will be dynamically added here -->
+                    </div>
+                    <p class="video-helper-text">Click timeline markers to jump to key moments</p>
+                </div>
             </div>
 
             <!-- Decision Support Section (shown after upload) -->
@@ -279,7 +327,7 @@
                 <!-- Three Verdict Cards -->
                 <div class="verdict-cards-container">
                     <!-- Safe Card -->
-                    <div class="verdict-card verdict-card-safe">
+                    <div class="verdict-card verdict-card-safe" data-verdict-type="safe">
                         <div class="verdict-badge">
                             <span class="verdict-icon">🟢</span>
                             <span class="verdict-label">Safe / Defensible</span>
@@ -290,6 +338,11 @@
                         <p class="verdict-explanation" id="verdict-explanation-safe">
                             Clear expression, strong contrast at a glance.
                         </p>
+                        <button class="verdict-timestamp-link" data-verdict-type="safe" style="display: none;">
+                            <span class="timestamp-icon">📍</span>
+                            <span class="timestamp-text">0:00</span>
+                            <span class="timestamp-action">View in video</span>
+                        </button>
                         <button class="verdict-toggle" data-target="safe">
                             <span class="toggle-icon">▼</span> Why?
                         </button>
@@ -303,7 +356,7 @@
                     </div>
 
                     <!-- Bold/High-Variance Card -->
-                    <div class="verdict-card verdict-card-bold">
+                    <div class="verdict-card verdict-card-bold" data-verdict-type="bold">
                         <div class="verdict-badge">
                             <span class="verdict-icon">🟡</span>
                             <span class="verdict-label">High-Variance / Bold</span>
@@ -314,6 +367,11 @@
                         <p class="verdict-explanation" id="verdict-explanation-bold">
                             Emotional peak mid-video — more expressive, less predictable.
                         </p>
+                        <button class="verdict-timestamp-link" data-verdict-type="bold" style="display: none;">
+                            <span class="timestamp-icon">📍</span>
+                            <span class="timestamp-text">0:00</span>
+                            <span class="timestamp-action">View in video</span>
+                        </button>
                         <button class="verdict-toggle" data-target="bold">
                             <span class="toggle-icon">▼</span> Why?
                         </button>
@@ -327,7 +385,7 @@
                     </div>
 
                     <!-- Avoid Card -->
-                    <div class="verdict-card verdict-card-avoid">
+                    <div class="verdict-card verdict-card-avoid" data-verdict-type="avoid">
                         <div class="verdict-badge">
                             <span class="verdict-icon">🔴</span>
                             <span class="verdict-label">Avoid / Common Pitfall</span>
@@ -338,6 +396,11 @@
                         <p class="verdict-explanation" id="verdict-explanation-avoid">
                             Mid-blink or unclear expression — easy to miss at a glance.
                         </p>
+                        <button class="verdict-timestamp-link" data-verdict-type="avoid" style="display: none;">
+                            <span class="timestamp-icon">📍</span>
+                            <span class="timestamp-text">0:00</span>
+                            <span class="timestamp-action">View in video</span>
+                        </button>
                         <button class="verdict-toggle" data-target="avoid">
                             <span class="toggle-icon">▼</span> Why?
                         </button>
