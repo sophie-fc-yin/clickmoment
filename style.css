@@ -1846,9 +1846,9 @@ h3,
 }
 
 .hero-note {
-    margin-top: 20px;
+    margin-top: 18px;
     color: #555c68;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 .btn-ghost {
@@ -1968,10 +1968,10 @@ h3,
 }
 
 .landing-title {
-    font-size: clamp(36px, 5vw, 60px);
+    font-size: clamp(32px, 4.5vw, 54px);
     font-weight: 700;
     color: var(--ink);
-    margin-bottom: 24px;
+    margin-bottom: 20px;
     line-height: 1.15;
     letter-spacing: -0.04em;
     max-width: 800px;
@@ -1988,11 +1988,11 @@ h3,
 }
 
 .landing-description {
-    font-size: clamp(16px, 2vw, 19px);
+    font-size: clamp(15px, 1.8vw, 18px);
     color: #4b5160;
-    line-height: 1.7;
+    line-height: 1.65;
     margin-bottom: 0;
-    max-width: 580px;
+    max-width: 560px;
     font-weight: 400;
     opacity: 0.9;
 }
