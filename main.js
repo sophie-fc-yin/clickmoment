@@ -441,7 +441,7 @@ const signupFormContainer = document.getElementById('signup-form-container');
 const resetFormContainer = document.getElementById('reset-form-container');
 const loginForm = document.getElementById('login-form');
 const signupForm = document.getElementById('signup-form');
-const resetForm = document.getElementById('reset-form');
+const passwordResetForm = document.getElementById('reset-form');
 const forgotPasswordLink = document.getElementById('forgot-password-link');
 const backToLoginBtn = document.getElementById('back-to-login');
 const googleLoginBtn = document.getElementById('google-login-btn');
@@ -466,7 +466,7 @@ function closeAuthModalHandler() {
     // Clear forms
     if (loginForm) loginForm.reset();
     if (signupForm) signupForm.reset();
-    if (resetForm) resetForm.reset();
+    if (passwordResetForm) passwordResetForm.reset();
 }
 
 // Show Login Form
@@ -598,8 +598,8 @@ if (signupForm) {
 }
 
 // Password Reset
-if (resetForm) {
-    resetForm.addEventListener('submit', async (e) => {
+if (passwordResetForm) {
+    passwordResetForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const email = document.getElementById('reset-email').value;
