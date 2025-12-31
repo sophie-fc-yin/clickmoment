@@ -1246,7 +1246,7 @@ async function handleVideoUpload(file) {
             console.log('Analysis complete, showing results');
             analysisProgressSection.style.display = 'none';
             showMockDecisionSection(gcs_path);
-            updateStatus('Analysis complete! Review the thumbnail choices below.', 'success');
+            updateStatus('Analysis complete! Review the moments below.', 'success');
         }, 3000); // Simulating 3 seconds, real analysis takes 2-3 minutes
         
     } catch (error) {
@@ -1392,12 +1392,12 @@ if (decisionDoneBtn) {
         
         // 2️⃣ Show confirmation panel with appropriate copy
         const labelMap = {
-            'safe': 'Safe / Defensible',
-            'bold': 'High-Variance / Bold',
-            'avoid': 'Avoid / Common Pitfall'
+            safe: 'Clear click signal',
+            bold: 'Mixed signal',
+            avoid: 'Low clarity'
         };
         
-        confirmationChoiceText.textContent = `You chose the ${labelMap[selectedVerdictData.type] || selectedVerdictData.label} direction.`;
+        confirmationChoiceText.textContent = `Saved: ${labelMap[selectedVerdictData.type] || selectedVerdictData.label}`;
         
         // Hide the CTA button and show confirmation
         decisionDoneBtn.style.display = 'none';
@@ -1452,11 +1452,11 @@ if (confirmDesignAroundBtn) {
             ? formatTimestamp(selectedVerdictData.timestamp) 
             : 'Not available';
         
-        // Create a simple alert with design context
-        const contextMessage = `Design Context:\n\n` +
+        // Create a simple alert with moment context
+        const contextMessage = `Moment Context:\n\n` +
             `Timestamp: ${timestampFormatted}\n\n` +
             `${selectedVerdictData.explanation}\n\n` +
-            `Tip: Use this moment as your creative anchor point.`;
+            `This is the moment captured from your video.`;
         
         alert(contextMessage);
         
@@ -1465,7 +1465,7 @@ if (confirmDesignAroundBtn) {
             seekVideoTo(parseFloat(selectedVerdictData.timestamp));
         }
         
-        console.log('Design context shown for:', selectedVerdictData);
+        console.log('Moment context shown for:', selectedVerdictData);
     });
 }
 
@@ -1492,9 +1492,9 @@ function showMockDecisionSection(gcsPath) {
     const mockResults = {
         gcs_path: gcsPath,
         verdict_moments: {
-            safe: { timestamp: 8.5, label: "Safe / Defensible" },
-            bold: { timestamp: 52.3, label: "High-Variance / Bold" },
-            avoid: { timestamp: 94.1, label: "Avoid / Common Pitfall" }
+            safe: { timestamp: 8.5, label: "Clear click signal" },
+            bold: { timestamp: 52.3, label: "Mixed signal" },
+            avoid: { timestamp: 94.1, label: "Low clarity" }
         },
         video_duration: 125.0 // mock duration in seconds
     };
