@@ -1832,9 +1832,9 @@ h3,
 .hero-eyebrow {
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    font-size: 12px;
+    font-size: 11px;
     color: #5b5f66;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     font-weight: 600;
 }
 
@@ -1842,13 +1842,13 @@ h3,
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
-    margin-top: 40px;
+    margin-top: 32px;
 }
 
 .hero-note {
-    margin-top: 24px;
+    margin-top: 20px;
     color: #555c68;
-    font-size: 15px;
+    font-size: 14px;
 }
 
 .btn-ghost {
@@ -1968,10 +1968,10 @@ h3,
 }
 
 .landing-title {
-    font-size: clamp(42px, 6vw, 72px);
+    font-size: clamp(36px, 5vw, 60px);
     font-weight: 700;
     color: var(--ink);
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     line-height: 1.15;
     letter-spacing: -0.04em;
     max-width: 800px;
@@ -1988,19 +1988,19 @@ h3,
 }
 
 .landing-description {
-    font-size: clamp(18px, 2.5vw, 22px);
+    font-size: clamp(16px, 2vw, 19px);
     color: #4b5160;
-    line-height: 1.8;
+    line-height: 1.7;
     margin-bottom: 0;
-    max-width: 600px;
+    max-width: 580px;
     font-weight: 400;
     opacity: 0.9;
 }
 
 
 .btn-large {
-    padding: 18px 48px;
-    font-size: 18px;
+    padding: 16px 40px;
+    font-size: 16px;
     font-weight: 600;
     border-radius: 8px;
     transition: all 0.2s ease;
@@ -3259,10 +3259,10 @@ h3,
     }
     
     .btn-large {
-        padding: 16px 36px;
-        font-size: 16px;
+        padding: 14px 32px;
+        font-size: 15px;
         width: 100%;
-        max-width: 320px;
+        max-width: 300px;
     }
     
     #projects-view,
