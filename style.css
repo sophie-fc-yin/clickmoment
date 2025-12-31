@@ -1773,7 +1773,8 @@ h3,
 /* Landing Page Styles */
 .landing-hero {
     text-align: left;
-    padding: 140px 6vw 120px;
+    padding: 10vh 6vw 8vh;
+    min-height: 100vh;
     margin: 0;
     position: relative;
     background-image:
@@ -1781,6 +1782,9 @@ h3,
         repeating-linear-gradient(90deg, transparent 0 72px, var(--line-faint) 72px 73px),
         repeating-linear-gradient(0deg, transparent 0 72px, var(--line-faint) 72px 73px);
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
 }
 
 .landing-hero::before,
@@ -1811,6 +1815,7 @@ h3,
 
 .hero-grid {
     max-width: none;
+    width: 100%;
     margin: 0;
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
@@ -1886,6 +1891,7 @@ h3,
     overflow: hidden;
     background: #111827;
     height: 220px;
+    max-height: 30vh;
 }
 
 .frame-placeholder {
@@ -3038,7 +3044,8 @@ h3,
     }
     
     .landing-hero {
-        padding: 120px 20px 100px;
+        padding: 8vh 20px 6vh;
+        min-height: 100vh;
     }
 
     .hero-grid {
