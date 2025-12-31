@@ -431,13 +431,195 @@ async function handleLogin() {
     }
 }
 
-// Login button handlers
-loginBtn.addEventListener('click', handleLogin);
+// Auth Modal Elements
+const authModal = document.getElementById('auth-modal');
+const closeAuthModal = document.getElementById('close-auth-modal');
+const tabLogin = document.getElementById('tab-login');
+const tabSignup = document.getElementById('tab-signup');
+const loginFormContainer = document.getElementById('login-form-container');
+const signupFormContainer = document.getElementById('signup-form-container');
+const resetFormContainer = document.getElementById('reset-form-container');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+const resetForm = document.getElementById('reset-form');
+const forgotPasswordLink = document.getElementById('forgot-password-link');
+const backToLoginBtn = document.getElementById('back-to-login');
+const googleLoginBtn = document.getElementById('google-login-btn');
+const googleSignupBtn = document.getElementById('google-signup-btn');
+
+// Open Auth Modal
+function openAuthModal(tab = 'login') {
+    authModal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    
+    if (tab === 'signup') {
+        showSignupForm();
+    } else {
+        showLoginForm();
+    }
+}
+
+// Close Auth Modal
+function closeAuthModalHandler() {
+    authModal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+    // Clear forms
+    if (loginForm) loginForm.reset();
+    if (signupForm) signupForm.reset();
+    if (resetForm) resetForm.reset();
+}
+
+// Show Login Form
+function showLoginForm() {
+    tabLogin.classList.add('active');
+    tabSignup.classList.remove('active');
+    loginFormContainer.style.display = 'block';
+    signupFormContainer.style.display = 'none';
+    resetFormContainer.style.display = 'none';
+}
+
+// Show Signup Form
+function showSignupForm() {
+    tabSignup.classList.add('active');
+    tabLogin.classList.remove('active');
+    signupFormContainer.style.display = 'block';
+    loginFormContainer.style.display = 'none';
+    resetFormContainer.style.display = 'none';
+}
+
+// Show Reset Form
+function showResetForm() {
+    resetFormContainer.style.display = 'block';
+    loginFormContainer.style.display = 'none';
+    signupFormContainer.style.display = 'none';
+}
+
+// Login button handlers - open modal instead of direct Google OAuth
+loginBtn.addEventListener('click', () => openAuthModal('login'));
 if (landingLoginBtn) {
-    landingLoginBtn.addEventListener('click', handleLogin);
+    landingLoginBtn.addEventListener('click', () => openAuthModal('login'));
 }
 if (landingFooterLoginBtn) {
-    landingFooterLoginBtn.addEventListener('click', handleLogin);
+    landingFooterLoginBtn.addEventListener('click', () => openAuthModal('login'));
+}
+
+// Close modal handlers
+if (closeAuthModal) {
+    closeAuthModal.addEventListener('click', closeAuthModalHandler);
+}
+if (authModal) {
+    authModal.addEventListener('click', (e) => {
+        if (e.target.classList.contains('auth-modal-overlay')) {
+            closeAuthModalHandler();
+        }
+    });
+}
+
+// Tab switching
+if (tabLogin) tabLogin.addEventListener('click', showLoginForm);
+if (tabSignup) tabSignup.addEventListener('click', showSignupForm);
+
+// Forgot password link
+if (forgotPasswordLink) forgotPasswordLink.addEventListener('click', showResetForm);
+if (backToLoginBtn) backToLoginBtn.addEventListener('click', showLoginForm);
+
+// Google OAuth handlers
+if (googleLoginBtn) googleLoginBtn.addEventListener('click', handleLogin);
+if (googleSignupBtn) googleSignupBtn.addEventListener('click', handleLogin);
+
+// Email/Password Login
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+            
+            if (error) {
+                alert('Login error: ' + error.message);
+            } else {
+                closeAuthModalHandler();
+                // updateUI will be called by onAuthStateChange
+            }
+        } catch (err) {
+            console.error('Login error:', err);
+            alert('An error occurred during login. Please try again.');
+        }
+    });
+}
+
+// Email/Password Signup
+if (signupForm) {
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        const confirmPassword = document.getElementById('signup-password-confirm').value;
+        
+        // Validate passwords match
+        if (password !== confirmPassword) {
+            alert('Passwords do not match');
+            return;
+        }
+        
+        // Validate password strength
+        if (password.length < 8) {
+            alert('Password must be at least 8 characters');
+            return;
+        }
+        
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: {
+                    emailRedirectTo: window.location.origin
+                }
+            });
+            
+            if (error) {
+                alert('Signup error: ' + error.message);
+            } else {
+                alert('Success! Check your email to verify your account.');
+                closeAuthModalHandler();
+            }
+        } catch (err) {
+            console.error('Signup error:', err);
+            alert('An error occurred during signup. Please try again.');
+        }
+    });
+}
+
+// Password Reset
+if (resetForm) {
+    resetForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const email = document.getElementById('reset-email').value;
+        
+        try {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.origin
+            });
+            
+            if (error) {
+                alert('Error: ' + error.message);
+            } else {
+                alert('Password reset link sent! Check your email.');
+                showLoginForm();
+            }
+        } catch (err) {
+            console.error('Reset error:', err);
+            alert('An error occurred. Please try again.');
+        }
+    });
 }
 
 // Logout handler
