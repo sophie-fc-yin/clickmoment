@@ -1249,17 +1249,48 @@ async function handleVideoUpload(file) {
         // Trigger actual analysis API call
         try {
             const authHeaders = await getAuthHeaders();
-            const analysisResponse = await fetch(`${API_BASE_URL}/analyze`, {
+            
+            // Fetch current project and user profile to build full payload
+            const project = await projectManager.getProject(currentProjectId);
+            const userProfile = await profileManager.getProfile(currentUser.id);
+            
+            // Build the full request payload
+            const requestPayload = {
+                project_id: currentProjectId,
+                content_sources: {
+                    video_path: gcs_path
+                },
+                target: {
+                    platform: project?.platform || 'youtube',
+                    optimization: project?.optimization || '',
+                    audience_profile: project?.audience_profile || ''
+                },
+                creative_brief: {
+                    title_hint: project?.title_hint || '',
+                    mood: project?.mood || '',
+                    brand_colors: Array.isArray(project?.brand_colors) ? project.brand_colors : [],
+                    notes: project?.notes || ''
+                },
+                channel_profile: {
+                    stage: userProfile?.stage || '',
+                    subscriber_count: userProfile?.subscriber_count || 0,
+                    content_niche: userProfile?.content_niche || '',
+                    upload_frequency: userProfile?.upload_frequency || '',
+                    growth_goal: userProfile?.growth_goal || ''
+                },
+                profile_photos: [] // TODO: Add user avatar/headshot if available
+            };
+            
+            console.log('Sending analysis request:', requestPayload);
+            
+            // Call the thumbnail generation endpoint
+            const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     ...authHeaders
                 },
-                body: JSON.stringify({
-                    gcs_path: gcs_path,
-                    project_id: currentProjectId,
-                    user_id: currentUser?.id
-                })
+                body: JSON.stringify(requestPayload)
             });
             
             if (!analysisResponse.ok) {
@@ -1774,17 +1805,48 @@ async function triggerAnalysisForExistingVideo() {
     try {
         // Call the real analysis API
         const authHeaders = await getAuthHeaders();
-        const analysisResponse = await fetch(`${API_BASE_URL}/analyze`, {
+        
+        // Fetch current project and user profile to build full payload
+        const project = await projectManager.getProject(currentProjectId);
+        const userProfile = await profileManager.getProfile(currentUser.id);
+        
+        // Build the full request payload
+        const requestPayload = {
+            project_id: currentProjectId,
+            content_sources: {
+                video_path: currentVideoPath
+            },
+            target: {
+                platform: project?.platform || 'youtube',
+                optimization: project?.optimization || '',
+                audience_profile: project?.audience_profile || ''
+            },
+            creative_brief: {
+                title_hint: project?.title_hint || '',
+                mood: project?.mood || '',
+                brand_colors: Array.isArray(project?.brand_colors) ? project.brand_colors : [],
+                notes: project?.notes || ''
+            },
+            channel_profile: {
+                stage: userProfile?.stage || '',
+                subscriber_count: userProfile?.subscriber_count || 0,
+                content_niche: userProfile?.content_niche || '',
+                upload_frequency: userProfile?.upload_frequency || '',
+                growth_goal: userProfile?.growth_goal || ''
+            },
+            profile_photos: [] // TODO: Add user avatar/headshot if available
+        };
+        
+        console.log('Sending analysis request:', requestPayload);
+        
+        // Call the thumbnail generation endpoint
+        const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 ...authHeaders
             },
-            body: JSON.stringify({
-                gcs_path: currentVideoPath,
-                project_id: currentProjectId,
-                user_id: currentUser?.id
-            })
+            body: JSON.stringify(requestPayload)
         });
         
         if (!analysisResponse.ok) {
