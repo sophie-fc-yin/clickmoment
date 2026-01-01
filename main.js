@@ -1575,7 +1575,24 @@ function showDecisionSectionFromAnalysis(analysis) {
     }
     
     const moments = (analysis?.phase1?.moments || []).slice(0, 3);
-    const videoDuration = analysis?.video_duration || inferVideoDurationFromMoments(moments) || 120;
+    
+    // Get actual video duration from the video element if available
+    let videoDuration = 120; // fallback
+    if (projectVideo && !isNaN(projectVideo.duration) && projectVideo.duration > 0) {
+        videoDuration = projectVideo.duration;
+        console.log('Using video element duration:', videoDuration);
+    } else if (analysis?.video_duration) {
+        videoDuration = analysis.video_duration;
+        console.log('Using API video_duration:', videoDuration);
+    } else {
+        const inferred = inferVideoDurationFromMoments(moments);
+        if (inferred) {
+            videoDuration = inferred;
+            console.log('Using inferred duration from moments:', videoDuration);
+        }
+    }
+    
+    console.log('Final videoDuration for timeline:', videoDuration);
     
     // Log frame URLs for debugging
     console.log('Rendering moments, frame URLs:', moments.map(m => ({ 
@@ -1924,8 +1941,18 @@ function renderTimelineMarkers(verdictMoments, videoDuration) {
     // Clear existing markers
     markersContainer.innerHTML = '';
     
+    if (!videoDuration || videoDuration <= 0) {
+        console.warn('Invalid video duration for timeline markers:', videoDuration);
+        return;
+    }
+    
     // Create marker for each verdict
     Object.entries(verdictMoments).forEach(([type, data]) => {
+        if (!data.timestamp || data.timestamp < 0) {
+            console.warn(`Invalid timestamp for ${type}:`, data.timestamp);
+            return;
+        }
+        
         const marker = document.createElement('div');
         marker.className = `timeline-marker timeline-marker-${type}`;
         marker.setAttribute('data-verdict-type', type);
@@ -1934,8 +1961,10 @@ function renderTimelineMarkers(verdictMoments, videoDuration) {
         marker.title = `${data.label} - ${formatTimestamp(data.timestamp)}`;
         
         // Position marker based on percentage of video duration
-        const position = (data.timestamp / videoDuration) * 100;
+        const position = Math.min(100, Math.max(0, (data.timestamp / videoDuration) * 100));
         marker.style.left = `${position}%`;
+        
+        console.log(`Timeline marker ${type}: timestamp=${data.timestamp}s, duration=${videoDuration}s, position=${position}%`);
         
         // Add click handler to seek video
         marker.addEventListener('click', () => {
