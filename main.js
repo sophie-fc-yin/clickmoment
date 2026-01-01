@@ -8,6 +8,7 @@ let currentUser = null;
 let projectManager = null;
 let profileManager = null;
 let currentProjectId = null;
+let currentVideoPath = null;
 
 // DOM elements
 const loginBtn = document.getElementById('login-btn');
@@ -51,6 +52,9 @@ const videoPlayerSection = document.getElementById('video-player-section');
 const projectVideo = document.getElementById('project-video');
 const videoSource = document.getElementById('video-source');
 const videoLoadingState = document.getElementById('video-loading-state');
+const analysisManualCta = document.getElementById('analysis-manual-cta');
+const manualAnalysisBtn = document.getElementById('manual-analysis-btn');
+const analysisManualHint = document.getElementById('analysis-manual-hint');
 
 // Initialize auth state
 async function initAuth() {
@@ -264,6 +268,7 @@ async function showProjectView(projectId) {
         
         if (hasVideo) {
             // Video already selected - hide selection UI, show player
+            currentVideoPath = project.video_path;
             videoSelectionSection.style.display = 'none';
             uploadProgressSection.style.display = 'none';
             analysisProgressSection.style.display = 'none';
@@ -282,12 +287,11 @@ async function showProjectView(projectId) {
             
             // TODO: Check if analysis exists in database
             // const analysis = await fetch(`${API_BASE_URL}/analysis/${currentProjectId}`);
-            // if (analysis.data) { show results } else { show analyzing state }
+            // if (analysis.data) { showDecisionSectionFromAnalysis(analysis.data); showManualAnalysisCTA(false); }
+            // else { showManualAnalysisCTA(true, 'Video is ready. Run analysis when you’re ready.'); }
             
-            // For now, simulate that analysis is complete
-            setTimeout(() => {
-                showMockDecisionSection(project.video_path);
-            }, 500);
+            // Until backend is wired, show manual analysis CTA
+            showManualAnalysisCTA(true, 'Video is ready. Run analysis when you’re ready.');
             
         } else {
             // No video yet - show selection UI
@@ -295,6 +299,7 @@ async function showProjectView(projectId) {
             uploadProgressSection.style.display = 'none';
             analysisProgressSection.style.display = 'none';
             videoPlayerSection.style.display = 'none';
+            showManualAnalysisCTA(false);
             
             // Hide decision section
             const decisionSection = document.getElementById('decision-section');
@@ -1121,6 +1126,7 @@ async function handleVideoUpload(file) {
 
         const { signed_url, gcs_path } = await signedUrlResponse.json();
         console.log('Got signed URL for GCS path:', gcs_path);
+        currentVideoPath = gcs_path;
 
         // Step 2: Upload file directly to GCS with progress tracking
         console.log('Uploading file:', file.name);
@@ -1222,6 +1228,8 @@ async function handleVideoUpload(file) {
         
         // Show analysis in progress
         analysisProgressSection.style.display = 'block';
+        showManualAnalysisCTA(false);
+            showManualAnalysisCTA(false);
         
         // Hide decision section while analyzing
         const decisionSection = document.getElementById('decision-section');
@@ -1248,84 +1256,7 @@ async function handleVideoUpload(file) {
             console.log('Analysis complete, showing results');
             analysisProgressSection.style.display = 'none';
             
-            // Minimal mock shaped like the real API for rendering
-            const mockApiAnalysis = {
-                project_id: currentProject?.id || 'mock-project',
-                status: 'draft',
-                recommended_title: 'Sample video title',
-                thumbnail_url: '',
-                selected_frame_url: '',
-                phase1: {
-                    positioning: 'ClickMoment identifies moments in your video that are already psychologically ready to earn clicks.',
-                    moments: [
-                        {
-                            frame_id: 'Moment 1',
-                            frame_number: 1,
-                            timestamp: '8.5s',
-                            frame_url: '',
-                            moment_summary: 'A clear emotional beat with a readable focal point.',
-                            viewer_feel: 'Immediate joy and curiosity.',
-                            why_this_reads: [
-                                'Emotion is clear at a glance',
-                                'Hints at a story without explaining it',
-                                'Subject holds up on mobile in ~2 seconds'
-                            ],
-                            optional_note: null,
-                            pillars: {
-                                emotional_signal: 'Visible, unambiguous emotion.',
-                                curiosity_gap: 'Suggests something just happened, without resolving it.',
-                                attention_signals: ['face', 'contrast'],
-                                readability_speed: 'Central subject, readable at small size.'
-                            }
-                        },
-                        {
-                            frame_id: 'Moment 2',
-                            frame_number: 2,
-                            timestamp: '14.2s',
-                            frame_url: '',
-                            moment_summary: 'A hint of tension or surprise that stands out.',
-                            viewer_feel: 'Intrigued, wanting to know what happens next.',
-                            why_this_reads: [
-                                'Emotion is visible even if mixed',
-                                'Hints at an outcome without revealing it',
-                                'Key subject is still findable on mobile'
-                            ],
-                            optional_note: null,
-                            pillars: {
-                                emotional_signal: 'Detectable tension/surprise.',
-                                curiosity_gap: 'Something is happening; outcome not revealed.',
-                                attention_signals: ['face'],
-                                readability_speed: 'Focal point remains findable on mobile.'
-                            }
-                        },
-                        {
-                            frame_id: 'Moment 3',
-                            frame_number: 3,
-                            timestamp: '22.0s',
-                            frame_url: '',
-                            moment_summary: 'A quieter beat that still captures a real emotion.',
-                            viewer_feel: 'Calm interest, looking for what comes next.',
-                            why_this_reads: [
-                                'Emotion present without needing text',
-                                'Suggests a story beat without spelling it out',
-                                'Focal point stays readable on small screens'
-                            ],
-                            optional_note: null,
-                            pillars: {
-                                emotional_signal: 'Soft but authentic emotion.',
-                                curiosity_gap: 'Implied next step without exposition.',
-                                attention_signals: ['face'],
-                                readability_speed: 'Single focal point, holds up small.'
-                            }
-                        }
-                    ],
-                    meta: {
-                        selection_note: 'Mock data for demo',
-                        positioning: 'ClickMoment finds moments that already deserve to be thumbnails.'
-                    }
-                },
-                video_duration: 125
-            };
+            const mockApiAnalysis = buildMockAnalysis(gcs_path);
             
             showDecisionSectionFromAnalysis(mockApiAnalysis);
             updateStatus('Analysis complete! Review the moments below.', 'success');
@@ -1374,6 +1305,13 @@ if (toggleTechnicalDetailsBtn && technicalDetails) {
     });
 }
 
+// Manual analysis trigger (fallback if upload did not auto-trigger analysis)
+if (manualAnalysisBtn) {
+    manualAnalysisBtn.addEventListener('click', () => {
+        triggerAnalysisForExistingVideo();
+    });
+}
+
 // Video player is always visible - no toggle needed
 
 // Toggle verdict card details
@@ -1387,11 +1325,11 @@ document.addEventListener('click', (e) => {
             if (detailsElement.classList.contains('verdict-details-collapsed')) {
                 detailsElement.classList.remove('verdict-details-collapsed');
                 button.classList.add('expanded');
-                button.innerHTML = '<span class="toggle-icon">▲</span> Hide';
+                button.innerHTML = '<span class="toggle-icon">▲</span> Hide pillars';
             } else {
                 detailsElement.classList.add('verdict-details-collapsed');
                 button.classList.remove('expanded');
-                button.innerHTML = '<span class="toggle-icon">▼</span> Why?';
+                button.innerHTML = '<span class="toggle-icon">▼</span> Pillars (optional)';
             }
         }
     }
@@ -1572,9 +1510,9 @@ if (confirmDismissBtn) {
 function showDecisionSectionFromAnalysis(analysis) {
     const decisionSection = document.getElementById('decision-section');
     if (!decisionSection) return;
-    
-    const technicalJsonOutput = document.getElementById('json-output');
-    if (technicalJsonOutput) {
+        
+        const technicalJsonOutput = document.getElementById('json-output');
+        if (technicalJsonOutput) {
         technicalJsonOutput.textContent = JSON.stringify(analysis, null, 2);
     }
     
@@ -1681,6 +1619,7 @@ function showDecisionSectionFromAnalysis(analysis) {
     
     decisionSection.style.display = 'block';
     decisionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showManualAnalysisCTA(false);
 }
 
 function parseTimestampToSeconds(ts) {
@@ -1699,6 +1638,126 @@ function inferVideoDurationFromMoments(moments) {
         .filter(v => Number.isFinite(v))
         .reduce((a, b) => Math.max(a, b), 0);
     return maxTs > 0 ? maxTs + 5 : null; // small buffer
+}
+
+function buildMockAnalysis(gcsPath) {
+    return {
+        project_id: currentProjectId || 'mock-project',
+        status: 'draft',
+        recommended_title: 'Sample video title',
+        thumbnail_url: '',
+        selected_frame_url: '',
+        phase1: {
+            positioning: 'ClickMoment identifies moments in your video that are already psychologically ready to earn clicks.',
+            moments: [
+                {
+                    frame_id: 'Moment 1',
+                    frame_number: 1,
+                    timestamp: '8.5s',
+                    frame_url: '',
+                    moment_summary: 'A clear emotional beat with a readable focal point.',
+                    viewer_feel: 'Immediate joy and curiosity.',
+                    why_this_reads: [
+                        'Emotion is clear at a glance',
+                        'Hints at a story without explaining it',
+                        'Subject holds up on mobile in ~2 seconds'
+                    ],
+                    optional_note: null,
+                    pillars: {
+                        emotional_signal: 'Visible, unambiguous emotion.',
+                        curiosity_gap: 'Suggests something just happened, without resolving it.',
+                        attention_signals: ['face', 'contrast'],
+                        readability_speed: 'Central subject, readable at small size.'
+                    }
+                },
+                {
+                    frame_id: 'Moment 2',
+                    frame_number: 2,
+                    timestamp: '14.2s',
+                    frame_url: '',
+                    moment_summary: 'A hint of tension or surprise that stands out.',
+                    viewer_feel: 'Intrigued, wanting to know what happens next.',
+                    why_this_reads: [
+                        'Emotion is visible even if mixed',
+                        'Hints at an outcome without revealing it',
+                        'Key subject is still findable on mobile'
+                    ],
+                    optional_note: null,
+                    pillars: {
+                        emotional_signal: 'Detectable tension/surprise.',
+                        curiosity_gap: 'Something is happening; outcome not revealed.',
+                        attention_signals: ['face'],
+                        readability_speed: 'Focal point remains findable on mobile.'
+                    }
+                },
+                {
+                    frame_id: 'Moment 3',
+                    frame_number: 3,
+                    timestamp: '22.0s',
+                    frame_url: '',
+                    moment_summary: 'A quieter beat that still captures a real emotion.',
+                    viewer_feel: 'Calm interest, looking for what comes next.',
+                    why_this_reads: [
+                        'Emotion present without needing text',
+                        'Suggests a story beat without spelling it out',
+                        'Focal point stays readable on small screens'
+                    ],
+                    optional_note: null,
+                    pillars: {
+                        emotional_signal: 'Soft but authentic emotion.',
+                        curiosity_gap: 'Implied next step without exposition.',
+                        attention_signals: ['face'],
+                        readability_speed: 'Single focal point, holds up small.'
+                    }
+                }
+            ],
+            meta: {
+                selection_note: 'Mock data for demo',
+                positioning: 'ClickMoment finds moments that already deserve to be thumbnails.'
+            }
+        },
+        video_duration: 125,
+        gcs_path: gcsPath
+    };
+}
+
+function showManualAnalysisCTA(show, hintText) {
+    if (!analysisManualCta) return;
+    analysisManualCta.style.display = show ? 'block' : 'none';
+    if (analysisManualHint && hintText) {
+        analysisManualHint.textContent = hintText;
+    }
+}
+
+async function triggerAnalysisForExistingVideo() {
+    if (!currentVideoPath) {
+        alert('No video found to analyze. Upload a video first.');
+        return;
+    }
+    if (!API_BASE_URL || API_BASE_URL.trim() === '') {
+        updateStatus('API_BASE_URL is not configured. Please set it in environment variables.', 'error');
+        return;
+    }
+    
+    // Optional: usage limit check could be added here similar to upload flow
+    
+    // Show progress UI
+    if (analysisProgressSection) analysisProgressSection.style.display = 'block';
+    const decisionSection = document.getElementById('decision-section');
+    if (decisionSection) decisionSection.style.display = 'none';
+    showManualAnalysisCTA(false);
+    updateStatus('Running analysis...', 'info');
+    
+    // Ensure video is ready
+    await loadVideoIntoPlayer(currentVideoPath);
+    
+    // TODO: replace with real API call for analysis
+    setTimeout(() => {
+        const mockApiAnalysis = buildMockAnalysis(currentVideoPath);
+        showDecisionSectionFromAnalysis(mockApiAnalysis);
+        if (analysisProgressSection) analysisProgressSection.style.display = 'none';
+        updateStatus('Analysis complete! Review the moments below.', 'success');
+    }, 2000);
 }
 
 // Render timeline markers on video player
