@@ -1240,12 +1240,94 @@ async function handleVideoUpload(file) {
         
         // TODO: Trigger actual analysis API call here
         // const analysisResult = await fetch(`${API_BASE_URL}/analyze`, { ... });
+        // const analysisJson = await analysisResult.json();
+        // showDecisionSectionFromAnalysis(analysisJson);
         
-        // For now, simulate analysis with mock data (2-3 minutes in real scenario)
+        // For now, simulate analysis with mock API-shaped data (2-3 minutes in real scenario)
         setTimeout(() => {
             console.log('Analysis complete, showing results');
             analysisProgressSection.style.display = 'none';
-            showMockDecisionSection(gcs_path);
+            
+            // Minimal mock shaped like the real API for rendering
+            const mockApiAnalysis = {
+                project_id: currentProject?.id || 'mock-project',
+                status: 'draft',
+                recommended_title: 'Sample video title',
+                thumbnail_url: '',
+                selected_frame_url: '',
+                phase1: {
+                    positioning: 'ClickMoment identifies moments in your video that are already psychologically ready to earn clicks.',
+                    moments: [
+                        {
+                            frame_id: 'Moment 1',
+                            frame_number: 1,
+                            timestamp: '8.5s',
+                            frame_url: '',
+                            moment_summary: 'A clear emotional beat with a readable focal point.',
+                            viewer_feel: 'Immediate joy and curiosity.',
+                            why_this_reads: [
+                                'Emotion is clear at a glance',
+                                'Hints at a story without explaining it',
+                                'Subject holds up on mobile in ~2 seconds'
+                            ],
+                            optional_note: null,
+                            pillars: {
+                                emotional_signal: 'Visible, unambiguous emotion.',
+                                curiosity_gap: 'Suggests something just happened, without resolving it.',
+                                attention_signals: ['face', 'contrast'],
+                                readability_speed: 'Central subject, readable at small size.'
+                            }
+                        },
+                        {
+                            frame_id: 'Moment 2',
+                            frame_number: 2,
+                            timestamp: '14.2s',
+                            frame_url: '',
+                            moment_summary: 'A hint of tension or surprise that stands out.',
+                            viewer_feel: 'Intrigued, wanting to know what happens next.',
+                            why_this_reads: [
+                                'Emotion is visible even if mixed',
+                                'Hints at an outcome without revealing it',
+                                'Key subject is still findable on mobile'
+                            ],
+                            optional_note: null,
+                            pillars: {
+                                emotional_signal: 'Detectable tension/surprise.',
+                                curiosity_gap: 'Something is happening; outcome not revealed.',
+                                attention_signals: ['face'],
+                                readability_speed: 'Focal point remains findable on mobile.'
+                            }
+                        },
+                        {
+                            frame_id: 'Moment 3',
+                            frame_number: 3,
+                            timestamp: '22.0s',
+                            frame_url: '',
+                            moment_summary: 'A quieter beat that still captures a real emotion.',
+                            viewer_feel: 'Calm interest, looking for what comes next.',
+                            why_this_reads: [
+                                'Emotion present without needing text',
+                                'Suggests a story beat without spelling it out',
+                                'Focal point stays readable on small screens'
+                            ],
+                            optional_note: null,
+                            pillars: {
+                                emotional_signal: 'Soft but authentic emotion.',
+                                curiosity_gap: 'Implied next step without exposition.',
+                                attention_signals: ['face'],
+                                readability_speed: 'Single focal point, holds up small.'
+                            }
+                        }
+                    ],
+                    meta: {
+                        selection_note: 'Mock data for demo',
+                        positioning: 'ClickMoment finds moments that already deserve to be thumbnails.'
+                    }
+                },
+                video_duration: 125
+            };
+            
+            showDecisionSectionFromAnalysis(mockApiAnalysis);
             updateStatus('Analysis complete! Review the moments below.', 'success');
         }, 3000); // Simulating 3 seconds, real analysis takes 2-3 minutes
         
@@ -1486,35 +1568,137 @@ if (confirmDismissBtn) {
     });
 }
 
-// Show decision section with mock data (for demonstration)
-function showMockDecisionSection(gcsPath) {
-    // Mock analysis results with timestamps
-    const mockResults = {
-        gcs_path: gcsPath,
-        verdict_moments: {
-            safe: { timestamp: 8.5, label: "Moment 1" },
-            bold: { timestamp: 52.3, label: "Moment 2" },
-            avoid: { timestamp: 94.1, label: "Moment 3" }
-        },
-        video_duration: 125.0 // mock duration in seconds
-    };
-    
+// Show decision section from real analysis output (or mock shaped like it)
+function showDecisionSectionFromAnalysis(analysis) {
     const decisionSection = document.getElementById('decision-section');
-    if (decisionSection) {
-        decisionSection.style.display = 'block';
+    if (!decisionSection) return;
+    
+    const technicalJsonOutput = document.getElementById('json-output');
+    if (technicalJsonOutput) {
+        technicalJsonOutput.textContent = JSON.stringify(analysis, null, 2);
+    }
+    
+    const moments = (analysis?.phase1?.moments || []).slice(0, 3);
+    const videoDuration = analysis?.video_duration || inferVideoDurationFromMoments(moments) || 120;
+    
+    // Map first three moments to the existing card keys
+    const cardOrder = ['safe', 'bold', 'avoid'];
+    
+    cardOrder.forEach((cardKey, idx) => {
+        const moment = moments[idx];
+        const card = document.querySelector(`.verdict-card[data-verdict-type="${cardKey}"]`);
+        if (!card) return;
         
-        // Update technical details with mock result
-        const technicalJsonOutput = document.getElementById('json-output');
-        if (technicalJsonOutput) {
-            technicalJsonOutput.textContent = JSON.stringify(mockResults, null, 2);
+        const labelEl = card.querySelector('.verdict-label');
+        const frameEl = card.querySelector('.verdict-frame');
+        const explanationEl = card.querySelector('.verdict-explanation');
+        const viewerFeelEl = card.querySelector('.verdict-viewer-feel');
+        const detailsEl = card.querySelector('.verdict-details');
+        const timestampLink = card.querySelector('.verdict-timestamp-link');
+        
+        // Populate label
+        if (labelEl) {
+            labelEl.textContent = moment?.frame_id || `Moment ${idx + 1}`;
         }
         
-        // Render timeline markers
-        renderTimelineMarkers(mockResults.verdict_moments, mockResults.video_duration);
+        // Populate frame preview
+        if (frameEl) {
+            frameEl.innerHTML = '';
+            if (moment?.frame_url) {
+                const img = document.createElement('img');
+                img.src = moment.frame_url;
+                img.alt = moment.moment_summary || `Moment ${idx + 1}`;
+                img.loading = 'lazy';
+                img.setAttribute('data-frame-id', moment.frame_id || '');
+                frameEl.appendChild(img);
+            } else {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'frame-placeholder-text';
+                placeholder.textContent = 'Frame preview';
+                frameEl.appendChild(placeholder);
+            }
+        }
         
-        // Show timestamp links on verdict cards
-        updateVerdictCardTimestamps(mockResults.verdict_moments);
-    }
+        // Moment summary
+        if (explanationEl) {
+            explanationEl.textContent = moment?.moment_summary
+                ? `Moment summary: ${moment.moment_summary}`
+                : 'Moment summary unavailable.';
+        }
+        
+        // Viewer feel
+        if (viewerFeelEl) {
+            viewerFeelEl.innerHTML = `<strong>Viewer may feel:</strong> ${moment?.viewer_feel || '—'}`;
+        }
+        
+        // Why this reads + pillars
+        if (detailsEl) {
+            const whyList = Array.isArray(moment?.why_this_reads) ? moment.why_this_reads : [];
+            const pillars = moment?.pillars || {};
+            const attentionSignals = Array.isArray(pillars.attention_signals) ? pillars.attention_signals : [];
+            
+            const items = [];
+            whyList.forEach(reason => items.push(`Why this reads: ${reason}`));
+            
+            if (pillars.emotional_signal) items.push(`Pillar — Emotional signal: ${pillars.emotional_signal}`);
+            if (pillars.curiosity_gap) items.push(`Pillar — Curiosity gap: ${pillars.curiosity_gap}`);
+            if (attentionSignals.length > 0) items.push(`Pillar — Attention signals: ${attentionSignals.join(', ')}`);
+            if (pillars.readability_speed) items.push(`Pillar — Readability & speed: ${pillars.readability_speed}`);
+            
+            detailsEl.innerHTML = `<ul>${items.map(text => `<li>${text}</li>`).join('')}</ul>`;
+        }
+        
+        // Timestamps + timeline links
+        const timestampSeconds = parseTimestampToSeconds(moment?.timestamp);
+        if (timestampLink) {
+            if (timestampSeconds != null) {
+                const tsText = timestampLink.querySelector('.timestamp-text');
+                if (tsText) tsText.textContent = formatTimestamp(timestampSeconds);
+                timestampLink.style.display = 'inline-flex';
+                timestampLink.setAttribute('data-timestamp', timestampSeconds);
+                timestampLink.addEventListener('click', () => seekVideoTo(timestampSeconds));
+            } else {
+                timestampLink.style.display = 'none';
+            }
+        }
+    });
+    
+    // Timeline markers use the three mapped moments
+    const verdictMoments = {};
+    const mappedMoments = (analysis?.phase1?.moments || []).slice(0, 3);
+    cardOrder.forEach((key, idx) => {
+        const m = mappedMoments[idx];
+        if (!m) return;
+        const ts = parseTimestampToSeconds(m.timestamp);
+        verdictMoments[key] = {
+            timestamp: ts != null ? ts : 0,
+            label: m.frame_id || `Moment ${idx + 1}`
+        };
+    });
+    
+    renderTimelineMarkers(verdictMoments, videoDuration);
+    updateVerdictCardTimestamps(verdictMoments);
+    
+    decisionSection.style.display = 'block';
+    decisionSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function parseTimestampToSeconds(ts) {
+    if (ts == null) return null;
+    if (typeof ts === 'number') return ts;
+    const cleaned = String(ts).replace(/[^0-9.]/g, '');
+    if (!cleaned) return null;
+    const num = parseFloat(cleaned);
+    return Number.isFinite(num) ? num : null;
+}
+
+function inferVideoDurationFromMoments(moments) {
+    if (!Array.isArray(moments) || moments.length === 0) return null;
+    const maxTs = moments
+        .map(m => parseTimestampToSeconds(m?.timestamp))
+        .filter(v => Number.isFinite(v))
+        .reduce((a, b) => Math.max(a, b), 0);
+    return maxTs > 0 ? maxTs + 5 : null; // small buffer
 }
 
 // Render timeline markers on video player
