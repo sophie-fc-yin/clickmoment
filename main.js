@@ -1999,7 +1999,7 @@ function seekVideoTo(timestamp) {
     // Video is always visible, just seek
     if (projectVideo) {
         projectVideo.currentTime = timestamp;
-        projectVideo.play();
+        projectVideo.pause(); // Pause at the moment instead of auto-playing
         
         // Scroll to video player
         videoPlayerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
