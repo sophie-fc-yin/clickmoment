@@ -1246,21 +1246,41 @@ async function handleVideoUpload(file) {
         console.log('Starting analysis...');
         updateStatus('Analysis in progress...', 'info');
         
-        // TODO: Trigger actual analysis API call here
-        // const analysisResult = await fetch(`${API_BASE_URL}/analyze`, { ... });
-        // const analysisJson = await analysisResult.json();
-        // showDecisionSectionFromAnalysis(analysisJson);
-        
-        // For now, simulate analysis with mock API-shaped data (2-3 minutes in real scenario)
-        setTimeout(() => {
-            console.log('Analysis complete, showing results');
+        // Trigger actual analysis API call
+        try {
+            const authHeaders = await getAuthHeaders();
+            const analysisResponse = await fetch(`${API_BASE_URL}/analyze`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
+                body: JSON.stringify({
+                    gcs_path: gcs_path,
+                    project_id: currentProjectId,
+                    user_id: currentUser?.id
+                })
+            });
+            
+            if (!analysisResponse.ok) {
+                const errorText = await analysisResponse.text();
+                console.error('Analysis API error:', errorText);
+                throw new Error(`Analysis failed (${analysisResponse.status}): ${errorText}`);
+            }
+            
+            const analysisData = await analysisResponse.json();
+            console.log('Analysis complete:', analysisData);
+            
             analysisProgressSection.style.display = 'none';
-            
-            const mockApiAnalysis = buildMockAnalysis(gcs_path);
-            
-            showDecisionSectionFromAnalysis(mockApiAnalysis);
+            showDecisionSectionFromAnalysis(analysisData);
             updateStatus('Analysis complete! Review the moments below.', 'success');
-        }, 3000); // Simulating 3 seconds, real analysis takes 2-3 minutes
+            
+        } catch (analysisError) {
+            console.error('Analysis error:', analysisError);
+            analysisProgressSection.style.display = 'none';
+            updateStatus(`Analysis failed: ${analysisError.message}. You can retry manually.`, 'error');
+            showManualAnalysisCTA(true, 'Analysis failed. Click to retry.');
+        }
         
     } catch (error) {
         updateStatus(`Error: ${error.message}`, 'error');
@@ -1751,13 +1771,41 @@ async function triggerAnalysisForExistingVideo() {
     // Ensure video is ready
     await loadVideoIntoPlayer(currentVideoPath);
     
-    // TODO: replace with real API call for analysis
-    setTimeout(() => {
-        const mockApiAnalysis = buildMockAnalysis(currentVideoPath);
-        showDecisionSectionFromAnalysis(mockApiAnalysis);
+    try {
+        // Call the real analysis API
+        const authHeaders = await getAuthHeaders();
+        const analysisResponse = await fetch(`${API_BASE_URL}/analyze`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders
+            },
+            body: JSON.stringify({
+                gcs_path: currentVideoPath,
+                project_id: currentProjectId,
+                user_id: currentUser?.id
+            })
+        });
+        
+        if (!analysisResponse.ok) {
+            const errorText = await analysisResponse.text();
+            console.error('Analysis API error:', errorText);
+            throw new Error(`Analysis failed (${analysisResponse.status}): ${errorText}`);
+        }
+        
+        const analysisData = await analysisResponse.json();
+        console.log('Analysis complete:', analysisData);
+        
+        showDecisionSectionFromAnalysis(analysisData);
         if (analysisProgressSection) analysisProgressSection.style.display = 'none';
         updateStatus('Analysis complete! Review the moments below.', 'success');
-    }, 2000);
+        
+    } catch (error) {
+        console.error('Analysis error:', error);
+        if (analysisProgressSection) analysisProgressSection.style.display = 'none';
+        updateStatus(`Analysis failed: ${error.message}`, 'error');
+        showManualAnalysisCTA(true, 'Analysis failed. Try again?');
+    }
 }
 
 // Render timeline markers on video player
