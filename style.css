@@ -3361,3 +3361,70 @@ h3,
         font-size: 14px;
     }
 }
+
+/* Site Footer */
+.site-footer {
+    margin-top: auto;
+    padding: 32px 0;
+    background: var(--bg);
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.footer-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.footer-copyright {
+    font-size: 14px;
+    color: var(--ink-light);
+    margin: 0;
+}
+
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.footer-link {
+    font-size: 14px;
+    color: var(--ink-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+    color: var(--accent);
+}
+
+.footer-separator {
+    color: var(--ink-light);
+    font-size: 14px;
+}
+
+@media (max-width: 768px) {
+    .site-footer {
+        padding: 24px 0;
+    }
+    
+    .footer-content {
+        gap: 8px;
+    }
+    
+    .footer-copyright,
+    .footer-link {
+        font-size: 13px;
+    }
+}
