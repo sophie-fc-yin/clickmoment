@@ -1392,9 +1392,9 @@ if (decisionDoneBtn) {
         
         // 2️⃣ Show confirmation panel with appropriate copy
         const labelMap = {
-            safe: 'Clear click signal',
-            bold: 'Mixed signal',
-            avoid: 'Low clarity'
+            safe: 'Moment 1',
+            bold: 'Moment 2',
+            avoid: 'Moment 3'
         };
         
         confirmationChoiceText.textContent = `Saved: ${labelMap[selectedVerdictData.type] || selectedVerdictData.label}`;
@@ -1492,9 +1492,9 @@ function showMockDecisionSection(gcsPath) {
     const mockResults = {
         gcs_path: gcsPath,
         verdict_moments: {
-            safe: { timestamp: 8.5, label: "Clear click signal" },
-            bold: { timestamp: 52.3, label: "Mixed signal" },
-            avoid: { timestamp: 94.1, label: "Low clarity" }
+            safe: { timestamp: 8.5, label: "Moment 1" },
+            bold: { timestamp: 52.3, label: "Moment 2" },
+            avoid: { timestamp: 94.1, label: "Moment 3" }
         },
         video_duration: 125.0 // mock duration in seconds
     };
