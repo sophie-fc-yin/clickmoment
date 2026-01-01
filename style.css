@@ -1038,45 +1038,45 @@ h3,
 }
 
 .verdict-card-safe.verdict-card-selected {
-    border-color: rgba(34, 197, 94, 0.7);
-    box-shadow: 0 8px 32px rgba(34, 197, 94, 0.25);
+    border-color: rgba(59, 130, 246, 0.7);
+    box-shadow: 0 8px 32px rgba(59, 130, 246, 0.25);
 }
 
 .verdict-card-bold.verdict-card-selected {
-    border-color: rgba(251, 191, 36, 0.7);
-    box-shadow: 0 8px 32px rgba(251, 191, 36, 0.25);
+    border-color: rgba(168, 85, 247, 0.7);
+    box-shadow: 0 8px 32px rgba(168, 85, 247, 0.25);
 }
 
 .verdict-card-avoid.verdict-card-selected {
-    border-color: rgba(239, 68, 68, 0.7);
-    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.25);
+    border-color: rgba(14, 165, 233, 0.7);
+    box-shadow: 0 8px 32px rgba(14, 165, 233, 0.25);
 }
 
 .verdict-card-safe {
-    border-color: rgba(34, 197, 94, 0.3);
-    background: linear-gradient(145deg, #ffffff, #f0fdf4);
+    border-color: rgba(59, 130, 246, 0.3);
+    background: linear-gradient(145deg, #ffffff, #eff6ff);
 }
 
 .verdict-card-safe:hover {
-    border-color: rgba(34, 197, 94, 0.5);
+    border-color: rgba(59, 130, 246, 0.5);
 }
 
 .verdict-card-bold {
-    border-color: rgba(251, 191, 36, 0.3);
-    background: linear-gradient(145deg, #ffffff, #fffbeb);
+    border-color: rgba(168, 85, 247, 0.3);
+    background: linear-gradient(145deg, #ffffff, #faf5ff);
 }
 
 .verdict-card-bold:hover {
-    border-color: rgba(251, 191, 36, 0.5);
+    border-color: rgba(168, 85, 247, 0.5);
 }
 
 .verdict-card-avoid {
-    border-color: rgba(239, 68, 68, 0.3);
-    background: linear-gradient(145deg, #ffffff, #fef2f2);
+    border-color: rgba(14, 165, 233, 0.3);
+    background: linear-gradient(145deg, #ffffff, #ecfeff);
 }
 
 .verdict-card-avoid:hover {
-    border-color: rgba(239, 68, 68, 0.5);
+    border-color: rgba(14, 165, 233, 0.5);
 }
 
 .verdict-badge {
@@ -1093,18 +1093,18 @@ h3,
 }
 
 .verdict-card-safe .verdict-badge {
-    background: rgba(34, 197, 94, 0.15);
-    color: #15803d;
+    background: rgba(59, 130, 246, 0.15);
+    color: #1e40af;
 }
 
 .verdict-card-bold .verdict-badge {
-    background: rgba(251, 191, 36, 0.15);
-    color: #92400e;
+    background: rgba(168, 85, 247, 0.15);
+    color: #7c3aed;
 }
 
 .verdict-card-avoid .verdict-badge {
-    background: rgba(239, 68, 68, 0.15);
-    color: #991b1b;
+    background: rgba(14, 165, 233, 0.15);
+    color: #0369a1;
 }
 
 .verdict-icon {
@@ -1183,15 +1183,15 @@ h3,
 }
 
 .verdict-card-safe .verdict-details {
-    border-left-color: rgba(34, 197, 94, 0.5);
+    border-left-color: rgba(59, 130, 246, 0.5);
 }
 
 .verdict-card-bold .verdict-details {
-    border-left-color: rgba(251, 191, 36, 0.5);
+    border-left-color: rgba(168, 85, 247, 0.5);
 }
 
 .verdict-card-avoid .verdict-details {
-    border-left-color: rgba(239, 68, 68, 0.5);
+    border-left-color: rgba(14, 165, 233, 0.5);
 }
 
 .verdict-details-collapsed {
@@ -1668,18 +1668,18 @@ h3,
 }
 
 .timeline-marker-safe {
-    background: #22c55e;
-    border: 2px solid #15803d;
+    background: #3b82f6;
+    border: 2px solid #1e40af;
 }
 
 .timeline-marker-bold {
-    background: #fbbf24;
-    border: 2px solid #92400e;
+    background: #a855f7;
+    border: 2px solid #7c3aed;
 }
 
 .timeline-marker-avoid {
-    background: #ef4444;
-    border: 2px solid #991b1b;
+    background: #0ea5e9;
+    border: 2px solid #0369a1;
 }
 
 .timeline-marker::after {

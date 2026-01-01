@@ -1281,9 +1281,11 @@ async function handleVideoUpload(file) {
                 profile_photos: [] // TODO: Add user avatar/headshot if available
             };
             
-            console.log('Sending analysis request:', requestPayload);
+            console.log('Sending analysis request to:', `${API_BASE_URL}/thumbnails/generate`);
+            console.log('Request payload:', requestPayload);
             
-            // Call the thumbnail generation endpoint
+            // Call the thumbnail generation endpoint (analysis may take 2-3 minutes)
+            console.log('Calling thumbnail generation API...');
             const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
                 method: 'POST',
                 headers: {
@@ -1291,16 +1293,21 @@ async function handleVideoUpload(file) {
                     ...authHeaders
                 },
                 body: JSON.stringify(requestPayload)
+            }).catch(fetchError => {
+                console.error('Fetch error details:', fetchError);
+                throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
             });
+            
+            console.log('Response received, status:', analysisResponse.status);
             
             if (!analysisResponse.ok) {
                 const errorText = await analysisResponse.text();
-                console.error('Analysis API error:', errorText);
+                console.error('Analysis API error response:', errorText);
                 throw new Error(`Analysis failed (${analysisResponse.status}): ${errorText}`);
             }
             
             const analysisData = await analysisResponse.json();
-            console.log('Analysis complete:', analysisData);
+            console.log('Analysis complete, data received:', analysisData);
             
             analysisProgressSection.style.display = 'none';
             showDecisionSectionFromAnalysis(analysisData);
@@ -1570,11 +1577,24 @@ function showDecisionSectionFromAnalysis(analysis) {
     const moments = (analysis?.phase1?.moments || []).slice(0, 3);
     const videoDuration = analysis?.video_duration || inferVideoDurationFromMoments(moments) || 120;
     
+    // Log frame URLs for debugging
+    console.log('Rendering moments, frame URLs:', moments.map(m => ({ 
+        id: m?.frame_id, 
+        timestamp: m?.timestamp,
+        url: m?.frame_url,
+        summary: m?.moment_summary?.substring(0, 50) 
+    })));
+    
     // Map first three moments to the existing card keys
     const cardOrder = ['safe', 'bold', 'avoid'];
     
     cardOrder.forEach((cardKey, idx) => {
         const moment = moments[idx];
+        
+        // Debug logging for each card mapping
+        if (moment) {
+            console.log(`Card ${cardKey} (index ${idx}) ← Moment: ${moment.frame_id} (${moment.timestamp}), URL: ${moment.frame_url}`);
+        }
         const card = document.querySelector(`.verdict-card[data-verdict-type="${cardKey}"]`);
         if (!card) return;
         
@@ -1585,9 +1605,9 @@ function showDecisionSectionFromAnalysis(analysis) {
         const detailsEl = card.querySelector('.verdict-details');
         const timestampLink = card.querySelector('.verdict-timestamp-link');
         
-        // Populate label
+        // Populate label - always use "Moment 1/2/3" regardless of API frame_id
         if (labelEl) {
-            labelEl.textContent = moment?.frame_id || `Moment ${idx + 1}`;
+            labelEl.textContent = `Moment ${idx + 1}`;
         }
         
         // Populate frame preview
@@ -1599,6 +1619,25 @@ function showDecisionSectionFromAnalysis(analysis) {
                 img.alt = moment.moment_summary || `Moment ${idx + 1}`;
                 img.loading = 'lazy';
                 img.setAttribute('data-frame-id', moment.frame_id || '');
+                
+                // Handle image load errors
+                img.onerror = () => {
+                    console.warn(`Frame image failed to load for ${moment.frame_id}:`, moment.frame_url);
+                    frameEl.innerHTML = '<div class="frame-placeholder-text">Frame image unavailable</div>';
+                };
+                
+                img.onload = () => {
+                    console.log(`Frame image loaded successfully for ${moment.frame_id}`);
+                    // Verify the URL path matches the frame_id if possible
+                    if (moment.frame_id && moment.frame_url) {
+                        const frameIdMatch = moment.frame_id.toLowerCase().replace(/\s+/g, '').replace('frame', '');
+                        const urlMatch = moment.frame_url.includes(frameIdMatch) || moment.frame_url.includes(moment.frame_id);
+                        if (!urlMatch) {
+                            console.warn(`⚠️ Frame ID "${moment.frame_id}" may not match URL: ${moment.frame_url}`);
+                        }
+                    }
+                };
+                
                 frameEl.appendChild(img);
             } else {
                 const placeholder = document.createElement('div');
@@ -1837,9 +1876,11 @@ async function triggerAnalysisForExistingVideo() {
             profile_photos: [] // TODO: Add user avatar/headshot if available
         };
         
-        console.log('Sending analysis request:', requestPayload);
+        console.log('Sending analysis request to:', `${API_BASE_URL}/thumbnails/generate`);
+        console.log('Request payload:', requestPayload);
         
-        // Call the thumbnail generation endpoint
+        // Call the thumbnail generation endpoint (analysis may take 2-3 minutes)
+        console.log('Calling thumbnail generation API...');
         const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
             method: 'POST',
             headers: {
@@ -1847,16 +1888,21 @@ async function triggerAnalysisForExistingVideo() {
                 ...authHeaders
             },
             body: JSON.stringify(requestPayload)
+        }).catch(fetchError => {
+            console.error('Fetch error details:', fetchError);
+            throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
         });
+        
+        console.log('Response received, status:', analysisResponse.status);
         
         if (!analysisResponse.ok) {
             const errorText = await analysisResponse.text();
-            console.error('Analysis API error:', errorText);
+            console.error('Analysis API error response:', errorText);
             throw new Error(`Analysis failed (${analysisResponse.status}): ${errorText}`);
         }
         
         const analysisData = await analysisResponse.json();
-        console.log('Analysis complete:', analysisData);
+        console.log('Analysis complete, data received:', analysisData);
         
         showDecisionSectionFromAnalysis(analysisData);
         if (analysisProgressSection) analysisProgressSection.style.display = 'none';
