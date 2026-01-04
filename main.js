@@ -263,13 +263,31 @@ async function showProjectView(projectId) {
                 console.warn('Video could not be loaded, but continuing...');
             }
             
-            // TODO: Check if analysis exists in database
-            // const analysis = await fetch(`${API_BASE_URL}/analysis/${currentProjectId}`);
-            // if (analysis.data) { showDecisionSectionFromAnalysis(analysis.data); showManualAnalysisCTA(false); }
-            // else { showManualAnalysisCTA(true, 'Video is ready. Run analysis when you’re ready.'); }
-            
-            // Until backend is wired, show manual analysis CTA
-            showManualAnalysisCTA(true, 'Video is ready. Run analysis when you’re ready.');
+            // Check if analysis exists in database
+            console.log('Checking for existing analysis...');
+            const analysesResult = await projectManager.getAnalyses(currentProjectId);
+
+            if (analysesResult && analysesResult.length > 0) {
+                // Load the most recent analysis
+                const latestAnalysis = analysesResult[0]; // Already sorted by created_at DESC
+                console.log('Found existing analysis, loading...', latestAnalysis);
+
+                if (latestAnalysis.analysis_data) {
+                    // Refresh signed URLs before displaying (they may have expired)
+                    console.log('Refreshing frame URLs for saved analysis...');
+                    const refreshedAnalysis = await refreshSignedUrls(latestAnalysis.analysis_data);
+
+                    showDecisionSectionFromAnalysis(refreshedAnalysis);
+                    showManualAnalysisCTA(true, 'Re-analyze video'); // Show button for re-analysis
+                    updateStatus('Loaded existing analysis. Click "Re-analyze" to run again.', 'info');
+                } else {
+                    showManualAnalysisCTA(true, 'Video is ready. Run analysis when you are ready.');
+                }
+            } else {
+                // No analysis yet
+                console.log('No existing analysis found');
+                showManualAnalysisCTA(true, 'Video is ready. Run analysis when you are ready.');
+            }
             
         } else {
             // No video yet - show selection UI
@@ -1046,6 +1064,68 @@ async function loadVideoIntoPlayer(gcsPath) {
     }
 }
 
+// Refresh signed URLs for frame images in analysis data
+async function refreshSignedUrls(analysisData) {
+    if (!analysisData || !analysisData.phase1 || !analysisData.phase1.moments) {
+        return analysisData; // No moments to refresh
+    }
+
+    try {
+        // Extract all frame URLs that need refreshing
+        const framePaths = analysisData.phase1.moments
+            .map(moment => {
+                if (!moment.frame_url) return null;
+                // Extract GCS path from signed URL (remove query parameters)
+                const url = new URL(moment.frame_url);
+                return url.pathname; // e.g., "/clickmoment-prod-assets/projects/.../frame_0122051ms.jpg"
+            })
+            .filter(path => path !== null);
+
+        if (framePaths.length === 0) {
+            return analysisData; // No URLs to refresh
+        }
+
+        console.log('Refreshing signed URLs for', framePaths.length, 'frames...');
+
+        // Call backend to get fresh signed URLs
+        const authHeaders = await getAuthHeaders();
+        const response = await fetch(`${API_BASE_URL}/refresh-frame-urls`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeaders
+            },
+            body: JSON.stringify({ frame_paths: framePaths })
+        });
+
+        if (!response.ok) {
+            console.error('Failed to refresh signed URLs:', response.status);
+            return analysisData; // Return original data if refresh fails
+        }
+
+        const { signed_urls } = await response.json();
+        console.log('Received', signed_urls.length, 'fresh signed URLs');
+
+        // Update analysis data with fresh URLs
+        const refreshedAnalysis = { ...analysisData };
+        refreshedAnalysis.phase1.moments = analysisData.phase1.moments.map((moment, idx) => {
+            if (signed_urls[idx]) {
+                return {
+                    ...moment,
+                    frame_url: signed_urls[idx]
+                };
+            }
+            return moment;
+        });
+
+        return refreshedAnalysis;
+
+    } catch (error) {
+        console.error('Error refreshing signed URLs:', error);
+        return analysisData; // Return original data on error
+    }
+}
+
 // Handle video upload
 async function handleVideoUpload(file) {
     if (!file) {
@@ -1278,11 +1358,27 @@ async function handleVideoUpload(file) {
             
             const analysisData = await analysisResponse.json();
             // Analysis complete
-            
+
+            // Save analysis to database
+            if (currentProjectId && projectManager) {
+                console.log('Saving analysis to database...');
+                const saveResult = await projectManager.addAnalysis(currentProjectId, analysisData, gcs_path);
+                if (saveResult.error) {
+                    console.error('Error saving analysis:', saveResult.error);
+                } else {
+                    console.log('Analysis saved successfully');
+                }
+            }
+
+            // Increment usage count
+            if (profileManager && currentUser) {
+                await profileManager.incrementAnalysisCount(currentUser.id);
+            }
+
             analysisProgressSection.style.display = 'none';
             showDecisionSectionFromAnalysis(analysisData);
             updateStatus('Analysis complete! Review the moments below.', 'success');
-            
+
         } catch (analysisError) {
             console.error('Analysis error:', analysisError);
             analysisProgressSection.style.display = 'none';
@@ -1824,35 +1920,25 @@ async function triggerAnalysisForExistingVideo() {
         // Call the real analysis API
         const authHeaders = await getAuthHeaders();
         
-        // Fetch current project and user profile to build full payload
+        // Fetch current project to build payload
         const project = await projectManager.getProject(currentProjectId);
-        const userProfile = await profileManager.getProfile(currentUser.id);
-        
-        // Build the full request payload
+
+        // Build the full request payload with NEW structure
         const requestPayload = {
             project_id: currentProjectId,
             content_sources: {
                 video_path: currentVideoPath
             },
-            target: {
-                platform: project?.platform || 'youtube',
-                optimization: project?.optimization || '',
-                audience_profile: project?.audience_profile || ''
+            creative_direction: project?.creative_direction || {
+                mood: '',
+                notes: '',
+                title_hint: ''
             },
-            creative_brief: {
-                title_hint: project?.title_hint || '',
-                mood: project?.mood || '',
-                brand_colors: Array.isArray(project?.brand_colors) ? project.brand_colors : [],
-                notes: project?.notes || ''
+            creator_context: project?.creator_context || {
+                maturity_hint: '',
+                niche_hint: ''
             },
-            channel_profile: {
-                stage: userProfile?.stage || '',
-                subscriber_count: userProfile?.subscriber_count || 0,
-                content_niche: userProfile?.content_niche || '',
-                upload_frequency: userProfile?.upload_frequency || '',
-                growth_goal: userProfile?.growth_goal || ''
-            },
-            profile_photos: [] // TODO: Add user avatar/headshot if available
+            profile_photos: project?.profile_photos || []
         };
         
         // Sending analysis request to API
@@ -1881,7 +1967,23 @@ async function triggerAnalysisForExistingVideo() {
         
         const analysisData = await analysisResponse.json();
         // Analysis complete
-        
+
+        // Save analysis to database
+        if (currentProjectId && projectManager) {
+            console.log('Saving analysis to database...');
+            const saveResult = await projectManager.addAnalysis(currentProjectId, analysisData, currentVideoPath);
+            if (saveResult.error) {
+                console.error('Error saving analysis:', saveResult.error);
+            } else {
+                console.log('Analysis saved successfully');
+            }
+        }
+
+        // Increment usage count
+        if (profileManager && currentUser) {
+            await profileManager.incrementAnalysisCount(currentUser.id);
+        }
+
         showDecisionSectionFromAnalysis(analysisData);
         if (analysisProgressSection) analysisProgressSection.style.display = 'none';
         updateStatus('Analysis complete! Review the moments below.', 'success');
