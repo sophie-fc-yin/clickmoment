@@ -48,52 +48,36 @@
                     <label for="project-name">Project Name *</label>
                     <input type="text" id="project-name" name="name" required placeholder="My Project" />
                 </div>
-                
-                <h3>Target Settings</h3>
-                <p class="form-section-description">Tell us about your video and what it needs to communicate at a glance.</p>
-                <div class="form-group">
-                    <label for="project-platform">Platform</label>
-                    <select id="project-platform" name="platform">
-                        <option value="youtube">YouTube</option>
-                        <option value="shorts">Shorts</option>
-                        <option value="reels">Reels</option>
-                        <option value="tiktok">TikTok</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="project-optimization">Video Promise (Optional)</label>
-                    <input type="text" id="project-optimization" name="optimization" placeholder="e.g., the outcome, the tension, the reveal, the transformation" />
-                </div>
-                
-                <div class="form-group">
-                    <label for="project-audience-profile">Audience Profile (Optional)</label>
-                    <textarea id="project-audience-profile" name="audience_profile" maxlength="200" rows="3" placeholder="e.g., tech-savvy millennials, beginner programmers"></textarea>
-                </div>
-                
-                <h3>Creative Context</h3>
-                <p class="form-section-description">Share context about your style and brand so we can spot risks that matter to you.</p>
+
+                <h3>Creative Direction</h3>
+                <p class="form-section-description">Share context about your style and creative vision.</p>
                 <div class="form-group">
                     <label for="project-mood">Mood (Optional)</label>
                     <input type="text" id="project-mood" name="mood" maxlength="120" placeholder="e.g., energetic, calm, mysterious, playful" />
                 </div>
-                
+
                 <div class="form-group">
                     <label for="project-title-hint">Title Hint (Optional)</label>
                     <input type="text" id="project-title-hint" name="title_hint" placeholder="Optional working title or topic" />
                 </div>
-                
-                <div class="form-group">
-                    <label for="project-brand-colors">Brand Colors (Optional)</label>
-                    <input type="text" id="project-brand-colors" name="brand_colors" placeholder="Comma-separated: e.g., #FF0000, blue, #00FF00" />
-                    <small class="form-helper-text">Enter colors as names or hex codes, separated by commas</small>
-                </div>
-                
+
                 <div class="form-group">
                     <label for="project-notes">Notes (Optional)</label>
                     <textarea id="project-notes" name="notes" maxlength="1000" rows="4" placeholder="Anything else you'd like us to know? (context, constraints, anything to keep in mind)"></textarea>
                 </div>
-                
+
+                <h3>Creator Context</h3>
+                <p class="form-section-description">Tell us about your channel's maturity and content niche.</p>
+                <div class="form-group">
+                    <label for="project-maturity-hint">Channel Maturity (Optional)</label>
+                    <input type="text" id="project-maturity-hint" name="maturity_hint" maxlength="50" placeholder="e.g., early, growing, established" />
+                </div>
+
+                <div class="form-group">
+                    <label for="project-niche-hint">Content Niche (Optional)</label>
+                    <input type="text" id="project-niche-hint" name="niche_hint" maxlength="100" placeholder="e.g., travel, gaming, tech reviews" />
+                </div>
+
                 <div class="form-actions">
                     <button type="button" id="cancel-create-project-form-btn" class="btn btn-ghost">Cancel</button>
                     <button type="submit" class="btn btn-primary">Create Project</button>
@@ -186,52 +170,36 @@
                     <label for="edit-project-name">Project Name *</label>
                     <input type="text" id="edit-project-name" name="name" required placeholder="My Project" />
                 </div>
-                
-                <h3>Target Settings</h3>
-                <p class="form-section-description">Tell us about your video and what it needs to communicate at a glance.</p>
-                <div class="form-group">
-                    <label for="edit-project-platform">Platform</label>
-                    <select id="edit-project-platform" name="platform">
-                        <option value="youtube">YouTube</option>
-                        <option value="shorts">Shorts</option>
-                        <option value="reels">Reels</option>
-                        <option value="tiktok">TikTok</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-project-optimization">Video Promise (Optional)</label>
-                    <input type="text" id="edit-project-optimization" name="optimization" placeholder="e.g., the outcome, the tension, the reveal, the transformation" />
-                </div>
-                
-                <div class="form-group">
-                    <label for="edit-project-audience-profile">Audience Profile (Optional)</label>
-                    <textarea id="edit-project-audience-profile" name="audience_profile" maxlength="200" rows="3" placeholder="e.g., tech-savvy millennials, beginner programmers"></textarea>
-                </div>
-                
-                <h3>Creative Context</h3>
-                <p class="form-section-description">Share context about your style and brand so we can interpret moments in the right context.</p>
+
+                <h3>Creative Direction</h3>
+                <p class="form-section-description">Share context about your style and creative vision.</p>
                 <div class="form-group">
                     <label for="edit-project-mood">Mood (Optional)</label>
                     <input type="text" id="edit-project-mood" name="mood" maxlength="120" placeholder="e.g., energetic, calm, mysterious, playful" />
                 </div>
-                
+
                 <div class="form-group">
                     <label for="edit-project-title-hint">Title Hint (Optional)</label>
                     <input type="text" id="edit-project-title-hint" name="title_hint" placeholder="Optional working title or topic" />
                 </div>
-                
-                <div class="form-group">
-                    <label for="edit-project-brand-colors">Brand Colors (Optional)</label>
-                    <input type="text" id="edit-project-brand-colors" name="brand_colors" placeholder="Comma-separated: e.g., #FF0000, blue, #00FF00" />
-                    <small class="form-helper-text">Enter colors as names or hex codes, separated by commas</small>
-                </div>
-                
+
                 <div class="form-group">
                     <label for="edit-project-notes">Notes (Optional)</label>
                     <textarea id="edit-project-notes" name="notes" maxlength="1000" rows="4" placeholder="Anything else you'd like us to know? (context, constraints, anything to keep in mind)"></textarea>
                 </div>
-                
+
+                <h3>Creator Context</h3>
+                <p class="form-section-description">Tell us about your channel's maturity and content niche.</p>
+                <div class="form-group">
+                    <label for="edit-project-maturity-hint">Channel Maturity (Optional)</label>
+                    <input type="text" id="edit-project-maturity-hint" name="maturity_hint" maxlength="50" placeholder="e.g., early, growing, established" />
+                </div>
+
+                <div class="form-group">
+                    <label for="edit-project-niche-hint">Content Niche (Optional)</label>
+                    <input type="text" id="edit-project-niche-hint" name="niche_hint" maxlength="100" placeholder="e.g., travel, gaming, tech reviews" />
+                </div>
+
                 <div class="form-actions">
                     <button type="button" id="cancel-edit-project-form-btn" class="btn btn-ghost">Cancel</button>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -250,17 +218,15 @@
             <!-- Project Details -->
             <div id="project-info" class="project-info">
                 <div class="info-section">
-                    <h4>Target Settings</h4>
-                    <p><strong>Platform:</strong> <span id="info-platform">-</span></p>
-                    <p><strong>Video Promise:</strong> <span id="info-optimization">-</span></p>
-                    <p><strong>Audience:</strong> <span id="info-audience">-</span></p>
-                </div>
-                <div class="info-section">
-                    <h4>Creative Context</h4>
+                    <h4>Creative Direction</h4>
                     <p><strong>Mood:</strong> <span id="info-mood">-</span></p>
                     <p><strong>Title Hint:</strong> <span id="info-title-hint">-</span></p>
-                    <p><strong>Brand Colors:</strong> <span id="info-brand-colors">-</span></p>
                     <p><strong>Notes:</strong> <span id="info-notes">-</span></p>
+                </div>
+                <div class="info-section">
+                    <h4>Creator Context</h4>
+                    <p><strong>Maturity:</strong> <span id="info-maturity">-</span></p>
+                    <p><strong>Niche:</strong> <span id="info-niche">-</span></p>
                 </div>
                 <div class="info-section">
                     <h4>Video</h4>
