@@ -103,8 +103,11 @@ export class ProjectManager {
         // Log data size for debugging
         const dataSize = JSON.stringify(analysisData).length;
         console.log(`Analysis data size: ${(dataSize / 1024).toFixed(2)} KB`);
+        
+        const startTime = Date.now();
 
         try {
+            console.log('Sending insert request to Supabase...');
             const { data, error } = await supabase
                 .from('analyses')
                 .insert({
@@ -114,6 +117,9 @@ export class ProjectManager {
                 })
                 .select()
                 .single();
+
+            const duration = Date.now() - startTime;
+            console.log(`Supabase insert completed in ${duration}ms`);
 
             if (error) {
                 console.error('Failed to save analysis:', error.message);
@@ -126,7 +132,8 @@ export class ProjectManager {
             console.log('Analysis saved successfully to database!');
             return { data };
         } catch (err) {
-            console.error('Exception saving analysis:', err);
+            const duration = Date.now() - startTime;
+            console.error(`Exception saving analysis after ${duration}ms:`, err);
             console.error('Exception type:', err.constructor.name);
             console.error('Exception message:', err.message);
             return { error: err };
