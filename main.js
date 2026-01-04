@@ -13,7 +13,6 @@ let currentVideoPath = null;
 // DOM elements
 const loginBtn = document.getElementById('login-btn');
 const logoutBtn = document.getElementById('logout-btn');
-const profileBtn = document.getElementById('profile-btn');
 const landingPage = document.getElementById('landing-page');
 const projectsView = document.getElementById('projects-view');
 const createProjectView = document.getElementById('create-project-view');
@@ -118,7 +117,6 @@ async function updateUI() {
         // User is logged in - show app
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
-        profileBtn.style.display = 'inline-block';
         landingPage.style.display = 'none';
         
         // Clean up old localStorage data once
@@ -133,27 +131,12 @@ async function updateUI() {
         }
         
         // Check if user has a profile with data, if not show profile setup
-        const profile = await profileManager.getProfile(currentUser.id);
-        const hasProfileData = profile && (
-            profile.stage || 
-            profile.subscriber_count || 
-            profile.content_niche || 
-            profile.upload_frequency || 
-            profile.growth_goal
-        );
-        
-        if (!hasProfileData) {
-            // First time user or empty profile - show profile setup
-            await showProfileView();
-        } else {
-            // Show projects list by default
-            await showProjectsView();
-        }
+        // Profile UI disabled - always show projects list
+        await showProjectsView();
     } else {
         // User is not logged in - show landing page
         loginBtn.style.display = 'inline-block';
         logoutBtn.style.display = 'none';
-        profileBtn.style.display = 'none';
         landingPage.style.display = 'block';
         projectsView.style.display = 'none';
         createProjectView.style.display = 'none';
@@ -210,14 +193,15 @@ async function showEditProjectView(projectId) {
     
     const project = await projectManager.getProject(projectId);
     if (project) {
+        const creativeDirection = project.creative_direction || {};
+        const creatorContext = project.creator_context || {};
+
         document.getElementById('edit-project-name').value = project.name;
-        document.getElementById('edit-project-platform').value = project.platform || 'youtube';
-        document.getElementById('edit-project-optimization').value = project.optimization || '';
-        document.getElementById('edit-project-audience-profile').value = project.audience_profile || '';
-        document.getElementById('edit-project-mood').value = project.mood || '';
-        document.getElementById('edit-project-title-hint').value = project.title_hint || '';
-        document.getElementById('edit-project-brand-colors').value = project.brand_colors ? project.brand_colors.join(', ') : '';
-        document.getElementById('edit-project-notes').value = project.notes || '';
+        document.getElementById('edit-project-mood').value = creativeDirection.mood || '';
+        document.getElementById('edit-project-title-hint').value = creativeDirection.title_hint || '';
+        document.getElementById('edit-project-notes').value = creativeDirection.notes || '';
+        document.getElementById('edit-project-maturity-hint').value = creatorContext.maturity_hint || '';
+        document.getElementById('edit-project-niche-hint').value = creatorContext.niche_hint || '';
     }
 }
 
@@ -240,44 +224,45 @@ async function showProjectView(projectId) {
     if (project) {
         projectTitle.textContent = project.name;
         
-        // Display project info
-        document.getElementById('info-platform').textContent = project.platform || '-';
-        document.getElementById('info-optimization').textContent = project.optimization || '-';
-        document.getElementById('info-audience').textContent = project.audience_profile || '-';
-        document.getElementById('info-mood').textContent = project.mood || '-';
-        document.getElementById('info-title-hint').textContent = project.title_hint || '-';
-        document.getElementById('info-brand-colors').textContent = project.brand_colors && project.brand_colors.length > 0 
-            ? project.brand_colors.join(', ') 
-            : '-';
-        document.getElementById('info-notes').textContent = project.notes || '-';
-        
+        // Display project info (from JSONB fields)
+        const creativeDirection = project.creative_direction || {};
+        const creatorContext = project.creator_context || {};
+        const contentSources = project.content_sources || {};
+
+        document.getElementById('info-mood').textContent = creativeDirection.mood || '-';
+        document.getElementById('info-title-hint').textContent = creativeDirection.title_hint || '-';
+        document.getElementById('info-notes').textContent = creativeDirection.notes || '-';
+        document.getElementById('info-maturity').textContent = creatorContext.maturity_hint || '-';
+        document.getElementById('info-niche').textContent = creatorContext.niche_hint || '-';
+
         // Display video path (shortened for display)
         const videoPathDisplay = document.getElementById('info-video-path');
-        if (project.video_path && project.video_path !== '-') {
+        const videoPath = contentSources.video_path;
+        if (videoPath && videoPath !== '-') {
             // Show just the filename for readability
-            const filename = project.video_path.split('/').pop();
+            const filename = videoPath.split('/').pop();
             videoPathDisplay.textContent = filename;
-            videoPathDisplay.title = project.video_path; // Full path on hover
+            videoPathDisplay.title = videoPath; // Full path on hover
         } else {
             videoPathDisplay.textContent = 'No video uploaded yet';
             videoPathDisplay.title = '';
         }
-        
+
         // Check if video_path exists - determines UI state
-        const hasVideo = project.video_path && project.video_path !== '-';
+        const hasVideo = videoPath && videoPath !== '-';
         
         if (hasVideo) {
             // Video already selected - hide selection UI, show player
-            currentVideoPath = project.video_path;
+            currentVideoPath = videoPath;
             videoSelectionSection.style.display = 'none';
             uploadProgressSection.style.display = 'none';
             analysisProgressSection.style.display = 'none';
             videoPlayerSection.style.display = 'block';
             
             // Load video into player with signed URL immediately
-            console.log('Project has video:', project.video_path);
+            console.log('Project has video:', videoPath);
             console.log('Loading video stream for immediate playback...');
-            const videoLoaded = await loadVideoIntoPlayer(project.video_path);
+            const videoLoaded = await loadVideoIntoPlayer(videoPath);
             
             if (videoLoaded) {
                 console.log('Video stream is ready and available for playback');
@@ -668,30 +653,29 @@ function resetForm() {
 }
 
 // Show profile view
-async function showProfileView() {
-    stopVideoPlayback(); // Stop any playing video
-    projectsView.style.display = 'none';
-    createProjectView.style.display = 'none';
-    editProjectView.style.display = 'none';
-    projectView.style.display = 'none';
-    profileView.style.display = 'block';
-    
-    // Load existing profile data
-    if (profileManager && currentUser) {
-        const profile = await profileManager.getProfile(currentUser.id);
-        if (profile) {
-            document.getElementById('profile-stage').value = profile.stage || '';
-            document.getElementById('profile-subscriber-count').value = profile.subscriber_count || '';
-            const contentNicheSelect = document.getElementById('profile-content-niche');
-            const savedNiche = profile.content_niche || 'general';
-            // Check if saved value exists in options, otherwise default to 'general'
-            const optionExists = Array.from(contentNicheSelect.options).some(opt => opt.value === savedNiche);
-            contentNicheSelect.value = optionExists ? savedNiche : 'general';
-            document.getElementById('profile-upload-frequency').value = profile.upload_frequency || '';
-            document.getElementById('profile-growth-goal').value = profile.growth_goal || '';
-        }
-    }
-}
+// DISABLED - Profile view removed from UI (keeping table for backend usage tracking)
+// async function showProfileView() {
+//     stopVideoPlayback();
+//     projectsView.style.display = 'none';
+//     createProjectView.style.display = 'none';
+//     editProjectView.style.display = 'none';
+//     projectView.style.display = 'none';
+//     profileView.style.display = 'block';
+//
+//     if (profileManager && currentUser) {
+//         const profile = await profileManager.getProfile(currentUser.id);
+//         if (profile) {
+//             document.getElementById('profile-stage').value = profile.stage || '';
+//             document.getElementById('profile-subscriber-count').value = profile.subscriber_count || '';
+//             const contentNicheSelect = document.getElementById('profile-content-niche');
+//             const savedNiche = profile.content_niche || 'general';
+//             const optionExists = Array.from(contentNicheSelect.options).some(opt => opt.value === savedNiche);
+//             contentNicheSelect.value = optionExists ? savedNiche : 'general';
+//             document.getElementById('profile-upload-frequency').value = profile.upload_frequency || '';
+//             document.getElementById('profile-growth-goal').value = profile.growth_goal || '';
+//         }
+//     }
+// }
 
 // Project management event listeners
 createProjectBtn.addEventListener('click', () => {
@@ -729,31 +713,28 @@ cancelEditProjectFormBtn.addEventListener('click', async () => {
 
 createProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
     if (!projectManager) {
         console.error('Project manager not initialized');
         alert('Error: Project manager not initialized. Please refresh the page.');
         return;
     }
-    
+
     const formData = new FormData(e.target);
-    
-    // Parse brand colors from comma-separated string
-    const brandColorsStr = formData.get('brand_colors') || '';
-    const brandColors = brandColorsStr
-        .split(',')
-        .map(color => color.trim())
-        .filter(color => color.length > 0);
-    
+
+    // Build project data with new JSONB structure
     const projectData = {
         name: formData.get('name'),
-        platform: formData.get('platform') || 'youtube',
-        optimization: formData.get('optimization') || null,
-        audience_profile: formData.get('audience_profile') || null,
-        mood: formData.get('mood') || null,
-        title_hint: formData.get('title_hint') || null,
-        brand_colors: brandColors,
-        notes: formData.get('notes') || null,
+        creative_direction: {
+            mood: formData.get('mood') || '',
+            title_hint: formData.get('title_hint') || '',
+            notes: formData.get('notes') || ''
+        },
+        creator_context: {
+            maturity_hint: formData.get('maturity_hint') || '',
+            niche_hint: formData.get('niche_hint') || ''
+        },
+        profile_photos: [] // TODO: Add support for profile photos upload
     };
     
     console.log('Creating project with data:', projectData);
@@ -787,25 +768,22 @@ createProjectForm.addEventListener('submit', async (e) => {
 editProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentProjectId) return;
-    
+
     const formData = new FormData(e.target);
-    
-    // Parse brand colors from comma-separated string
-    const brandColorsStr = formData.get('brand_colors') || '';
-    const brandColors = brandColorsStr
-        .split(',')
-        .map(color => color.trim())
-        .filter(color => color.length > 0);
-    
+
+    // Build project data with new JSONB structure
     const projectData = {
         name: formData.get('name'),
-        platform: formData.get('platform') || 'youtube',
-        optimization: formData.get('optimization') || null,
-        audience_profile: formData.get('audience_profile') || null,
-        mood: formData.get('mood') || null,
-        title_hint: formData.get('title_hint') || null,
-        brand_colors: brandColors,
-        notes: formData.get('notes') || null,
+        creative_direction: {
+            mood: formData.get('mood') || '',
+            title_hint: formData.get('title_hint') || '',
+            notes: formData.get('notes') || ''
+        },
+        creator_context: {
+            maturity_hint: formData.get('maturity_hint') || '',
+            niche_hint: formData.get('niche_hint') || ''
+        },
+        profile_photos: [] // TODO: Add support for profile photos upload
     };
     
     // Update existing project
@@ -821,83 +799,81 @@ backToProjectsBtn.addEventListener('click', () => {
     showProjectsView();
 });
 
-profileBtn.addEventListener('click', () => {
-    showProfileView();
-});
+// DISABLED - Profile UI removed
+// profileBtn.addEventListener('click', () => {
+//     showProfileView();
+// });
 
-backFromProfileBtn.addEventListener('click', () => {
-    showProjectsView();
-});
+// DISABLED - Profile UI removed
+// backFromProfileBtn.addEventListener('click', () => {
+//     showProjectsView();
+// });
 
-profileForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    if (!profileManager || !currentUser) {
-        console.error('Profile manager or user not initialized');
-        alert('Error: Profile system not ready. Please refresh the page.');
-        return;
-    }
-    
-    // Get the submit button
-    const submitBtn = profileForm.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn ? submitBtn.textContent : '';
-    
-    try {
-        // Show loading state
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Saving...';
-        }
-        
-    const formData = new FormData(e.target);
-    const profileData = {
-        stage: formData.get('stage') || null,
-        subscriber_count: formData.get('subscriber_count') ? parseInt(formData.get('subscriber_count')) : null,
-        content_niche: formData.get('content_niche') || null,
-        upload_frequency: formData.get('upload_frequency') || null,
-        growth_goal: formData.get('growth_goal') || null,
-    };
-        
-        console.log('Saving profile data:', profileData);
-    
-    const result = await profileManager.saveProfile(currentUser.id, profileData);
-        console.log('Profile save result:', result);
-        
-    if (result.error) {
-            console.error('Error saving profile:', result.error);
-        alert('Error saving profile: ' + result.error.message);
-            if (submitBtn) {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalBtnText;
-            }
-    } else {
-            console.log('Profile saved successfully to Supabase');
-            // Show success message
-            if (submitBtn) {
-                submitBtn.textContent = '✓ Saved!';
-                submitBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-            }
-            
-            // Wait a moment to show success, then go to projects
-            setTimeout(async () => {
-        await showProjectsView();
-                // Reset button for next time
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = originalBtnText;
-                    submitBtn.style.background = '';
-                }
-            }, 1000);
-        }
-    } catch (error) {
-        console.error('Exception saving profile:', error);
-        alert('Error saving profile: ' + error.message);
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.textContent = originalBtnText;
-        }
-    }
-});
+// DISABLED - Profile form UI removed
+// profileForm.addEventListener('submit', async (e) => {
+//     e.preventDefault();
+//
+//     if (!profileManager || !currentUser) {
+//         console.error('Profile manager or user not initialized');
+//         alert('Error: Profile system not ready. Please refresh the page.');
+//         return;
+//     }
+//
+//     const submitBtn = profileForm.querySelector('button[type="submit"]');
+//     const originalBtnText = submitBtn ? submitBtn.textContent : '';
+//
+//     try {
+//         if (submitBtn) {
+//             submitBtn.disabled = true;
+//             submitBtn.textContent = 'Saving...';
+//         }
+//
+//         const formData = new FormData(e.target);
+//         const profileData = {
+//             stage: formData.get('stage') || null,
+//             subscriber_count: formData.get('subscriber_count') ? parseInt(formData.get('subscriber_count')) : null,
+//             content_niche: formData.get('content_niche') || null,
+//             upload_frequency: formData.get('upload_frequency') || null,
+//             growth_goal: formData.get('growth_goal') || null,
+//         };
+//
+//         console.log('Saving profile data:', profileData);
+//
+//         const result = await profileManager.saveProfile(currentUser.id, profileData);
+//         console.log('Profile save result:', result);
+//
+//         if (result.error) {
+//             console.error('Error saving profile:', result.error);
+//             alert('Error saving profile: ' + result.error.message);
+//             if (submitBtn) {
+//                 submitBtn.disabled = false;
+//                 submitBtn.textContent = originalBtnText;
+//             }
+//         } else {
+//             console.log('Profile saved successfully to Supabase');
+//             if (submitBtn) {
+//                 submitBtn.textContent = '✓ Saved!';
+//                 submitBtn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+//             }
+//
+//             setTimeout(async () => {
+//                 await showProjectsView();
+//                 if (submitBtn) {
+//                     submitBtn.disabled = false;
+//                     submitBtn.textContent = originalBtnText;
+//                     submitBtn.style.background = '';
+//                 }
+//             }, 1000);
+//         }
+//     } catch (error) {
+//         console.error('Exception saving profile:', error);
+//         alert('Error saving profile: ' + error.message);
+//         if (submitBtn) {
+//             submitBtn.disabled = false;
+//             submitBtn.textContent = originalBtnText;
+//         }
+//     }
+// });
 
 // Handle "Upload New Video" button click
 if (uploadNewVideoBtn) {
@@ -1169,7 +1145,9 @@ async function handleVideoUpload(file) {
         // Step 3: Save video_path to project (THIS LOCKS THE VIDEO)
         if (currentProjectId && projectManager && gcs_path) {
             console.log('Saving video_path to project...');
-                const updateResult = await projectManager.updateProject(currentProjectId, { video_path: gcs_path });
+                const updateResult = await projectManager.updateProject(currentProjectId, {
+                    content_sources: { video_path: gcs_path }
+                });
                 if (updateResult.error) {
                     console.error('Error updating project:', updateResult.error);
                 throw new Error('Failed to save video to project');
@@ -1250,35 +1228,25 @@ async function handleVideoUpload(file) {
         try {
             const authHeaders = await getAuthHeaders();
             
-            // Fetch current project and user profile to build full payload
+            // Fetch current project to build full payload
             const project = await projectManager.getProject(currentProjectId);
-            const userProfile = await profileManager.getProfile(currentUser.id);
-            
-            // Build the full request payload
+
+            // Build the full request payload with new structure
             const requestPayload = {
                 project_id: currentProjectId,
                 content_sources: {
                     video_path: gcs_path
                 },
-                target: {
-                    platform: project?.platform || 'youtube',
-                    optimization: project?.optimization || '',
-                    audience_profile: project?.audience_profile || ''
+                creative_direction: project?.creative_direction || {
+                    mood: '',
+                    notes: '',
+                    title_hint: ''
                 },
-                creative_brief: {
-                    title_hint: project?.title_hint || '',
-                    mood: project?.mood || '',
-                    brand_colors: Array.isArray(project?.brand_colors) ? project.brand_colors : [],
-                    notes: project?.notes || ''
+                creator_context: project?.creator_context || {
+                    maturity_hint: '',
+                    niche_hint: ''
                 },
-                channel_profile: {
-                    stage: userProfile?.stage || '',
-                    subscriber_count: userProfile?.subscriber_count || 0,
-                    content_niche: userProfile?.content_niche || '',
-                    upload_frequency: userProfile?.upload_frequency || '',
-                    growth_goal: userProfile?.growth_goal || ''
-                },
-                profile_photos: [] // TODO: Add user avatar/headshot if available
+                profile_photos: project?.profile_photos || []
             };
             
             console.log('Sending analysis request to:', `${API_BASE_URL}/thumbnails/generate`);

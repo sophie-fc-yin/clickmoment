@@ -15,7 +15,6 @@
         <div class="header-container">
             <img src="logo.png" alt="ClickMoment" class="logo" />
             <div id="auth-section">
-                <button id="profile-btn" class="btn btn-ghost" style="display: none;">Profile</button>
                 <button id="login-btn" class="btn btn-primary" style="display: none;">Login</button>
                 <button id="logout-btn" class="btn btn-ghost" style="display: none;">Logout</button>
             </div>
@@ -85,8 +84,8 @@
             </form>
         </main>
 
-        <!-- Profile View -->
-        <main id="profile-view" style="display: none;">
+        <!-- Profile View - DISABLED (keeping table for future use) -->
+        <!-- <main id="profile-view" style="display: none;">
             <div class="profile-header">
                 <button id="back-from-profile-btn" class="btn btn-ghost">← Back</button>
                 <h2>Channel Profile</h2>
@@ -94,15 +93,14 @@
             <div class="profile-intro">
                 <p><strong>Help us understand your channel.</strong> Fill in these details so ClickMoment can surface moments that fit your content and audience.</p>
             </div>
-            
-            <!-- Usage Stats -->
+
             <div id="usage-stats" class="usage-stats" style="display: none;">
                 <div class="usage-stats-content">
                     <span class="usage-label">Analyses Remaining:</span>
                     <span id="remaining-analyses" class="usage-count">50</span>
                 </div>
             </div>
-            
+
             <form id="profile-form" class="profile-form">
                 <div class="form-group">
                     <label for="profile-stage">Channel Stage</label>
@@ -114,12 +112,12 @@
                         <option value="large/mainstream">Large/Mainstream</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="profile-subscriber-count">Subscriber Count</label>
                     <input type="number" id="profile-subscriber-count" name="subscriber_count" min="0" placeholder="e.g., 1000" />
                 </div>
-                
+
                 <div class="form-group">
                     <label for="profile-content-niche">Content Niche</label>
                     <select id="profile-content-niche" name="content_niche">
@@ -138,7 +136,7 @@
                         <option value="music / performance">Music / Performance</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="profile-upload-frequency">Upload Frequency</label>
                     <select id="profile-upload-frequency" name="upload_frequency">
@@ -149,15 +147,15 @@
                         <option value="irregular">Irregular</option>
                     </select>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="profile-growth-goal">Growth Goal</label>
                     <input type="text" id="profile-growth-goal" name="growth_goal" maxlength="100" placeholder="e.g., build trust, grow loyal community, establish authority" />
                 </div>
-                
+
                 <button type="submit" class="btn btn-primary">Save Profile</button>
             </form>
-        </main>
+        </main> -->
 
         <!-- Edit Project View -->
         <main id="edit-project-view" style="display: none;">
