@@ -1224,7 +1224,7 @@ async function handleVideoUpload(file) {
             console.log('Analysis count incremented');
         }
         
-        console.log('Starting analysis...');
+        // Starting analysis
         updateStatus('Analysis in progress...', 'info');
         
         // Trigger actual analysis API call
@@ -1252,11 +1252,10 @@ async function handleVideoUpload(file) {
                 profile_photos: project?.profile_photos || []
             };
             
-            console.log('Sending analysis request to:', `${API_BASE_URL}/thumbnails/generate`);
-            console.log('Request payload:', requestPayload);
+            // Sending analysis request to API
             
             // Call the thumbnail generation endpoint (analysis may take 2-3 minutes)
-            console.log('Calling thumbnail generation API...');
+            // Calling thumbnail generation API
             const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
                 method: 'POST',
                 headers: {
@@ -1269,7 +1268,7 @@ async function handleVideoUpload(file) {
                 throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
             });
             
-            console.log('Response received, status:', analysisResponse.status);
+            // Response received from API
             
             if (!analysisResponse.ok) {
                 const errorText = await analysisResponse.text();
@@ -1278,7 +1277,7 @@ async function handleVideoUpload(file) {
             }
             
             const analysisData = await analysisResponse.json();
-            console.log('Analysis complete, data received:', analysisData);
+            // Analysis complete
             
             analysisProgressSection.style.display = 'none';
             showDecisionSectionFromAnalysis(analysisData);
@@ -1394,7 +1393,7 @@ document.addEventListener('click', (e) => {
             label: verdictCard.querySelector('.verdict-label').textContent
         };
         
-        console.log('Verdict selected:', selectedVerdictData);
+        // Verdict selected
     }
 });
 
@@ -1421,7 +1420,7 @@ if (decisionDoneBtn) {
                 created_at: new Date().toISOString()
             };
             
-            console.log('Saving decision:', decision);
+            // Saving decision
             
             // Save to Supabase (silent, no user feedback)
             const { error } = await supabase
@@ -1432,7 +1431,7 @@ if (decisionDoneBtn) {
                 console.error('Error saving decision:', error);
                 // Continue anyway - don't block the user experience
             } else {
-                console.log('Decision saved successfully');
+                // Decision saved successfully
             }
         } catch (err) {
             console.error('Error in decision persistence:', err);
@@ -1484,7 +1483,7 @@ if (confirmUseFrameBtn) {
             updateStatus('Frame downloaded successfully.', 'success');
         }
         
-        console.log('Frame downloaded:', selectedVerdictData.frame_url);
+        // Frame downloaded
     });
 }
 
@@ -1514,7 +1513,7 @@ if (confirmDesignAroundBtn) {
             seekVideoTo(parseFloat(selectedVerdictData.timestamp));
         }
         
-        console.log('Moment context shown for:', selectedVerdictData);
+        // Moment context shown
     });
 }
 
@@ -1531,7 +1530,7 @@ if (confirmDismissBtn) {
         // Scroll to top smoothly
         window.scrollTo({ top: 0, behavior: 'smooth' });
         
-        console.log('User chose to handle it themselves');
+        // User chose to handle it themselves
     });
 }
 
@@ -1551,27 +1550,19 @@ function showDecisionSectionFromAnalysis(analysis) {
     let videoDuration = 120; // fallback
     if (projectVideo && !isNaN(projectVideo.duration) && projectVideo.duration > 0) {
         videoDuration = projectVideo.duration;
-        console.log('Using video element duration:', videoDuration);
+        // Using video element duration
     } else if (analysis?.video_duration) {
         videoDuration = analysis.video_duration;
-        console.log('Using API video_duration:', videoDuration);
+        // Using API video_duration
     } else {
         const inferred = inferVideoDurationFromMoments(moments);
         if (inferred) {
             videoDuration = inferred;
-            console.log('Using inferred duration from moments:', videoDuration);
+            // Using inferred duration from moments
         }
     }
     
-    console.log('Final videoDuration for timeline:', videoDuration);
-    
-    // Log frame URLs for debugging
-    console.log('Rendering moments, frame URLs:', moments.map(m => ({ 
-        id: m?.frame_id, 
-        timestamp: m?.timestamp,
-        url: m?.frame_url,
-        summary: m?.moment_summary?.substring(0, 50) 
-    })));
+    // Rendering moments on timeline (logging removed for cleaner console)
     
     // Map first three moments to the existing card keys
     const cardOrder = ['safe', 'bold', 'avoid'];
@@ -1581,7 +1572,7 @@ function showDecisionSectionFromAnalysis(analysis) {
         
         // Debug logging for each card mapping
         if (moment) {
-            console.log(`Card ${cardKey} (index ${idx}) ← Moment: ${moment.frame_id} (${moment.timestamp}), URL: ${moment.frame_url}`);
+            // Mapping moment to card
         }
         const card = document.querySelector(`.verdict-card[data-verdict-type="${cardKey}"]`);
         if (!card) return;
@@ -1615,7 +1606,7 @@ function showDecisionSectionFromAnalysis(analysis) {
                 };
                 
                 img.onload = () => {
-                    console.log(`Frame image loaded successfully for ${moment.frame_id}`);
+                    // Frame image loaded successfully
                     // Verify the URL path matches the frame_id if possible
                     if (moment.frame_id && moment.frame_url) {
                         const frameIdMatch = moment.frame_id.toLowerCase().replace(/\s+/g, '').replace('frame', '');
@@ -1864,11 +1855,10 @@ async function triggerAnalysisForExistingVideo() {
             profile_photos: [] // TODO: Add user avatar/headshot if available
         };
         
-        console.log('Sending analysis request to:', `${API_BASE_URL}/thumbnails/generate`);
-        console.log('Request payload:', requestPayload);
+        // Sending analysis request to API
         
         // Call the thumbnail generation endpoint (analysis may take 2-3 minutes)
-        console.log('Calling thumbnail generation API...');
+        // Calling thumbnail generation API
         const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
             method: 'POST',
             headers: {
@@ -1881,7 +1871,7 @@ async function triggerAnalysisForExistingVideo() {
             throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
         });
         
-        console.log('Response received, status:', analysisResponse.status);
+        // Response received from API
         
         if (!analysisResponse.ok) {
             const errorText = await analysisResponse.text();
@@ -1890,7 +1880,7 @@ async function triggerAnalysisForExistingVideo() {
         }
         
         const analysisData = await analysisResponse.json();
-        console.log('Analysis complete, data received:', analysisData);
+        // Analysis complete
         
         showDecisionSectionFromAnalysis(analysisData);
         if (analysisProgressSection) analysisProgressSection.style.display = 'none';
@@ -1935,7 +1925,7 @@ function renderTimelineMarkers(verdictMoments, videoDuration) {
         const position = Math.min(100, Math.max(0, (data.timestamp / videoDuration) * 100));
         marker.style.left = `${position}%`;
         
-        console.log(`Timeline marker ${type}: timestamp=${data.timestamp}s, duration=${videoDuration}s, position=${position}%`);
+        // Timeline marker rendered
         
         // Add click handler to seek video
         marker.addEventListener('click', () => {
