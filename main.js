@@ -1392,26 +1392,27 @@ async function handleVideoUpload(file) {
             const analysisData = await analysisResponse.json();
             // Analysis complete
 
-            // Show results immediately (don't wait for database save)
+            // Save analysis to database BEFORE showing results (ensure it's saved)
+            if (currentProjectId && projectManager) {
+                console.log('Saving analysis to database...');
+                try {
+                    const saveResult = await projectManager.addAnalysis(currentProjectId, analysisData, gcs_path);
+                    if (saveResult.error) {
+                        console.error('Error saving analysis:', saveResult.error);
+                        updateStatus('Analysis complete, but failed to save. Results shown below.', 'warning');
+                    } else {
+                        console.log('Analysis saved successfully');
+                    }
+                } catch (saveError) {
+                    console.error('Failed to save analysis:', saveError);
+                    updateStatus('Analysis complete, but failed to save. Results shown below.', 'warning');
+                }
+            }
+
+            // Show results after save attempt
             analysisProgressSection.style.display = 'none';
             showDecisionSectionFromAnalysis(analysisData);
             updateStatus('Analysis complete! Review the moments below.', 'success');
-
-            // Save analysis to database in background
-            if (currentProjectId && projectManager) {
-                console.log('Saving analysis to database...');
-                projectManager.addAnalysis(currentProjectId, analysisData, gcs_path)
-                    .then(saveResult => {
-                        if (saveResult.error) {
-                            console.error('Error saving analysis:', saveResult.error);
-                        } else {
-                            console.log('Analysis saved successfully');
-                        }
-                    })
-                    .catch(err => {
-                        console.error('Failed to save analysis:', err);
-                    });
-            }
 
             // Increment usage count
             if (profileManager && currentUser) {
@@ -2028,26 +2029,27 @@ async function triggerAnalysisForExistingVideo() {
         const analysisData = await analysisResponse.json();
         // Analysis complete
 
-        // Show results immediately (don't wait for database save)
+        // Save analysis to database BEFORE showing results (ensure it's saved)
+        if (currentProjectId && projectManager) {
+            console.log('Saving analysis to database...');
+            try {
+                const saveResult = await projectManager.addAnalysis(currentProjectId, analysisData, currentVideoPath);
+                if (saveResult.error) {
+                    console.error('Error saving analysis:', saveResult.error);
+                    updateStatus('Analysis complete, but failed to save. Results shown below.', 'warning');
+                } else {
+                    console.log('Analysis saved successfully');
+                }
+            } catch (saveError) {
+                console.error('Failed to save analysis:', saveError);
+                updateStatus('Analysis complete, but failed to save. Results shown below.', 'warning');
+            }
+        }
+
+        // Show results after save attempt
         showDecisionSectionFromAnalysis(analysisData);
         if (analysisProgressSection) analysisProgressSection.style.display = 'none';
         updateStatus('Analysis complete! Review the moments below.', 'success');
-
-        // Save analysis to database in background
-        if (currentProjectId && projectManager) {
-            console.log('Saving analysis to database...');
-            projectManager.addAnalysis(currentProjectId, analysisData, currentVideoPath)
-                .then(saveResult => {
-                    if (saveResult.error) {
-                        console.error('Error saving analysis:', saveResult.error);
-                    } else {
-                        console.log('Analysis saved successfully');
-                    }
-                })
-                .catch(err => {
-                    console.error('Failed to save analysis:', err);
-                });
-        }
 
         // Increment usage count
         if (profileManager && currentUser) {

@@ -98,22 +98,11 @@ export class ProjectManager {
 
     // Add analysis result to a project
     async addAnalysis(projectId, analysisData, gcsPath = null) {
-        console.log('addAnalysis called with projectId:', projectId);
-
-        // First verify the project exists
-        const { data: projectCheck, error: projectError } = await supabase
-            .from('projects')
-            .select('id')
-            .eq('id', projectId)
-            .eq('user_id', this.userId)
-            .single();
-
-        if (projectError || !projectCheck) {
-            console.error('Project not found or access denied:', projectError);
-            return { error: projectError || new Error('Project not found') };
-        }
-
-        console.log('Project verified, inserting analysis...');
+        console.log('Attempting to save analysis for projectId:', projectId);
+        
+        // Log data size for debugging
+        const dataSize = JSON.stringify(analysisData).length;
+        console.log(`Analysis data size: ${(dataSize / 1024).toFixed(2)} KB`);
 
         try {
             const { data, error } = await supabase
@@ -127,15 +116,19 @@ export class ProjectManager {
                 .single();
 
             if (error) {
-                console.error('Supabase error saving analysis:', error);
-                console.error('Error details:', JSON.stringify(error, null, 2));
+                console.error('Failed to save analysis:', error.message);
+                console.error('Full error:', error);
+                console.error('Error code:', error.code);
+                console.error('Error details:', error.details);
                 return { error };
             }
 
-            console.log('Analysis insert successful:', data);
+            console.log('Analysis saved successfully to database!');
             return { data };
         } catch (err) {
             console.error('Exception saving analysis:', err);
+            console.error('Exception type:', err.constructor.name);
+            console.error('Exception message:', err.message);
             return { error: err };
         }
     }
