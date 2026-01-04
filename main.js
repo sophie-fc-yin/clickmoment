@@ -1297,13 +1297,7 @@ async function handleVideoUpload(file) {
         if (decisionSection) {
             decisionSection.style.display = 'none';
         }
-        
-        // Increment analysis count (user is starting analysis)
-        if (profileManager && currentUser) {
-            await profileManager.incrementAnalysisCount(currentUser.id);
-            console.log('Analysis count incremented');
-        }
-        
+
         // Starting analysis
         updateStatus('Analysis in progress...', 'info');
         
@@ -1334,19 +1328,28 @@ async function handleVideoUpload(file) {
             
             // Sending analysis request to API
             
-            // Call the thumbnail generation endpoint (analysis may take 2-3 minutes)
-            // Calling thumbnail generation API
+            // Call the thumbnail generation endpoint (analysis may take 5-10 minutes)
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000); // 15 minute timeout
+
             const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     ...authHeaders
                 },
-                body: JSON.stringify(requestPayload)
+                body: JSON.stringify(requestPayload),
+                signal: controller.signal
             }).catch(fetchError => {
+                clearTimeout(timeoutId);
+                if (fetchError.name === 'AbortError') {
+                    throw new Error('Analysis timed out after 15 minutes');
+                }
                 console.error('Fetch error details:', fetchError);
                 throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
             });
+
+            clearTimeout(timeoutId);
             
             // Response received from API
             
@@ -1943,19 +1946,28 @@ async function triggerAnalysisForExistingVideo() {
         
         // Sending analysis request to API
         
-        // Call the thumbnail generation endpoint (analysis may take 2-3 minutes)
-        // Calling thumbnail generation API
+        // Call the thumbnail generation endpoint (analysis may take 5-10 minutes)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000); // 15 minute timeout
+
         const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 ...authHeaders
             },
-            body: JSON.stringify(requestPayload)
+            body: JSON.stringify(requestPayload),
+            signal: controller.signal
         }).catch(fetchError => {
+            clearTimeout(timeoutId);
+            if (fetchError.name === 'AbortError') {
+                throw new Error('Analysis timed out after 15 minutes');
+            }
             console.error('Fetch error details:', fetchError);
             throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
         });
+
+        clearTimeout(timeoutId);
         
         // Response received from API
         

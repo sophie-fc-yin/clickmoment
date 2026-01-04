@@ -25,21 +25,19 @@ CREATE TABLE IF NOT EXISTS projects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    
-    -- Target settings
-    platform TEXT DEFAULT 'youtube',
-    optimization TEXT,
-    audience_profile TEXT CHECK (char_length(audience_profile) <= 200),
-    
-    -- Creative Brief settings
-    mood TEXT CHECK (char_length(mood) <= 120),
-    title_hint TEXT,
-    brand_colors TEXT[], -- Array of color strings
-    notes TEXT CHECK (char_length(notes) <= 1000),
-    
-    -- Video path (stored after video upload)
-    video_path TEXT,
-    
+
+    -- Video content (JSONB: {video_path: "gs://..."})
+    content_sources JSONB DEFAULT '{}'::jsonb,
+
+    -- Creative direction (JSONB: {mood: "...", notes: "...", title_hint: "..."})
+    creative_direction JSONB DEFAULT '{}'::jsonb,
+
+    -- Creator context (JSONB: {maturity_hint: "...", niche_hint: "..."})
+    creator_context JSONB DEFAULT '{}'::jsonb,
+
+    -- Profile photos for thumbnail generation
+    profile_photos TEXT[] DEFAULT '{}',
+
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

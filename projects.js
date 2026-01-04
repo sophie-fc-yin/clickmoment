@@ -29,22 +29,19 @@ export class ProjectManager {
             .insert({
                 user_id: this.userId,
                 name: projectData.name || `Project ${new Date().toISOString()}`,
-                platform: projectData.platform || 'youtube',
-                optimization: projectData.optimization || null,
-                audience_profile: projectData.audience_profile || null,
-                mood: projectData.mood || null,
-                title_hint: projectData.title_hint || null,
-                brand_colors: projectData.brand_colors || [],
-                notes: projectData.notes || null,
+                content_sources: projectData.content_sources || {},
+                creative_direction: projectData.creative_direction || {},
+                creator_context: projectData.creator_context || {},
+                profile_photos: projectData.profile_photos || [],
             })
             .select()
             .single();
-        
+
         if (error) {
             console.error('Error creating project:', error);
             return { error };
         }
-        
+
         return { data };
     }
 
