@@ -293,7 +293,7 @@ async function showProjectView(projectId) {
 
                 if (latestAnalysis.result) {
                     // Refresh signed URLs before displaying (they may have expired)
-                    console.log('Refreshing frame URLs for saved analysis...');
+                    // Note: Refresh silently fails if endpoint doesn't exist (uses existing URLs)
                     const refreshedAnalysis = await refreshSignedUrls(latestAnalysis.result);
 
                     // Final check before displaying
@@ -1111,52 +1111,48 @@ async function refreshSignedUrls(analysisData) {
             return analysisData;
         }
 
-        console.log('Refreshing signed URLs for', framePaths.length, 'frames...');
+        // Call backend to get fresh signed URLs (silently fail if endpoint doesn't exist)
+        try {
+            const authHeaders = await getAuthHeaders();
+            const response = await fetch(`${API_BASE_URL}/refresh-frame-urls`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...authHeaders
+                },
+                body: JSON.stringify({ frame_paths: framePaths })
+            });
 
-        // Call backend to get fresh signed URLs
-        const authHeaders = await getAuthHeaders();
-        const response = await fetch(`${API_BASE_URL}/refresh-frame-urls`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...authHeaders
-            },
-            body: JSON.stringify({ frame_paths: framePaths })
-        });
-
-        if (!response.ok) {
-            // Endpoint might not exist yet (404) - that's okay, we'll use existing URLs
-            if (response.status === 404) {
-                console.warn('Refresh endpoint not available (404), using existing frame URLs');
-            } else {
-                console.warn('Failed to refresh signed URLs:', response.status, '- using existing URLs');
+            if (!response.ok) {
+                // Endpoint might not exist (404) or other error - silently use existing URLs
+                return analysisData;
             }
-            return analysisData; // Return original data if refresh fails
+
+            const { signed_urls } = await response.json();
+            if (!signed_urls || signed_urls.length === 0) {
+                return analysisData;
+            }
+
+            // Update analysis data with fresh URLs
+            const refreshedAnalysis = { ...analysisData };
+            refreshedAnalysis.phase1.moments = analysisData.phase1.moments.map((moment, idx) => {
+                if (signed_urls[idx]) {
+                    return {
+                        ...moment,
+                        frame_url: signed_urls[idx]
+                    };
+                }
+                return moment;
+            });
+
+            return refreshedAnalysis;
+        } catch (fetchError) {
+            // Network error or endpoint doesn't exist - silently use existing URLs
+            return analysisData;
         }
-
-        const { signed_urls } = await response.json();
-        console.log('Received', signed_urls.length, 'fresh signed URLs');
-
-        // Update analysis data with fresh URLs
-        const refreshedAnalysis = { ...analysisData };
-        refreshedAnalysis.phase1.moments = analysisData.phase1.moments.map((moment, idx) => {
-            if (signed_urls[idx]) {
-                return {
-                    ...moment,
-                    frame_url: signed_urls[idx]
-                };
-            }
-            return moment;
-        });
-
-        return refreshedAnalysis;
-
     } catch (error) {
-        // Network errors or other issues - silently fall back to existing URLs
-        if (error.name !== 'TypeError' || !error.message.includes('Failed to fetch')) {
-            console.warn('Error refreshing signed URLs, using existing URLs:', error.message);
-        }
-        return analysisData; // Return original data on error
+        // Outer catch for any other errors - silently fall back to existing URLs
+        return analysisData;
     }
 }
 
