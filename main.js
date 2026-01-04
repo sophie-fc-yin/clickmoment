@@ -18,7 +18,8 @@ const projectsView = document.getElementById('projects-view');
 const createProjectView = document.getElementById('create-project-view');
 const editProjectView = document.getElementById('edit-project-view');
 const projectView = document.getElementById('project-view');
-const profileView = document.getElementById('profile-view');
+// DISABLED - Profile view commented out in HTML
+// const profileView = document.getElementById('profile-view');
 const landingLoginBtn = document.getElementById('landing-login-btn');
 const landingFooterLoginBtn = document.getElementById('landing-footer-login-btn');
 const projectsList = document.getElementById('projects-list');
@@ -29,7 +30,8 @@ const cancelCreateProjectFormBtn = document.getElementById('cancel-create-projec
 const backToProjectsBtn = document.getElementById('back-to-projects-btn');
 const cancelEditProjectBtn = document.getElementById('cancel-edit-project-btn');
 const cancelEditProjectFormBtn = document.getElementById('cancel-edit-project-form-btn');
-const backFromProfileBtn = document.getElementById('back-from-profile-btn');
+// DISABLED - Profile view commented out in HTML
+// const backFromProfileBtn = document.getElementById('back-from-profile-btn');
 const editProjectBtn = document.getElementById('edit-project-btn');
 const projectTitle = document.getElementById('project-title');
 const videoInput = document.getElementById('video-input');
@@ -37,7 +39,8 @@ const statusText = document.getElementById('status-text');
 const jsonOutput = document.getElementById('json-output');
 const createProjectForm = document.getElementById('create-project-form');
 const editProjectForm = document.getElementById('edit-project-form');
-const profileForm = document.getElementById('profile-form');
+// DISABLED - Profile view commented out in HTML
+// const profileForm = document.getElementById('profile-form');
 
 // New video selection elements
 const videoSelectionSection = document.getElementById('video-selection-section');
@@ -142,7 +145,7 @@ async function updateUI() {
         createProjectView.style.display = 'none';
         editProjectView.style.display = 'none';
         projectView.style.display = 'none';
-        profileView.style.display = 'none';
+        // profileView.style.display = 'none'; // DISABLED
     }
 }
 
@@ -163,7 +166,7 @@ async function showProjectsView() {
     createProjectView.style.display = 'none';
     editProjectView.style.display = 'none';
     projectView.style.display = 'none';
-    profileView.style.display = 'none';
+    // profileView.style.display = 'none'; // DISABLED
     currentProjectId = null;
     console.log('Refreshing projects list...');
     await renderProjectsList();
@@ -177,7 +180,7 @@ function showCreateProjectView() {
     createProjectView.style.display = 'block';
     editProjectView.style.display = 'none';
     projectView.style.display = 'none';
-    profileView.style.display = 'none';
+    // profileView.style.display = 'none'; // DISABLED
     createProjectForm.reset();
     currentProjectId = null;
 }
@@ -188,7 +191,7 @@ async function showEditProjectView(projectId) {
     createProjectView.style.display = 'none';
     editProjectView.style.display = 'block';
     projectView.style.display = 'none';
-    profileView.style.display = 'none';
+    // profileView.style.display = 'none'; // DISABLED
     currentProjectId = projectId;
     
     const project = await projectManager.getProject(projectId);
@@ -214,7 +217,7 @@ async function showProjectView(projectId) {
     createProjectView.style.display = 'none';
     editProjectView.style.display = 'none';
     projectView.style.display = 'block';
-    profileView.style.display = 'none';
+    // profileView.style.display = 'none'; // DISABLED
     currentProjectId = projectId;
     
         console.log('Fetching project data...');
@@ -364,25 +367,40 @@ async function renderProjectsList() {
             noProjects.style.display = 'none';
             projectsList.style.display = 'grid';
             
-            // Get analyses count for each project
+            // Render project cards (removed analyses fetch to speed up rendering)
             for (const project of projects) {
-                const analyses = await projectManager.getAnalyses(project.id);
-                const projectCard = document.createElement('div');
-                projectCard.className = 'project-card';
-                
-                // Handle both old and new data structures
-                const creativeDirection = project.creative_direction || {};
-                const titleHint = creativeDirection.title_hint || project.title_hint || '';
-                const displayInfo = titleHint ? `Title: ${escapeHtml(titleHint)}` : 'No title hint';
-                
-                projectCard.innerHTML = `
-                    <h3>${escapeHtml(project.name)}</h3>
-                    <p class="project-meta">Created: ${new Date(project.created_at).toLocaleDateString()}</p>
-                    <p class="project-meta">${displayInfo}</p>
-                    <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
-                    <button class="btn btn-ghost delete-project-btn" data-project-id="${project.id}">Delete</button>
-                `;
-                projectsList.appendChild(projectCard);
+                try {
+                    const projectCard = document.createElement('div');
+                    projectCard.className = 'project-card';
+                    
+                    // Handle both old and new data structures
+                    const creativeDirection = project.creative_direction || {};
+                    const titleHint = creativeDirection.title_hint || project.title_hint || '';
+                    const displayInfo = titleHint ? `Title: ${escapeHtml(titleHint)}` : 'No title hint';
+                    
+                    // Safely format date
+                    let createdDate = 'Unknown';
+                    try {
+                        if (project.created_at) {
+                            createdDate = new Date(project.created_at).toLocaleDateString();
+                        }
+                    } catch (dateError) {
+                        console.warn('Error formatting date for project:', project.id, dateError);
+                    }
+                    
+                    projectCard.innerHTML = `
+                        <h3>${escapeHtml(project.name || 'Unnamed Project')}</h3>
+                        <p class="project-meta">Created: ${createdDate}</p>
+                        <p class="project-meta">${displayInfo}</p>
+                        <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
+                        <button class="btn btn-ghost delete-project-btn" data-project-id="${project.id}">Delete</button>
+                    `;
+                    projectsList.appendChild(projectCard);
+                    console.log(`Rendered project card for: ${project.name} (${project.id})`);
+                } catch (cardError) {
+                    console.error(`Error rendering project card for ${project.id}:`, cardError, cardError.stack);
+                    // Continue with next project even if one fails
+                }
             }
         }
     } catch (error) {
