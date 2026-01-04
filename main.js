@@ -212,7 +212,16 @@ async function showProjectView(projectId) {
     editProjectView.style.display = 'none';
     projectView.style.display = 'block';
     // profileView.style.display = 'none'; // DISABLED
+    
+    // Hide any existing decision section immediately when switching projects
+    const decisionSection = document.getElementById('decision-section');
+    if (decisionSection) {
+        decisionSection.style.display = 'none';
+    }
+    
+    // Set current project ID and store in local variable to prevent race conditions
     currentProjectId = projectId;
+    const activeProjectId = projectId; // Use this for all async operations
     
     const project = await projectManager.getProject(projectId);
         
@@ -264,8 +273,18 @@ async function showProjectView(projectId) {
             }
             
             // Check if analysis exists in database
+            // Verify we're still viewing the same project (prevent race conditions)
+            if (currentProjectId !== activeProjectId) {
+                return; // User switched projects, abort this analysis load
+            }
+            
             console.log('Checking for existing analysis...');
-            const analysesResult = await projectManager.getAnalyses(currentProjectId);
+            const analysesResult = await projectManager.getAnalyses(activeProjectId);
+
+            // Double-check we're still viewing the same project before displaying
+            if (currentProjectId !== activeProjectId) {
+                return; // User switched projects, don't display stale analysis
+            }
 
             if (analysesResult && analysesResult.length > 0) {
                 // Load the most recent analysis
@@ -276,6 +295,11 @@ async function showProjectView(projectId) {
                     // Refresh signed URLs before displaying (they may have expired)
                     console.log('Refreshing frame URLs for saved analysis...');
                     const refreshedAnalysis = await refreshSignedUrls(latestAnalysis.result);
+
+                    // Final check before displaying
+                    if (currentProjectId !== activeProjectId) {
+                        return; // User switched projects, don't display stale analysis
+                    }
 
                     showDecisionSectionFromAnalysis(refreshedAnalysis);
                     showManualAnalysisCTA(true, 'Re-analyze video'); // Show button for re-analysis
@@ -297,11 +321,7 @@ async function showProjectView(projectId) {
             videoPlayerSection.style.display = 'none';
             showManualAnalysisCTA(false);
             
-            // Hide decision section
-            const decisionSection = document.getElementById('decision-section');
-            if (decisionSection) {
-                decisionSection.style.display = 'none';
-            }
+            // Decision section already hidden at start of function
         }
         }
         
