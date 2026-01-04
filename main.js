@@ -1075,14 +1075,20 @@ async function refreshSignedUrls(analysisData) {
         const framePaths = analysisData.phase1.moments
             .map(moment => {
                 if (!moment.frame_url) return null;
-                // Extract GCS path from signed URL (remove query parameters)
-                const url = new URL(moment.frame_url);
-                return url.pathname; // e.g., "/clickmoment-prod-assets/projects/.../frame_0122051ms.jpg"
+                try {
+                    // If it's already a signed URL (has query params), extract the path
+                    const url = new URL(moment.frame_url);
+                    return url.pathname; // e.g., "/clickmoment-prod-assets/projects/.../frame_0122051ms.jpg"
+                } catch (e) {
+                    // If URL parsing fails, might be a GCS path or malformed - skip refresh
+                    return null;
+                }
             })
             .filter(path => path !== null);
 
         if (framePaths.length === 0) {
-            return analysisData; // No URLs to refresh
+            // No valid paths to refresh - URLs might already be valid or in wrong format
+            return analysisData;
         }
 
         console.log('Refreshing signed URLs for', framePaths.length, 'frames...');
@@ -1099,7 +1105,12 @@ async function refreshSignedUrls(analysisData) {
         });
 
         if (!response.ok) {
-            console.error('Failed to refresh signed URLs:', response.status);
+            // Endpoint might not exist yet (404) - that's okay, we'll use existing URLs
+            if (response.status === 404) {
+                console.warn('Refresh endpoint not available (404), using existing frame URLs');
+            } else {
+                console.warn('Failed to refresh signed URLs:', response.status, '- using existing URLs');
+            }
             return analysisData; // Return original data if refresh fails
         }
 
@@ -1121,7 +1132,10 @@ async function refreshSignedUrls(analysisData) {
         return refreshedAnalysis;
 
     } catch (error) {
-        console.error('Error refreshing signed URLs:', error);
+        // Network errors or other issues - silently fall back to existing URLs
+        if (error.name !== 'TypeError' || !error.message.includes('Failed to fetch')) {
+            console.warn('Error refreshing signed URLs, using existing URLs:', error.message);
+        }
         return analysisData; // Return original data on error
     }
 }
