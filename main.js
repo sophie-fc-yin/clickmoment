@@ -272,10 +272,10 @@ async function showProjectView(projectId) {
                 const latestAnalysis = analysesResult[0]; // Already sorted by created_at DESC
                 console.log('Found existing analysis, loading...', latestAnalysis);
 
-                if (latestAnalysis.analysis_data) {
+                if (latestAnalysis.result) {
                     // Refresh signed URLs before displaying (they may have expired)
                     console.log('Refreshing frame URLs for saved analysis...');
-                    const refreshedAnalysis = await refreshSignedUrls(latestAnalysis.analysis_data);
+                    const refreshedAnalysis = await refreshSignedUrls(latestAnalysis.result);
 
                     showDecisionSectionFromAnalysis(refreshedAnalysis);
                     showManualAnalysisCTA(true, 'Re-analyze video'); // Show button for re-analysis
@@ -1643,14 +1643,25 @@ if (confirmDismissBtn) {
 // Show decision section from real analysis output (or mock shaped like it)
 function showDecisionSectionFromAnalysis(analysis) {
     const decisionSection = document.getElementById('decision-section');
-    if (!decisionSection) return;
+    if (!decisionSection) {
+        console.error('Decision section element not found!');
+        return;
+    }
+    
+    // Explicitly show the decision section
+    decisionSection.style.display = 'block';
         
-        const technicalJsonOutput = document.getElementById('json-output');
-        if (technicalJsonOutput) {
+    const technicalJsonOutput = document.getElementById('json-output');
+    if (technicalJsonOutput) {
         technicalJsonOutput.textContent = JSON.stringify(analysis, null, 2);
     }
     
     const moments = (analysis?.phase1?.moments || []).slice(0, 3);
+    
+    if (moments.length === 0) {
+        console.warn('No moments found in analysis data:', analysis);
+        return;
+    }
     
     // Get actual video duration from the video element if available
     let videoDuration = 120; // fallback
