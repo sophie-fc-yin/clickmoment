@@ -100,15 +100,23 @@ export class ProjectManager {
     async addAnalysis(projectId, analysisData, gcsPath = null) {
         console.log('Attempting to save analysis for projectId:', projectId);
         
-        // Log data size for debugging
-        const dataSize = JSON.stringify(analysisData).length;
-        console.log(`Analysis data size: ${(dataSize / 1024).toFixed(2)} KB`);
+        // Log data size for debugging and validate JSON serialization
+        let dataSize;
+        try {
+            dataSize = JSON.stringify(analysisData).length;
+            console.log(`Analysis data size: ${(dataSize / 1024).toFixed(2)} KB`);
+        } catch (serializeError) {
+            console.error('Failed to serialize analysis data:', serializeError);
+            return { error: new Error('Analysis data contains non-serializable content') };
+        }
         
         const startTime = Date.now();
 
         try {
             console.log('Sending insert request to Supabase...');
-            const { data, error } = await supabase
+            
+            // Add timeout wrapper for Supabase insert (30 seconds)
+            const insertPromise = supabase
                 .from('analyses')
                 .insert({
                     project_id: projectId,
@@ -117,6 +125,14 @@ export class ProjectManager {
                 })
                 .select()
                 .single();
+            
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => {
+                    reject(new Error('Supabase insert timed out after 30 seconds'));
+                }, 30000);
+            });
+            
+            const { data, error } = await Promise.race([insertPromise, timeoutPromise]);
 
             const duration = Date.now() - startTime;
             console.log(`Supabase insert completed in ${duration}ms`);
@@ -136,6 +152,12 @@ export class ProjectManager {
             console.error(`Exception saving analysis after ${duration}ms:`, err);
             console.error('Exception type:', err.constructor.name);
             console.error('Exception message:', err.message);
+            
+            // If it's a timeout, try to check if Supabase connection is working
+            if (err.message.includes('timed out')) {
+                console.error('Supabase insert timed out - this may indicate a network or database issue');
+            }
+            
             return { error: err };
         }
     }
