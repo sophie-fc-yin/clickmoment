@@ -98,22 +98,46 @@ export class ProjectManager {
 
     // Add analysis result to a project
     async addAnalysis(projectId, analysisData, gcsPath = null) {
-        const { data, error } = await supabase
-            .from('analyses')
-            .insert({
-                project_id: projectId,
-                gcs_path: gcsPath,
-                result: analysisData
-            })
-            .select()
+        console.log('addAnalysis called with projectId:', projectId);
+
+        // First verify the project exists
+        const { data: projectCheck, error: projectError } = await supabase
+            .from('projects')
+            .select('id')
+            .eq('id', projectId)
+            .eq('user_id', this.userId)
             .single();
-        
-        if (error) {
-            console.error('Error saving analysis:', error);
-            return { error };
+
+        if (projectError || !projectCheck) {
+            console.error('Project not found or access denied:', projectError);
+            return { error: projectError || new Error('Project not found') };
         }
-        
-        return { data };
+
+        console.log('Project verified, inserting analysis...');
+
+        try {
+            const { data, error } = await supabase
+                .from('analyses')
+                .insert({
+                    project_id: projectId,
+                    gcs_path: gcsPath,
+                    result: analysisData
+                })
+                .select()
+                .single();
+
+            if (error) {
+                console.error('Supabase error saving analysis:', error);
+                console.error('Error details:', JSON.stringify(error, null, 2));
+                return { error };
+            }
+
+            console.log('Analysis insert successful:', data);
+            return { data };
+        } catch (err) {
+            console.error('Exception saving analysis:', err);
+            return { error: err };
+        }
     }
 
     // Get analyses for a project

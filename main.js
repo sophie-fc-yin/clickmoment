@@ -1362,25 +1362,32 @@ async function handleVideoUpload(file) {
             const analysisData = await analysisResponse.json();
             // Analysis complete
 
-            // Save analysis to database
+            // Show results immediately (don't wait for database save)
+            analysisProgressSection.style.display = 'none';
+            showDecisionSectionFromAnalysis(analysisData);
+            updateStatus('Analysis complete! Review the moments below.', 'success');
+
+            // Save analysis to database in background
             if (currentProjectId && projectManager) {
                 console.log('Saving analysis to database...');
-                const saveResult = await projectManager.addAnalysis(currentProjectId, analysisData, gcs_path);
-                if (saveResult.error) {
-                    console.error('Error saving analysis:', saveResult.error);
-                } else {
-                    console.log('Analysis saved successfully');
-                }
+                projectManager.addAnalysis(currentProjectId, analysisData, gcs_path)
+                    .then(saveResult => {
+                        if (saveResult.error) {
+                            console.error('Error saving analysis:', saveResult.error);
+                        } else {
+                            console.log('Analysis saved successfully');
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Failed to save analysis:', err);
+                    });
             }
 
             // Increment usage count
             if (profileManager && currentUser) {
-                await profileManager.incrementAnalysisCount(currentUser.id);
+                profileManager.incrementAnalysisCount(currentUser.id)
+                    .catch(err => console.error('Failed to increment count:', err));
             }
-
-            analysisProgressSection.style.display = 'none';
-            showDecisionSectionFromAnalysis(analysisData);
-            updateStatus('Analysis complete! Review the moments below.', 'success');
 
         } catch (analysisError) {
             console.error('Analysis error:', analysisError);
@@ -1980,25 +1987,32 @@ async function triggerAnalysisForExistingVideo() {
         const analysisData = await analysisResponse.json();
         // Analysis complete
 
-        // Save analysis to database
+        // Show results immediately (don't wait for database save)
+        showDecisionSectionFromAnalysis(analysisData);
+        if (analysisProgressSection) analysisProgressSection.style.display = 'none';
+        updateStatus('Analysis complete! Review the moments below.', 'success');
+
+        // Save analysis to database in background
         if (currentProjectId && projectManager) {
             console.log('Saving analysis to database...');
-            const saveResult = await projectManager.addAnalysis(currentProjectId, analysisData, currentVideoPath);
-            if (saveResult.error) {
-                console.error('Error saving analysis:', saveResult.error);
-            } else {
-                console.log('Analysis saved successfully');
-            }
+            projectManager.addAnalysis(currentProjectId, analysisData, currentVideoPath)
+                .then(saveResult => {
+                    if (saveResult.error) {
+                        console.error('Error saving analysis:', saveResult.error);
+                    } else {
+                        console.log('Analysis saved successfully');
+                    }
+                })
+                .catch(err => {
+                    console.error('Failed to save analysis:', err);
+                });
         }
 
         // Increment usage count
         if (profileManager && currentUser) {
-            await profileManager.incrementAnalysisCount(currentUser.id);
+            profileManager.incrementAnalysisCount(currentUser.id)
+                .catch(err => console.error('Failed to increment count:', err));
         }
-
-        showDecisionSectionFromAnalysis(analysisData);
-        if (analysisProgressSection) analysisProgressSection.style.display = 'none';
-        updateStatus('Analysis complete! Review the moments below.', 'success');
         
     } catch (error) {
         console.error('Analysis error:', error);
