@@ -80,7 +80,6 @@ async function initAuth() {
     
     // If we have an access token in URL, wait a moment for session to be set
     if (accessToken && !currentUser) {
-        console.log('Access token found in URL, waiting for session...');
         setTimeout(async () => {
             const { data: { session: newSession } } = await supabase.auth.getSession();
             currentUser = newSession?.user || null;
@@ -107,7 +106,7 @@ function cleanupOldLocalStorage() {
         keysToRemove.forEach(key => localStorage.removeItem(key));
         
         if (keysToRemove.length > 0) {
-            console.log(`Cleaned up ${keysToRemove.length} old localStorage entries`);
+            // Cleaned up old localStorage entries
         }
     } catch (error) {
         console.error('Error cleaning up localStorage:', error);
@@ -135,7 +134,7 @@ async function updateUI() {
         
         // Check if user has a profile with data, if not show profile setup
         // Profile UI disabled - always show projects list
-        await showProjectsView();
+            await showProjectsView();
     } else {
         // User is not logged in - show landing page
         loginBtn.style.display = 'inline-block';
@@ -154,13 +153,12 @@ function stopVideoPlayback() {
     if (projectVideo && !projectVideo.paused) {
         projectVideo.pause();
         projectVideo.currentTime = 0; // Reset to beginning
-        console.log('Video stopped');
+        // Video stopped
     }
 }
 
 // Show projects list view
 async function showProjectsView() {
-    console.log('showProjectsView called - switching to projects list view');
     stopVideoPlayback(); // Stop any playing video
     projectsView.style.display = 'block';
     createProjectView.style.display = 'none';
@@ -168,9 +166,7 @@ async function showProjectsView() {
     projectView.style.display = 'none';
     // profileView.style.display = 'none'; // DISABLED
     currentProjectId = null;
-    console.log('Refreshing projects list...');
     await renderProjectsList();
-    console.log('Projects list refresh complete');
 }
 
 // Show create project view
@@ -210,8 +206,6 @@ async function showEditProjectView(projectId) {
 
 // Show project detail view
 async function showProjectView(projectId) {
-    console.log('showProjectView called with projectId:', projectId);
-    
     try {
     projectsView.style.display = 'none';
     createProjectView.style.display = 'none';
@@ -220,9 +214,7 @@ async function showProjectView(projectId) {
     // profileView.style.display = 'none'; // DISABLED
     currentProjectId = projectId;
     
-        console.log('Fetching project data...');
     const project = await projectManager.getProject(projectId);
-        console.log('Project data received:', project);
         
     if (project) {
         projectTitle.textContent = project.name;
@@ -237,7 +229,7 @@ async function showProjectView(projectId) {
         document.getElementById('info-notes').textContent = creativeDirection.notes || '-';
         document.getElementById('info-maturity').textContent = creatorContext.maturity_hint || '-';
         document.getElementById('info-niche').textContent = creatorContext.niche_hint || '-';
-
+        
         // Display video path (shortened for display)
         const videoPathDisplay = document.getElementById('info-video-path');
         const videoPath = contentSources.video_path;
@@ -250,7 +242,7 @@ async function showProjectView(projectId) {
             videoPathDisplay.textContent = 'No video uploaded yet';
             videoPathDisplay.title = '';
         }
-
+        
         // Check if video_path exists - determines UI state
         const hasVideo = videoPath && videoPath !== '-';
         
@@ -263,12 +255,10 @@ async function showProjectView(projectId) {
             videoPlayerSection.style.display = 'block';
             
             // Load video into player with signed URL immediately
-            console.log('Project has video:', videoPath);
-            console.log('Loading video stream for immediate playback...');
             const videoLoaded = await loadVideoIntoPlayer(videoPath);
             
             if (videoLoaded) {
-                console.log('Video stream is ready and available for playback');
+                // Video stream is ready and available for playback
             } else {
                 console.warn('Video could not be loaded, but continuing...');
             }
@@ -315,7 +305,7 @@ async function showProjectView(projectId) {
         
         // Video player is always visible when video exists (no toggle needed)
         
-        console.log('showProjectView completed successfully');
+        // Project view loaded successfully
     } catch (error) {
         console.error('Error in showProjectView:', error);
         alert('Error loading project: ' + error.message);
@@ -333,7 +323,6 @@ async function renderProjectsList() {
     
     // If already rendering, mark that a re-render was requested
     if (isRendering) {
-        console.log('Render already in progress, will re-render after current render completes');
         renderRequested = true;
         return;
     }
@@ -342,15 +331,7 @@ async function renderProjectsList() {
     renderRequested = false;
     
     try {
-        console.log('Fetching projects from database...');
         const projects = await projectManager.getProjects();
-        console.log(`Found ${projects.length} projects:`, projects.map(p => ({ 
-            id: p.id, 
-            name: p.name,
-            has_creative_direction: !!p.creative_direction,
-            has_creator_context: !!p.creator_context,
-            has_content_sources: !!p.content_sources
-        })));
         
         // Clear existing content completely
         while (projectsList.firstChild) {
@@ -359,19 +340,17 @@ async function renderProjectsList() {
         projectsList.innerHTML = '';
         
         if (projects.length === 0) {
-            console.log('No projects found, showing empty state');
             noProjects.style.display = 'block';
             projectsList.style.display = 'none';
         } else {
-            console.log('Rendering project cards...');
             noProjects.style.display = 'none';
             projectsList.style.display = 'grid';
             
             // Render project cards (removed analyses fetch to speed up rendering)
             for (const project of projects) {
                 try {
-                    const projectCard = document.createElement('div');
-                    projectCard.className = 'project-card';
+                const projectCard = document.createElement('div');
+                projectCard.className = 'project-card';
                     
                     // Handle both old and new data structures
                     const creativeDirection = project.creative_direction || {};
@@ -388,15 +367,14 @@ async function renderProjectsList() {
                         console.warn('Error formatting date for project:', project.id, dateError);
                     }
                     
-                    projectCard.innerHTML = `
+                projectCard.innerHTML = `
                         <h3>${escapeHtml(project.name || 'Unnamed Project')}</h3>
                         <p class="project-meta">Created: ${createdDate}</p>
                         <p class="project-meta">${displayInfo}</p>
-                        <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
-                        <button class="btn btn-ghost delete-project-btn" data-project-id="${project.id}">Delete</button>
-                    `;
-                    projectsList.appendChild(projectCard);
-                    console.log(`Rendered project card for: ${project.name} (${project.id})`);
+                    <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
+                    <button class="btn btn-ghost delete-project-btn" data-project-id="${project.id}">Delete</button>
+                `;
+                projectsList.appendChild(projectCard);
                 } catch (cardError) {
                     console.error(`Error rendering project card for ${project.id}:`, cardError, cardError.stack);
                     // Continue with next project even if one fails
@@ -425,7 +403,7 @@ function escapeHtml(text) {
 async function handleLogin() {
     try {
         const redirectUrl = window.location.origin + window.location.pathname;
-        console.log('Initiating OAuth login with redirect:', redirectUrl);
+        // Initiating OAuth login
         
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -442,7 +420,6 @@ async function handleLogin() {
             console.error('OAuth error:', error);
             updateStatus('Login error: ' + error.message, 'error');
         } else if (data?.url) {
-            console.log('Redirecting to:', data.url);
             // Supabase will handle the redirect automatically
         }
     } catch (err) {
@@ -743,15 +720,15 @@ cancelEditProjectFormBtn.addEventListener('click', async () => {
 
 createProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-
+    
     if (!projectManager) {
         console.error('Project manager not initialized');
         alert('Error: Project manager not initialized. Please refresh the page.');
         return;
     }
-
+    
     const formData = new FormData(e.target);
-
+    
     // Build project data with new JSONB structure
     const projectData = {
         name: formData.get('name'),
@@ -767,18 +744,14 @@ createProjectForm.addEventListener('submit', async (e) => {
         profile_photos: [] // TODO: Add support for profile photos upload
     };
     
-    console.log('Creating project with data:', projectData);
-    
     try {
     // Create new project
     const result = await projectManager.createProject(projectData);
-        console.log('Project creation result:', result);
         
     if (result.error) {
             console.error('Error creating project:', result.error);
         alert('Error creating project: ' + result.error.message);
         } else if (result.data) {
-            console.log('Project created successfully with ID:', result.data.id);
             
             // Reset the form
             createProjectForm.reset();
@@ -798,9 +771,9 @@ createProjectForm.addEventListener('submit', async (e) => {
 editProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!currentProjectId) return;
-
+    
     const formData = new FormData(e.target);
-
+    
     // Build project data with new JSONB structure
     const projectData = {
         name: formData.get('name'),
@@ -991,7 +964,7 @@ async function getVideoPlaybackUrl(gcsPath) {
         }
 
         const { signed_url } = await response.json();
-        console.log('Got signed URL for video playback');
+        // Got signed URL for video playback
         return signed_url;
     } catch (error) {
         console.error('Error getting video playback URL:', error);
@@ -1012,7 +985,7 @@ async function loadVideoIntoPlayer(gcsPath) {
         projectVideo.style.display = 'none';
         
         // Get signed URL
-        console.log('Getting playback URL for video...');
+        // Getting playback URL for video
         const playbackUrl = await getVideoPlaybackUrl(gcsPath);
         
         if (!playbackUrl) {
@@ -1023,12 +996,12 @@ async function loadVideoIntoPlayer(gcsPath) {
         
         // Set video source
         videoSource.src = playbackUrl;
-        console.log('Video source set, starting load...');
+        // Video source set, starting load
         
         // Wait for video to be ready
         return new Promise((resolve) => {
             const onLoadedMetadata = () => {
-                console.log('Video metadata loaded, ready for playback');
+                // Video metadata loaded, ready for playback
                 videoLoadingState.style.display = 'none';
                 projectVideo.style.display = 'block';
                 projectVideo.removeEventListener('loadedmetadata', onLoadedMetadata);
@@ -1038,7 +1011,7 @@ async function loadVideoIntoPlayer(gcsPath) {
             };
             
             const onCanPlay = () => {
-                console.log('Video can play, ready for playback');
+                // Video can play, ready for playback
                 videoLoadingState.style.display = 'none';
                 projectVideo.style.display = 'block';
                 projectVideo.removeEventListener('loadedmetadata', onLoadedMetadata);
@@ -1085,7 +1058,7 @@ async function handleVideoUpload(file) {
         return;
     }
     
-    console.log('File selected:', file.name, 'Size:', (file.size / 1024 / 1024).toFixed(2), 'MB');
+    // File selected for upload
 
     if (!API_BASE_URL || API_BASE_URL.trim() === '') {
         updateStatus('API_BASE_URL is not configured. Please set API_BASE_URL (or EXPO_PUBLIC_API_BASE_URL) in Vercel environment variables to your Cloud Run service URL.', 'error');
@@ -1108,7 +1081,7 @@ async function handleVideoUpload(file) {
         uploadProgressBar.style.width = '0%';
         
         const signedUrlEndpoint = `${API_BASE_URL}/get-upload-url`;
-        console.log('Requesting signed URL from:', signedUrlEndpoint);
+        // Requesting signed URL for upload
         
         const signedUrlResponse = await fetch(signedUrlEndpoint, {
             method: 'POST',
@@ -1131,11 +1104,11 @@ async function handleVideoUpload(file) {
         }
 
         const { signed_url, gcs_path } = await signedUrlResponse.json();
-        console.log('Got signed URL for GCS path:', gcs_path);
+        // Got signed URL for GCS upload
         currentVideoPath = gcs_path;
 
         // Step 2: Upload file directly to GCS with progress tracking
-        console.log('Uploading file:', file.name);
+        // Uploading file to GCS
         
         const uploadPromise = new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -1167,14 +1140,14 @@ async function handleVideoUpload(file) {
         });
         
         await uploadPromise;
-        console.log('File uploaded to GCS successfully');
+        // File uploaded to GCS successfully
         
         uploadProgressText.textContent = 'Upload complete! Saving...';
         uploadProgressBar.style.width = '100%';
         
         // Step 3: Save video_path to project (THIS LOCKS THE VIDEO)
         if (currentProjectId && projectManager && gcs_path) {
-            console.log('Saving video_path to project...');
+            // Saving video_path to project
                 const updateResult = await projectManager.updateProject(currentProjectId, {
                     content_sources: { video_path: gcs_path }
                 });
@@ -1182,7 +1155,7 @@ async function handleVideoUpload(file) {
                     console.error('Error updating project:', updateResult.error);
                 throw new Error('Failed to save video to project');
             }
-            console.log('video_path saved successfully to Supabase:', gcs_path);
+            // video_path saved successfully to Supabase
             
             // Update the video path display in project details
             const videoPathDisplay = document.getElementById('info-video-path');
@@ -1190,13 +1163,13 @@ async function handleVideoUpload(file) {
                 const filename = gcs_path.split('/').pop();
                 videoPathDisplay.textContent = filename;
                 videoPathDisplay.title = gcs_path; // Full path on hover
-                console.log('Updated video path display on page');
+                // Updated video path display on page
             }
         }
 
         // Step 4: Check usage limit before analysis
         if (profileManager && currentUser) {
-            console.log('Checking analysis usage limit...');
+            // Checking analysis usage limit
             const limitCheck = await profileManager.canUserAnalyze(currentUser.id);
             
             if (limitCheck.error) {
@@ -1207,14 +1180,14 @@ async function handleVideoUpload(file) {
             }
             
             if (!limitCheck.canAnalyze) {
-                console.log('User has reached analysis limit');
+                // User has reached analysis limit
                 uploadProgressSection.style.display = 'none';
                 alert('You\'ve reached your limit of 50 analyses.\n\nUpgrade your account for unlimited analyses.');
                 updateStatus('Analysis limit reached', 'error');
                 return;
             }
             
-            console.log('Usage limit check passed, proceeding with analysis');
+            // Usage limit check passed, proceeding with analysis
         }
         
         // Step 5: Transition to analysis state
@@ -1225,11 +1198,11 @@ async function handleVideoUpload(file) {
         videoPlayerSection.style.display = 'block';
         
         // Load video into player (with loading state) and ensure it's ready
-        console.log('Loading video into player for immediate playback...');
+        // Loading video into player for immediate playback
         const videoLoaded = await loadVideoIntoPlayer(gcs_path);
         
         if (videoLoaded) {
-            console.log('Video is ready for streaming');
+            // Video is ready for streaming
             // Scroll to video player so user sees it immediately
             videoPlayerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
