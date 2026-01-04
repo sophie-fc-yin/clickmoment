@@ -341,7 +341,13 @@ async function renderProjectsList() {
     try {
         console.log('Fetching projects from database...');
         const projects = await projectManager.getProjects();
-        console.log(`Found ${projects.length} projects:`, projects.map(p => ({ id: p.id, name: p.name })));
+        console.log(`Found ${projects.length} projects:`, projects.map(p => ({ 
+            id: p.id, 
+            name: p.name,
+            has_creative_direction: !!p.creative_direction,
+            has_creator_context: !!p.creator_context,
+            has_content_sources: !!p.content_sources
+        })));
         
         // Clear existing content completely
         while (projectsList.firstChild) {
@@ -363,10 +369,16 @@ async function renderProjectsList() {
                 const analyses = await projectManager.getAnalyses(project.id);
                 const projectCard = document.createElement('div');
                 projectCard.className = 'project-card';
+                
+                // Handle both old and new data structures
+                const creativeDirection = project.creative_direction || {};
+                const titleHint = creativeDirection.title_hint || project.title_hint || '';
+                const displayInfo = titleHint ? `Title: ${escapeHtml(titleHint)}` : 'No title hint';
+                
                 projectCard.innerHTML = `
                     <h3>${escapeHtml(project.name)}</h3>
                     <p class="project-meta">Created: ${new Date(project.created_at).toLocaleDateString()}</p>
-                    <p class="project-meta">Platform: ${escapeHtml(project.platform || 'youtube')}</p>
+                    <p class="project-meta">${displayInfo}</p>
                     <button class="btn btn-primary open-project-btn" data-project-id="${project.id}">Open Project</button>
                     <button class="btn btn-ghost delete-project-btn" data-project-id="${project.id}">Delete</button>
                 `;
