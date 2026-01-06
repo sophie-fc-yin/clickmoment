@@ -1091,25 +1091,50 @@ async function refreshSignedUrls(analysisData) {
     }
 
     try {
-        // Extract all frame URLs that need refreshing
-        const framePaths = analysisData.phase1.moments
-            .map(moment => {
-                if (!moment.frame_url) return null;
-                try {
-                    // If it's already a signed URL (has query params), extract the path
-                    const url = new URL(moment.frame_url);
-                    return url.pathname; // e.g., "/clickmoment-prod-assets/projects/.../frame_0122051ms.jpg"
-                } catch (e) {
-                    // If URL parsing fails, might be a GCS path or malformed - skip refresh
-                    return null;
+        // Extract frame paths with their moment indices for proper mapping
+        const framePathMap = []; // Array of {momentIndex, path} objects
+        
+        analysisData.phase1.moments.forEach((moment, momentIdx) => {
+            if (!moment.frame_url) return;
+            
+            let framePath = null;
+            
+            try {
+                // Try to parse as URL first (handles signed URLs and HTTP/HTTPS URLs)
+                const url = new URL(moment.frame_url);
+                // Extract pathname, removing leading slash if present
+                framePath = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
+            } catch (e) {
+                // If URL parsing fails, check if it's a GCS path (gs://bucket/path)
+                if (moment.frame_url.startsWith('gs://')) {
+                    // Extract path from GCS URL: gs://bucket/path -> bucket/path
+                    framePath = moment.frame_url.replace('gs://', '');
+                } else if (moment.frame_url.startsWith('/')) {
+                    // Handle absolute paths: /bucket/path -> bucket/path
+                    framePath = moment.frame_url.substring(1);
+                } else if (!moment.frame_url.includes('://')) {
+                    // Handle relative paths that don't have a protocol
+                    framePath = moment.frame_url;
+                } else {
+                    // Unknown format, skip this moment
+                    console.warn(`Unable to extract path from frame_url: ${moment.frame_url}`);
+                    return;
                 }
-            })
-            .filter(path => path !== null);
+            }
+            
+            if (framePath) {
+                framePathMap.push({ momentIndex: momentIdx, path: framePath });
+            }
+        });
 
-        if (framePaths.length === 0) {
+        if (framePathMap.length === 0) {
             // No valid paths to refresh - URLs might already be valid or in wrong format
+            console.log('No frame paths found to refresh');
             return analysisData;
         }
+
+        // Extract just the paths for the API call
+        const framePaths = framePathMap.map(item => item.path);
 
         // Call backend to get fresh signed URLs (silently fail if endpoint doesn't exist)
         try {
@@ -1125,33 +1150,49 @@ async function refreshSignedUrls(analysisData) {
 
             if (!response.ok) {
                 // Endpoint might not exist (404) or other error - silently use existing URLs
+                console.warn(`Refresh frame URLs endpoint returned ${response.status}, using existing URLs`);
                 return analysisData;
             }
 
             const { signed_urls } = await response.json();
             if (!signed_urls || signed_urls.length === 0) {
+                console.warn('No signed URLs returned from refresh endpoint');
                 return analysisData;
             }
 
-            // Update analysis data with fresh URLs
+            // Verify we got the expected number of URLs
+            if (signed_urls.length !== framePathMap.length) {
+                console.warn(`Mismatch: requested ${framePathMap.length} URLs, got ${signed_urls.length}`);
+            }
+
+            // Update analysis data with fresh URLs using the proper mapping
             const refreshedAnalysis = { ...analysisData };
-            refreshedAnalysis.phase1.moments = analysisData.phase1.moments.map((moment, idx) => {
-                if (signed_urls[idx]) {
-                    return {
-                        ...moment,
-                        frame_url: signed_urls[idx]
-                    };
+            refreshedAnalysis.phase1.moments = analysisData.phase1.moments.map((moment, momentIdx) => {
+                // Find the corresponding refreshed URL for this moment
+                const pathMapEntry = framePathMap.find(entry => entry.momentIndex === momentIdx);
+                if (pathMapEntry) {
+                    const urlIndex = framePathMap.indexOf(pathMapEntry);
+                    if (signed_urls[urlIndex]) {
+                        return {
+                            ...moment,
+                            frame_url: signed_urls[urlIndex]
+                        };
+                    }
                 }
+                // No refreshed URL available, keep original
                 return moment;
             });
 
+            console.log(`Refreshed ${framePathMap.length} frame URLs`);
             return refreshedAnalysis;
         } catch (fetchError) {
             // Network error or endpoint doesn't exist - silently use existing URLs
+            console.warn('Error refreshing frame URLs:', fetchError);
             return analysisData;
         }
     } catch (error) {
         // Outer catch for any other errors - silently fall back to existing URLs
+        console.error('Error in refreshSignedUrls:', error);
         return analysisData;
     }
 }
@@ -1358,11 +1399,17 @@ async function handleVideoUpload(file) {
             
             // Sending analysis request to API
             
-            // Call the thumbnail generation endpoint (analysis may take 5-10 minutes)
+            // Call the thumbnail generation endpoint via Vercel proxy (avoids CORS issues)
+            // The proxy forwards to Cloud Run backend, similar to how OpenAI/Gemini APIs work
+            const endpointUrl = '/api/thumbnails/generate';
+            console.log('Making request to:', endpointUrl);
+            console.log('From origin:', window.location.origin);
+            console.log('Request payload keys:', Object.keys(requestPayload));
+            
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000); // 15 minute timeout
 
-            const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
+            const analysisResponse = await fetch(endpointUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1376,7 +1423,14 @@ async function handleVideoUpload(file) {
                     throw new Error('Analysis timed out after 15 minutes');
                 }
                 console.error('Fetch error details:', fetchError);
-                throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
+                console.error('Request URL:', endpointUrl);
+                console.error('Origin:', window.location.origin);
+                
+                // Provide more specific error message for network issues
+                if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('NetworkError')) {
+                    throw new Error(`Network error: Unable to reach the API proxy. This may be a deployment issue. Verify:\n1. The Vercel function /api/thumbnails/generate is deployed\n2. API_BASE_URL is configured in Vercel environment variables\n3. Check Vercel function logs for backend connection issues`);
+                }
+                throw new Error(`Network error: ${fetchError.message}`);
             });
 
             clearTimeout(timeoutId);
@@ -1995,11 +2049,17 @@ async function triggerAnalysisForExistingVideo() {
         
         // Sending analysis request to API
         
-        // Call the thumbnail generation endpoint (analysis may take 5-10 minutes)
+        // Call the thumbnail generation endpoint via Vercel proxy (avoids CORS issues)
+        // The proxy forwards to Cloud Run backend, similar to how OpenAI/Gemini APIs work
+        const endpointUrl = '/api/thumbnails/generate';
+        console.log('Making request to:', endpointUrl);
+        console.log('From origin:', window.location.origin);
+        console.log('Request payload keys:', Object.keys(requestPayload));
+        
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 15 * 60 * 1000); // 15 minute timeout
 
-        const analysisResponse = await fetch(`${API_BASE_URL}/thumbnails/generate`, {
+        const analysisResponse = await fetch(endpointUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2013,7 +2073,14 @@ async function triggerAnalysisForExistingVideo() {
                 throw new Error('Analysis timed out after 15 minutes');
             }
             console.error('Fetch error details:', fetchError);
-            throw new Error(`Network error: ${fetchError.message}. Check if API_BASE_URL is correct: ${API_BASE_URL}`);
+            console.error('Request URL:', endpointUrl);
+            console.error('Origin:', window.location.origin);
+            
+            // Provide more specific error message for network issues
+            if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('NetworkError')) {
+                throw new Error(`Network error: Unable to reach the API proxy. This may be a deployment issue. Verify:\n1. The Vercel function /api/thumbnails/generate is deployed\n2. API_BASE_URL is configured in Vercel environment variables\n3. Check Vercel function logs for backend connection issues`);
+            }
+            throw new Error(`Network error: ${fetchError.message}`);
         });
 
         clearTimeout(timeoutId);
