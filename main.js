@@ -1136,7 +1136,7 @@ async function refreshSignedUrls(analysisData) {
         // Extract just the paths for the API call
         const framePaths = framePathMap.map(item => item.path);
 
-        // Call backend to get fresh signed URLs (silently fail if endpoint doesn't exist)
+        // Call backend to get fresh signed URLs directly
         try {
             const authHeaders = await getAuthHeaders();
             const response = await fetch(`${API_BASE_URL}/refresh-frame-urls`, {
@@ -1399,9 +1399,8 @@ async function handleVideoUpload(file) {
             
             // Sending analysis request to API
             
-            // Call the thumbnail generation endpoint via Vercel proxy (avoids CORS issues)
-            // The proxy forwards to Cloud Run backend, similar to how OpenAI/Gemini APIs work
-            const endpointUrl = '/api/thumbnails/generate';
+            // Call the thumbnail generation endpoint directly on Cloud Run backend
+            const endpointUrl = `${API_BASE_URL}/thumbnails/generate`;
             console.log('Making request to:', endpointUrl);
             console.log('From origin:', window.location.origin);
             console.log('Request payload keys:', Object.keys(requestPayload));
@@ -1428,7 +1427,7 @@ async function handleVideoUpload(file) {
                 
                 // Provide more specific error message for network issues
                 if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('NetworkError')) {
-                    throw new Error(`Network error: Unable to reach the API proxy. This may be a deployment issue. Verify:\n1. The Vercel function /api/thumbnails/generate is deployed\n2. API_BASE_URL is configured in Vercel environment variables\n3. Check Vercel function logs for backend connection issues`);
+                    throw new Error(`Network error: Unable to reach the backend API. Verify:\n1. API_BASE_URL is configured in Vercel environment variables\n2. CORS is properly configured on your FastAPI backend\n3. Check backend logs for connection issues`);
                 }
                 throw new Error(`Network error: ${fetchError.message}`);
             });
@@ -2049,9 +2048,8 @@ async function triggerAnalysisForExistingVideo() {
         
         // Sending analysis request to API
         
-        // Call the thumbnail generation endpoint via Vercel proxy (avoids CORS issues)
-        // The proxy forwards to Cloud Run backend, similar to how OpenAI/Gemini APIs work
-        const endpointUrl = '/api/thumbnails/generate';
+        // Call the thumbnail generation endpoint directly on Cloud Run backend
+        const endpointUrl = `${API_BASE_URL}/thumbnails/generate`;
         console.log('Making request to:', endpointUrl);
         console.log('From origin:', window.location.origin);
         console.log('Request payload keys:', Object.keys(requestPayload));
@@ -2078,7 +2076,7 @@ async function triggerAnalysisForExistingVideo() {
             
             // Provide more specific error message for network issues
             if (fetchError.message.includes('Failed to fetch') || fetchError.message.includes('NetworkError')) {
-                throw new Error(`Network error: Unable to reach the API proxy. This may be a deployment issue. Verify:\n1. The Vercel function /api/thumbnails/generate is deployed\n2. API_BASE_URL is configured in Vercel environment variables\n3. Check Vercel function logs for backend connection issues`);
+                throw new Error(`Network error: Unable to reach the backend API. Verify:\n1. API_BASE_URL is configured in Vercel environment variables\n2. CORS is properly configured on your FastAPI backend\n3. Check backend logs for connection issues`);
             }
             throw new Error(`Network error: ${fetchError.message}`);
         });
