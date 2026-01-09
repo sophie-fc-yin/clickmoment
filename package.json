@@ -7,9 +7,10 @@
     "vercel-build": "node build.js",
     "postinstall": "echo 'Build will run via vercel-build script'"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@vercel/speed-insights": "^1.3.1"
+  },
   "engines": {
     "node": ">=18.x"
   }
 }
-

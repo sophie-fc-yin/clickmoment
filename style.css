@@ -3418,13 +3418,95 @@ h3,
     .site-footer {
         padding: 24px 0;
     }
-    
+
     .footer-content {
         gap: 8px;
     }
-    
+
     .footer-copyright,
     .footer-link {
         font-size: 13px;
     }
+}
+
+/* ============================================
+   LAYOUT ADJUSTMENTS FOR TEXT-ONLY VERSION
+   (When image sections are commented out)
+   ============================================ */
+
+/* Hero section - center text content when visual is hidden */
+.hero-grid:has(.hero-content):not(:has(.hero-visual)) {
+    grid-template-columns: 1fr;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.hero-grid:has(.hero-content):not(:has(.hero-visual)) .hero-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.hero-grid:has(.hero-content):not(:has(.hero-visual)) .hero-actions {
+    justify-content: center;
+}
+
+/* Reality check section - center content when visual is hidden */
+.reality-check-section:has(.reality-check-content):not(:has(.reality-check-visual)) {
+    grid-template-columns: 1fr;
+    max-width: 900px;
+    margin: 0 auto !important;
+}
+
+.reality-check-section:has(.reality-check-content):not(:has(.reality-check-visual)) .reality-check-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+/* Who it's for section - center content when visual is hidden */
+.who-its-for-grid:has(.who-its-for-content):not(:has(.who-its-for-visual)) {
+    grid-template-columns: 1fr;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.who-its-for-grid:has(.who-its-for-content):not(:has(.who-its-for-visual)) .who-its-for-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+    padding-left: 0;
+}
+
+.who-its-for-grid:has(.who-its-for-content):not(:has(.who-its-for-visual)) .who-its-for-content::before {
+    display: none;
+}
+
+.who-its-for-grid:has(.who-its-for-content):not(:has(.who-its-for-visual)) .creator-types {
+    justify-content: center;
+}
+
+.who-its-for-grid:has(.who-its-for-content):not(:has(.who-its-for-visual)) .who-its-for-metrics {
+    justify-content: center;
+}
+
+/* Footer section - center content when visual is hidden */
+.footer-grid:has(.footer-content):not(:has(.footer-visual)) {
+    grid-template-columns: 1fr;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.footer-grid:has(.footer-content):not(:has(.footer-visual)) .footer-content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.footer-grid:has(.footer-content):not(:has(.footer-visual)) .footer-cta-row {
+    justify-content: center;
+}
+
+.footer-grid:has(.footer-content):not(:has(.footer-visual)) .footer-pills {
+    justify-content: center;
 }
