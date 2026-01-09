@@ -1,6 +1,6 @@
-// Vercel Serverless Function - Proxy for refreshing frame signed URLs
+// Vercel Serverless Function - Proxy for thumbnail generation
 // Proxies requests to Cloud Run backend to avoid CORS issues
-// Access at: /api/refresh-frame-urls
+// Access at: /api/thumbnails/generate
 
 module.exports = async (req, res) => {
   // Set CORS headers - allow requests from any origin (like OpenAI/Gemini APIs)
@@ -30,7 +30,7 @@ module.exports = async (req, res) => {
   
   try {
     // Forward the request to Cloud Run backend
-    const backendResponse = await fetch(`${backendUrl}/refresh-frame-urls`, {
+    const backendResponse = await fetch(`${backendUrl}/thumbnails/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -38,6 +38,8 @@ module.exports = async (req, res) => {
         ...(req.headers.authorization && { Authorization: req.headers.authorization })
       },
       body: JSON.stringify(req.body)
+      // Note: Vercel Pro allows up to 300s timeout, but analysis may take longer
+      // The fetch itself can take longer, but Vercel function execution is limited
     });
     
     // Get response data
@@ -56,10 +58,15 @@ module.exports = async (req, res) => {
     
   } catch (error) {
     console.error('Proxy error:', error);
-    res.status(500).json({ 
-      error: 'Proxy error', 
-      message: error.message 
-    });
+    
+    if (error.name === 'AbortError' || error.name === 'TimeoutError') {
+      res.status(504).json({ error: 'Request timeout - analysis took too long' });
+    } else {
+      res.status(500).json({ 
+        error: 'Proxy error', 
+        message: error.message 
+      });
+    }
   }
 };
 

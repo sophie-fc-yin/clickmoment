@@ -1857,7 +1857,12 @@ function showDecisionSectionFromAnalysis(analysis) {
         }
         
         // Timestamps + timeline links
-        const timestampSeconds = parseTimestampToSeconds(moment?.timestamp);
+        // Priority: Extract from frame filename (source of truth), fallback to moment.timestamp
+        let timestampSeconds = extractTimestampFromFrameUrl(moment?.frame_url);
+        if (timestampSeconds == null) {
+            timestampSeconds = parseTimestampToSeconds(moment?.timestamp);
+        }
+        
         if (timestampLink) {
             if (timestampSeconds != null) {
                 const tsText = timestampLink.querySelector('.timestamp-text');
@@ -1877,7 +1882,11 @@ function showDecisionSectionFromAnalysis(analysis) {
     cardOrder.forEach((key, idx) => {
         const m = mappedMoments[idx];
         if (!m) return;
-        const ts = parseTimestampToSeconds(m.timestamp);
+        // Priority: Extract from frame filename (source of truth), fallback to moment.timestamp
+        let ts = extractTimestampFromFrameUrl(m.frame_url);
+        if (ts == null) {
+            ts = parseTimestampToSeconds(m.timestamp);
+        }
         verdictMoments[key] = {
             timestamp: ts != null ? ts : 0,
             label: m.frame_id || `Moment ${idx + 1}`
@@ -1899,6 +1908,42 @@ function parseTimestampToSeconds(ts) {
     if (!cleaned) return null;
     const num = parseFloat(cleaned);
     return Number.isFinite(num) ? num : null;
+}
+
+// Extract timestamp from frame filename (e.g., "frame_0122051ms.jpg" -> 122.051 seconds)
+function extractTimestampFromFrameUrl(frameUrl) {
+    if (!frameUrl) return null;
+    
+    try {
+        // Extract filename from URL (handle both signed URLs and GCS paths)
+        let filename = '';
+        if (frameUrl.includes('/')) {
+            // Get the last part of the path
+            const parts = frameUrl.split('/');
+            filename = parts[parts.length - 1];
+            // Remove query parameters if present (signed URLs)
+            if (filename.includes('?')) {
+                filename = filename.split('?')[0];
+            }
+        } else {
+            filename = frameUrl;
+        }
+        
+        // Match pattern: frame_XXXXXXXXms.jpg or frame_XXXXXXXXms
+        const match = filename.match(/frame_(\d+)ms/i);
+        if (match && match[1]) {
+            const milliseconds = parseInt(match[1], 10);
+            if (Number.isFinite(milliseconds) && milliseconds >= 0) {
+                // Convert milliseconds to seconds
+                return milliseconds / 1000;
+            }
+        }
+    } catch (e) {
+        // Silently fail if extraction fails
+        console.debug('Could not extract timestamp from frame URL:', frameUrl);
+    }
+    
+    return null;
 }
 
 function inferVideoDurationFromMoments(moments) {
