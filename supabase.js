@@ -4,10 +4,15 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = window.SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || '';
 
+console.log('🔧 Supabase configuration:', {
+    url: SUPABASE_URL ? SUPABASE_URL.substring(0, 30) + '...' : 'NOT SET',
+    key: SUPABASE_ANON_KEY ? '***hidden***' : 'NOT SET'
+});
+
 let supabase;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    console.error('Missing Supabase environment variables. Please configure SUPABASE_URL and SUPABASE_ANON_KEY.');
+    console.error('❌ Missing Supabase environment variables. Please configure SUPABASE_URL and SUPABASE_ANON_KEY.');
     // Create a dummy client to prevent errors
     supabase = {
         auth: {

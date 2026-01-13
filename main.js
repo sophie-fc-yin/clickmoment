@@ -115,23 +115,33 @@ function cleanupOldLocalStorage() {
 
 // Update UI based on auth state
 async function updateUI() {
+    console.log('🔄 updateUI called, currentUser:', currentUser ? currentUser.id : 'null');
+
     if (currentUser) {
         // User is logged in - show app
+        console.log('✅ User authenticated:', {
+            id: currentUser.id,
+            email: currentUser.email,
+            created_at: currentUser.created_at
+        });
+
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
         landingPage.style.display = 'none';
-        
+
         // Clean up old localStorage data once
         cleanupOldLocalStorage();
-        
+
         // Initialize managers
         if (!projectManager) {
+            console.log('📦 Initializing ProjectManager with userId:', currentUser.id);
             projectManager = new ProjectManager(currentUser.id);
         }
         if (!profileManager) {
+            console.log('📦 Initializing ProfileManager');
             profileManager = new ProfileManager();
         }
-        
+
         // Check if user has a profile with data, if not show profile setup
         // Profile UI disabled - always show projects list
             await showProjectsView();
@@ -183,15 +193,21 @@ function showCreateProjectView() {
 
 // Show edit project view
 async function showEditProjectView(projectId) {
+    console.log('✏️ showEditProjectView called with projectId:', projectId);
+
     projectsView.style.display = 'none';
     createProjectView.style.display = 'none';
     editProjectView.style.display = 'block';
     projectView.style.display = 'none';
     // profileView.style.display = 'none'; // DISABLED
     currentProjectId = projectId;
-    
+
+    console.log('🔍 Fetching project data for editing...');
     const project = await projectManager.getProject(projectId);
+
     if (project) {
+        console.log('✅ Project data loaded:', project);
+
         const creativeDirection = project.creative_direction || {};
         const creatorContext = project.creator_context || {};
 
@@ -201,6 +217,11 @@ async function showEditProjectView(projectId) {
         document.getElementById('edit-project-notes').value = creativeDirection.notes || '';
         document.getElementById('edit-project-maturity-hint').value = creatorContext.maturity_hint || '';
         document.getElementById('edit-project-niche-hint').value = creatorContext.niche_hint || '';
+
+        console.log('📋 Edit form populated with project data');
+    } else {
+        console.error('❌ Project not found');
+        alert('Error: Project not found');
     }
 }
 
@@ -354,30 +375,38 @@ async function showProjectView(projectId) {
 let isRendering = false;
 let renderRequested = false;
 async function renderProjectsList() {
+    console.log('📋 renderProjectsList called');
+
     if (!projectManager || !projectsList) {
-        console.warn('Cannot render projects list: projectManager or projectsList not available');
+        console.error('❌ Cannot render projects list:', {
+            projectManager: !!projectManager,
+            projectsList: !!projectsList
+        });
         return;
     }
-    
+
     // If already rendering, mark that a re-render was requested
     if (isRendering) {
         renderRequested = true;
         return;
     }
-    
+
     isRendering = true;
     renderRequested = false;
-    
+
     try {
+        console.log('🔍 Fetching projects from Supabase...');
         const projects = await projectManager.getProjects();
-        
+        console.log('📦 Projects fetched:', projects.length, 'projects');
+
         // Clear existing content completely
         while (projectsList.firstChild) {
             projectsList.removeChild(projectsList.firstChild);
         }
         projectsList.innerHTML = '';
-        
+
         if (projects.length === 0) {
+            console.log('ℹ️  No projects found - showing empty state');
             noProjects.style.display = 'block';
             projectsList.style.display = 'none';
         } else {
@@ -758,15 +787,16 @@ cancelEditProjectFormBtn.addEventListener('click', async () => {
 
 createProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+    console.log('📝 Create project form submitted');
+
     if (!projectManager) {
-        console.error('Project manager not initialized');
+        console.error('❌ Project manager not initialized');
         alert('Error: Project manager not initialized. Please refresh the page.');
         return;
     }
-    
+
     const formData = new FormData(e.target);
-    
+
     // Build project data with new JSONB structure
     const projectData = {
         name: formData.get('name'),
@@ -781,37 +811,49 @@ createProjectForm.addEventListener('submit', async (e) => {
         },
         profile_photos: [] // TODO: Add support for profile photos upload
     };
-    
+
+    console.log('📋 Form data collected:', projectData);
+
     try {
-    // Create new project
-    const result = await projectManager.createProject(projectData);
-        
-    if (result.error) {
-            console.error('Error creating project:', result.error);
-        alert('Error creating project: ' + result.error.message);
+        // Create new project
+        console.log('🚀 Calling projectManager.createProject...');
+        const result = await projectManager.createProject(projectData);
+
+        if (result.error) {
+            console.error('❌ Error creating project:', result.error);
+            alert('Error creating project: ' + result.error.message);
         } else if (result.data) {
-            
+            console.log('✅ Project created successfully, showing project view');
+
             // Reset the form
             createProjectForm.reset();
-            
+
             // Show the newly created project
-        await showProjectView(result.data.id);
+            await showProjectView(result.data.id);
         } else {
-            console.error('Unexpected result format:', result);
+            console.error('❌ Unexpected result format:', result);
             alert('Error: Unexpected response from server');
         }
     } catch (error) {
-        console.error('Exception during project creation:', error);
+        console.error('❌ Exception during project creation:', error);
         alert('Error creating project: ' + error.message);
     }
 });
 
 editProjectForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!currentProjectId) return;
-    
+    console.log('✏️ Edit project form submitted');
+
+    if (!currentProjectId) {
+        console.error('❌ No currentProjectId set');
+        alert('Error: No project selected');
+        return;
+    }
+
+    console.log('📋 Editing project ID:', currentProjectId);
+
     const formData = new FormData(e.target);
-    
+
     // Build project data with new JSONB structure
     const projectData = {
         name: formData.get('name'),
@@ -826,13 +868,24 @@ editProjectForm.addEventListener('submit', async (e) => {
         },
         profile_photos: [] // TODO: Add support for profile photos upload
     };
-    
-    // Update existing project
-    const result = await projectManager.updateProject(currentProjectId, projectData);
-    if (result.error) {
-        alert('Error updating project: ' + result.error.message);
-    } else {
-        await showProjectView(result.data.id);
+
+    console.log('📦 Update data collected:', projectData);
+
+    try {
+        // Update existing project
+        console.log('🚀 Calling projectManager.updateProject...');
+        const result = await projectManager.updateProject(currentProjectId, projectData);
+
+        if (result.error) {
+            console.error('❌ Error updating project:', result.error);
+            alert('Error updating project: ' + result.error.message);
+        } else {
+            console.log('✅ Project updated successfully, showing project view');
+            await showProjectView(result.data.id);
+        }
+    } catch (error) {
+        console.error('❌ Exception during project update:', error);
+        alert('Error updating project: ' + error.message);
     }
 });
 
@@ -1603,7 +1656,7 @@ if (decisionDoneBtn) {
         // 1️⃣ Persist the decision silently
         try {
             const decision = {
-                project_id: currentProject.id,
+                project_id: currentProjectId,
                 chosen_category: selectedVerdictData.type,
                 frame_id: selectedVerdictData.frame_id,
                 timestamp: selectedVerdictData.timestamp,

@@ -8,40 +8,68 @@ export class ProjectManager {
 
     // Get all projects for the current user, ordered by latest updated
     async getProjects() {
+        console.log('🔍 ProjectManager.getProjects() called with userId:', this.userId);
+
         const { data, error } = await supabase
             .from('projects')
             .select('*')
             .eq('user_id', this.userId)
             .order('updated_at', { ascending: false });
-        
+
         if (error) {
-            console.error('Error loading projects:', error);
+            console.error('❌ Error loading projects:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            });
             return [];
         }
-        
+
+        console.log('✅ Projects loaded successfully:', data?.length || 0, 'projects');
+        console.log('Projects data:', data);
         return data || [];
     }
 
     // Create a new project
     async createProject(projectData) {
+        console.log('📝 Creating new project:', {
+            name: projectData.name,
+            userId: this.userId,
+            hasCreativeDirection: !!projectData.creative_direction,
+            hasCreatorContext: !!projectData.creator_context
+        });
+
+        const insertData = {
+            user_id: this.userId,
+            name: projectData.name || `Project ${new Date().toISOString()}`,
+            content_sources: projectData.content_sources || {},
+            creative_direction: projectData.creative_direction || {},
+            creator_context: projectData.creator_context || {},
+            profile_photos: projectData.profile_photos || [],
+        };
+
+        console.log('📦 Insert data:', insertData);
+
         const { data, error } = await supabase
             .from('projects')
-            .insert({
-                user_id: this.userId,
-                name: projectData.name || `Project ${new Date().toISOString()}`,
-                content_sources: projectData.content_sources || {},
-                creative_direction: projectData.creative_direction || {},
-                creator_context: projectData.creator_context || {},
-                profile_photos: projectData.profile_photos || [],
-            })
+            .insert(insertData)
             .select()
             .single();
 
         if (error) {
-            console.error('Error creating project:', error);
+            console.error('❌ Error creating project:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            });
             return { error };
         }
 
+        console.log('✅ Project created successfully:', data);
         return { data };
     }
 
@@ -64,6 +92,13 @@ export class ProjectManager {
 
     // Update a project
     async updateProject(projectId, updates) {
+        console.log('✏️ Updating project:', {
+            projectId,
+            userId: this.userId,
+            updateKeys: Object.keys(updates)
+        });
+        console.log('📦 Update data:', updates);
+
         const { data, error } = await supabase
             .from('projects')
             .update(updates)
@@ -71,12 +106,19 @@ export class ProjectManager {
             .eq('user_id', this.userId)
             .select()
             .single();
-        
+
         if (error) {
-            console.error('Error updating project:', error);
+            console.error('❌ Error updating project:', error);
+            console.error('Error details:', {
+                message: error.message,
+                code: error.code,
+                details: error.details,
+                hint: error.hint
+            });
             return { error };
         }
-        
+
+        console.log('✅ Project updated successfully:', data);
         return { data };
     }
 
