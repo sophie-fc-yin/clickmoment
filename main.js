@@ -114,8 +114,8 @@ function cleanupOldLocalStorage() {
 }
 
 // Update UI based on auth state
-async function updateUI() {
-    console.log('🔄 updateUI called, currentUser:', currentUser ? currentUser.id : 'null');
+async function updateUI(skipNavigation = false) {
+    console.log('🔄 updateUI called, currentUser:', currentUser ? currentUser.id : 'null', 'skipNavigation:', skipNavigation);
 
     if (currentUser) {
         // User is logged in - show app
@@ -124,6 +124,12 @@ async function updateUI() {
             email: currentUser.email,
             created_at: currentUser.created_at
         });
+
+        // Close auth modal if it's open
+        if (authModal && authModal.style.display === 'flex') {
+            console.log('🔒 Closing auth modal after successful login');
+            closeAuthModalHandler();
+        }
 
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
@@ -142,9 +148,15 @@ async function updateUI() {
             profileManager = new ProfileManager();
         }
 
-        // Check if user has a profile with data, if not show profile setup
-        // Profile UI disabled - always show projects list
+        // Only navigate to projects view if not skipping navigation
+        // This prevents disrupting the user when they're already viewing a project
+        if (!skipNavigation) {
+            // Check if user has a profile with data, if not show profile setup
+            // Profile UI disabled - always show projects list
             await showProjectsView();
+        } else {
+            console.log('⏭️  Skipping navigation to projects view (user is already viewing content)');
+        }
     } else {
         // User is not logged in - show landing page
         loginBtn.style.display = 'inline-block';
@@ -706,13 +718,40 @@ logoutBtn.addEventListener('click', async () => {
 // Listen for auth state changes
 let authStateChangeInitialized = false;
 supabase.auth.onAuthStateChange(async (event, session) => {
+    console.log('🔐 Auth state changed:', event, 'Session:', !!session);
+
     currentUser = session?.user || null;
+
     // Skip the first call since initAuth already handles initial state
     if (!authStateChangeInitialized) {
         authStateChangeInitialized = true;
         return;
     }
-    await updateUI();
+
+    // Determine if we should skip navigation
+    // Skip if user is viewing a project or in the middle of an operation
+    const isViewingProject = currentProjectId && (
+        projectView.style.display === 'block' ||
+        createProjectView.style.display === 'block' ||
+        editProjectView.style.display === 'block'
+    );
+
+    // Check if analysis or upload is in progress
+    const isAnalysisInProgress = analysisProgressSection && analysisProgressSection.style.display === 'block';
+    const isUploadInProgress = uploadProgressSection && uploadProgressSection.style.display === 'block';
+
+    const skipNavigation = isViewingProject || isAnalysisInProgress || isUploadInProgress || event === 'TOKEN_REFRESHED';
+
+    if (skipNavigation) {
+        console.log('⏭️  Auth state changed but user is active - skipping navigation', {
+            isViewingProject,
+            isAnalysisInProgress,
+            isUploadInProgress,
+            event
+        });
+    }
+
+    await updateUI(skipNavigation);
 });
 
 // Update status text
@@ -2362,7 +2401,17 @@ function clearStaleVideoSources() {
     }
 }
 
+// Ensure auth modal is hidden on page load
+function ensureAuthModalHidden() {
+    if (authModal && authModal.style.display === 'flex') {
+        console.log('🔒 Hiding auth modal on page load');
+        authModal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
 // Initialize on load
 clearStaleVideoSources();
+ensureAuthModalHidden();
 initAuth();
 

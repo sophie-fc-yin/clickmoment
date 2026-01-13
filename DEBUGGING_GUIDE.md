@@ -397,14 +397,134 @@ All these buttons should work:
 4. If you see `❌ Failed to get video URL`, check your backend API is running
 5. Check that the backend `/get-video-url` endpoint exists and works
 
+## Specific Issue: Projects Not Loading (Existing Projects Invisible)
+
+If you have existing projects in the database but they're not showing up in the app:
+
+### Quick Diagnosis
+
+1. **Open Browser Console** (F12)
+2. **Log in to your app**
+3. **Look for these specific messages**:
+
+```
+🔍 ProjectManager.getProjects() called
+   Current userId: <your-user-id>
+   Session user: <session-user-id>
+   User ID match: true/false
+🔎 Executing Supabase query...
+```
+
+### Common Error Scenarios
+
+#### Scenario A: RLS Policy Error (Code 42501)
+```
+❌ Error loading projects: {...}
+🔒 RLS POLICY ERROR: Row Level Security is blocking access
+```
+
+**What this means**: Your table has RLS enabled but no policies allow you to read your data.
+
+**Fix**: Run the RLS policy SQL from `SUPABASE_DIAGNOSTIC.sql` (FIX 1 section)
+
+#### Scenario B: No Errors, But 0 Projects
+```
+✅ Projects query successful!
+   Total projects found: 0
+⚠️  No projects returned - possible causes:
+   1. No projects exist for this user
+   2. RLS policy is filtering them out
+   3. user_id does not match
+```
+
+**What this means**: The query ran but returned nothing.
+
+**Fix**:
+1. Open Supabase SQL Editor
+2. Run the diagnostic queries from `SUPABASE_DIAGNOSTIC.sql`
+3. Compare Query 5 (total projects) vs Query 8 (your projects)
+4. If Query 5 shows projects but Query 8 shows 0 → RLS issue
+5. If both show 0 → No projects exist, try creating one
+
+#### Scenario C: User ID Mismatch
+```
+   Current userId: abc-123...
+   Session user: xyz-789...
+   User ID match: false
+```
+
+**What this means**: The app is using a different user ID than your session.
+
+**Fix**: This is a critical bug - share this console output with me.
+
+### Step-by-Step Diagnostic Process
+
+**Step 1: Run Diagnostic SQL Queries**
+
+I've created `SUPABASE_DIAGNOSTIC.sql` with test queries. Run these in Supabase SQL Editor:
+
+1. Go to Supabase Dashboard → SQL Editor
+2. Create new query
+3. Copy queries from `SUPABASE_DIAGNOSTIC.sql`
+4. Run queries 1-10 one by one
+5. Note the results for each
+
+**Step 2: Interpret Results**
+
+| Result | Meaning | Fix |
+|--------|---------|-----|
+| Query 5 shows projects, Query 8 shows 0 | RLS is blocking | Run FIX 1 in SQL file |
+| Query 4 shows no policies | No RLS policies exist | Run FIX 1 in SQL file |
+| Query 6 shows different user_ids than Query 7 | Projects have wrong user_id | Contact me for help |
+| Query 1 returns 0 | Table doesn't exist | Run FIX 3 in SQL file |
+| All queries return 0 projects | No projects exist | Create a test project |
+
+**Step 3: Apply Fix**
+
+Most common fix is RLS policies. Run this in Supabase SQL Editor:
+
+```sql
+-- Enable RLS
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
+
+-- Create policies
+DROP POLICY IF EXISTS "Users can read own projects" ON projects;
+CREATE POLICY "Users can read own projects"
+ON projects FOR SELECT
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can create own projects" ON projects;
+CREATE POLICY "Users can create own projects"
+ON projects FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can update own projects" ON projects;
+CREATE POLICY "Users can update own projects"
+ON projects FOR UPDATE
+USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Users can delete own projects" ON projects;
+CREATE POLICY "Users can delete own projects"
+ON projects FOR DELETE
+USING (auth.uid() = user_id);
+```
+
+**Step 4: Test**
+
+1. Refresh your app (hard refresh: Cmd+Shift+R)
+2. Log in again
+3. Check console for `✅ Projects query successful!`
+4. Your projects should now appear
+
 ## Getting More Help
 
 If you still have issues after following this guide:
 
 1. **Share console output**: Copy all console logs (especially lines with ❌)
-2. **Share specific error messages**: Include error code and message
-3. **Share what you've tried**: Which SQL queries you ran
-4. **Share current state**: Can you log in? Can you see projects? What breaks?
+2. **Share SQL diagnostic results**: Run queries from `SUPABASE_DIAGNOSTIC.sql` and share results
+3. **Share specific error messages**: Include error code and message
+4. **Share what you've tried**: Which SQL queries you ran
+5. **Share current state**: Can you log in? Can you see projects? What breaks?
 
 ## Quick Reference: Console Log Meanings
 

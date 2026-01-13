@@ -8,27 +8,62 @@ export class ProjectManager {
 
     // Get all projects for the current user, ordered by latest updated
     async getProjects() {
-        console.log('🔍 ProjectManager.getProjects() called with userId:', this.userId);
+        console.log('🔍 ProjectManager.getProjects() called');
+        console.log('   Current userId:', this.userId);
 
-        const { data, error } = await supabase
+        // First, let's verify the Supabase client is working
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) {
+            console.error('❌ Session error:', sessionError);
+        } else {
+            console.log('   Session user:', session?.user?.id || 'NO SESSION');
+            console.log('   User ID match:', session?.user?.id === this.userId);
+        }
+
+        // Try to query projects
+        console.log('🔎 Executing Supabase query...');
+        const { data, error, count } = await supabase
             .from('projects')
-            .select('*')
+            .select('*', { count: 'exact' })
             .eq('user_id', this.userId)
             .order('updated_at', { ascending: false });
 
         if (error) {
             console.error('❌ Error loading projects:', error);
-            console.error('Error details:', {
+            console.error('📋 Error details:', {
                 message: error.message,
                 code: error.code,
                 details: error.details,
-                hint: error.hint
+                hint: error.hint,
+                statusCode: error.statusCode
             });
+
+            // Check for specific error codes
+            if (error.code === '42501') {
+                console.error('🔒 RLS POLICY ERROR: Row Level Security is blocking access');
+                console.error('   This means RLS policies are not configured correctly');
+            } else if (error.code === '42P01') {
+                console.error('📊 TABLE NOT FOUND: The projects table does not exist');
+            } else if (error.code === 'PGRST116') {
+                console.error('🔑 JWT ERROR: Authentication token is invalid or expired');
+            }
+
             return [];
         }
 
-        console.log('✅ Projects loaded successfully:', data?.length || 0, 'projects');
-        console.log('Projects data:', data);
+        console.log('✅ Projects query successful!');
+        console.log('   Total projects found:', data?.length || 0);
+        console.log('   Total count:', count);
+
+        if (data && data.length > 0) {
+            console.log('📦 Sample project:', data[0]);
+        } else {
+            console.warn('⚠️  No projects returned - possible causes:');
+            console.warn('   1. No projects exist for this user');
+            console.warn('   2. RLS policy is filtering them out');
+            console.warn('   3. user_id does not match');
+        }
+
         return data || [];
     }
 
