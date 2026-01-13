@@ -379,6 +379,24 @@ All these buttons should work:
 2. Redeploy the application
 3. Hard refresh browser (Cmd+Shift+R or Ctrl+Shift+R)
 
+### Issue: "Blob URL error" (ERR_FILE_NOT_FOUND)
+**Symptoms**: Console shows `GET blob:https://... net::ERR_FILE_NOT_FOUND`
+**What it means**: The browser is trying to load a video from a temporary URL that no longer exists (from a previous session)
+**Solution**: This is now automatically fixed - the app clears stale video sources on page load
+**If it persists**:
+1. Hard refresh the page (Cmd+Shift+R or Ctrl+Shift+R)
+2. Clear browser cache
+3. Check console for 🎬 logs showing video source being cleared
+
+### Issue: "Video not playing"
+**Symptoms**: Video player shows but video doesn't load
+**Debug steps**:
+1. Check console for: `🔍 Getting video playback URL`
+2. Look for: `✅ Got signed URL for video playback`
+3. If you see `❌ API_BASE_URL not configured`, add API_BASE_URL to Vercel
+4. If you see `❌ Failed to get video URL`, check your backend API is running
+5. Check that the backend `/get-video-url` endpoint exists and works
+
 ## Getting More Help
 
 If you still have issues after following this guide:

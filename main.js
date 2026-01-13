@@ -158,12 +158,21 @@ async function updateUI() {
     }
 }
 
-// Helper function to stop video playback
+// Helper function to stop video playback and clear source
 function stopVideoPlayback() {
-    if (projectVideo && !projectVideo.paused) {
-        projectVideo.pause();
+    if (projectVideo) {
+        if (!projectVideo.paused) {
+            projectVideo.pause();
+        }
         projectVideo.currentTime = 0; // Reset to beginning
-        // Video stopped
+
+        // Clear video source to prevent blob URL errors
+        if (videoSource) {
+            videoSource.src = '';
+        }
+        projectVideo.load(); // Reset the video element
+
+        console.log('🎬 Video playback stopped and source cleared');
     }
 }
 
@@ -1035,6 +1044,13 @@ function getVideoDuration(file) {
 
 // Get signed URL for video playback
 async function getVideoPlaybackUrl(gcsPath) {
+    console.log('🔍 Getting video playback URL for:', gcsPath);
+
+    if (!API_BASE_URL) {
+        console.error('❌ API_BASE_URL not configured');
+        return null;
+    }
+
     try {
         const authHeaders = await getAuthHeaders();
         const response = await fetch(`${API_BASE_URL}/get-video-url`, {
@@ -1050,44 +1066,60 @@ async function getVideoPlaybackUrl(gcsPath) {
 
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Failed to get video URL:', errorText);
+            console.error('❌ Failed to get video URL:', {
+                status: response.status,
+                statusText: response.statusText,
+                error: errorText
+            });
             throw new Error(`Failed to get video URL (${response.status})`);
         }
 
         const { signed_url } = await response.json();
-        // Got signed URL for video playback
+        console.log('✅ Got signed URL for video playback');
         return signed_url;
     } catch (error) {
-        console.error('Error getting video playback URL:', error);
+        console.error('❌ Error getting video playback URL:', error);
         return null;
     }
 }
 
 // Load video into player with loading state
 async function loadVideoIntoPlayer(gcsPath) {
+    console.log('🎬 loadVideoIntoPlayer called with gcsPath:', gcsPath);
+
     if (!gcsPath || !videoLoadingState || !projectVideo || !videoSource) {
-        console.warn('Missing video elements or path');
+        console.error('❌ Missing video elements or path:', {
+            gcsPath: !!gcsPath,
+            videoLoadingState: !!videoLoadingState,
+            projectVideo: !!projectVideo,
+            videoSource: !!videoSource
+        });
         return false;
     }
-    
+
     try {
         // Show loading state
         videoLoadingState.style.display = 'block';
         projectVideo.style.display = 'none';
-        
+
+        // Clear any previous source first
+        videoSource.src = '';
+        projectVideo.load();
+
         // Get signed URL
-        // Getting playback URL for video
+        console.log('🔍 Getting playback URL for video...');
         const playbackUrl = await getVideoPlaybackUrl(gcsPath);
-        
+
         if (!playbackUrl) {
-            console.error('Could not get playback URL');
+            console.error('❌ Could not get playback URL');
             videoLoadingState.style.display = 'none';
             return false;
         }
-        
+
         // Set video source
+        console.log('📺 Setting video source');
         videoSource.src = playbackUrl;
-        // Video source set, starting load
+        console.log('🚀 Starting video load...');
         
         // Wait for video to be ready
         return new Promise((resolve) => {
@@ -1112,12 +1144,23 @@ async function loadVideoIntoPlayer(gcsPath) {
             };
             
             const onError = (e) => {
-                console.error('Error loading video:', e);
+                console.error('❌ Error loading video:', {
+                    error: e,
+                    videoSrc: videoSource?.src,
+                    errorCode: projectVideo?.error?.code,
+                    errorMessage: projectVideo?.error?.message
+                });
                 videoLoadingState.style.display = 'none';
                 projectVideo.style.display = 'block';
                 projectVideo.removeEventListener('loadedmetadata', onLoadedMetadata);
                 projectVideo.removeEventListener('canplay', onCanPlay);
                 projectVideo.removeEventListener('error', onError);
+
+                // Clear the failed source
+                if (videoSource) {
+                    videoSource.src = '';
+                }
+
                 resolve(false);
             };
             
@@ -2308,6 +2351,18 @@ function formatTimestamp(seconds) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
 }
 
+// Clear any stale video sources on page load
+function clearStaleVideoSources() {
+    if (videoSource) {
+        videoSource.src = '';
+    }
+    if (projectVideo) {
+        projectVideo.load();
+        console.log('🎬 Cleared stale video sources on page load');
+    }
+}
+
 // Initialize on load
+clearStaleVideoSources();
 initAuth();
 
