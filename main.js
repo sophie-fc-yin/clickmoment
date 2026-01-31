@@ -254,12 +254,43 @@ async function showProjectView(projectId) {
     editProjectView.style.display = 'none';
     projectView.style.display = 'block';
     // profileView.style.display = 'none'; // DISABLED
-    
+
     // Hide any existing decision section immediately when switching projects
     const decisionSection = document.getElementById('decision-section');
     if (decisionSection) {
         decisionSection.style.display = 'none';
     }
+
+    // Reset decision confirmation section
+    const decisionConfirmation = document.getElementById('decision-confirmation');
+    const decisionDoneBtn = document.getElementById('decision-done-btn');
+    if (decisionConfirmation) {
+        decisionConfirmation.style.display = 'none';
+    }
+    if (decisionDoneBtn) {
+        decisionDoneBtn.style.display = 'inline-block'; // Reset to visible for next decision
+    }
+
+    // Ensure auth modal and overlay are hidden
+    if (authModal) {
+        authModal.style.display = 'none';
+    }
+
+    // Reset body overflow to ensure no scrolling issues
+    document.body.style.overflow = 'auto';
+
+    // Remove any stale overlays that might be lingering
+    const authModalOverlay = document.querySelector('.auth-modal-overlay');
+    if (authModalOverlay && authModalOverlay.parentElement === authModal) {
+        console.log('🧹 Auth modal overlay found inside modal (normal)');
+    }
+
+    // Log current modal states for debugging
+    console.log('🧹 Cleaned up UI state:', {
+        authModalDisplay: authModal?.style.display,
+        decisionConfirmationDisplay: decisionConfirmation?.style.display,
+        bodyOverflow: document.body.style.overflow
+    });
     
     // Set current project ID and store in local variable to prevent race conditions
     currentProjectId = projectId;
@@ -1866,7 +1897,24 @@ function showDecisionSectionFromAnalysis(analysis) {
         console.error('Decision section element not found!');
         return;
     }
-    
+
+    // Reset decision UI state
+    const decisionConfirmation = document.getElementById('decision-confirmation');
+    const decisionDoneBtn = document.getElementById('decision-done-btn');
+    if (decisionConfirmation) {
+        decisionConfirmation.style.display = 'none';
+    }
+    if (decisionDoneBtn) {
+        decisionDoneBtn.style.display = 'inline-block';
+    }
+
+    // Clear any selected verdict
+    document.querySelectorAll('.verdict-card').forEach(card => {
+        card.classList.remove('verdict-card-selected');
+    });
+
+    console.log('🔄 Reset decision UI state before showing analysis');
+
     // Explicitly show the decision section
     decisionSection.style.display = 'block';
         
@@ -2409,6 +2457,88 @@ function ensureAuthModalHidden() {
         document.body.style.overflow = 'auto';
     }
 }
+
+// Debug function to check overlay states (call from console)
+window.debugOverlays = function() {
+    console.log('🔍 OVERLAY DEBUG INFO:');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+    const authModalEl = document.getElementById('auth-modal');
+    const decisionConfEl = document.getElementById('decision-confirmation');
+    const authOverlayEl = document.querySelector('.auth-modal-overlay');
+
+    console.log('Auth Modal:', {
+        exists: !!authModalEl,
+        display: authModalEl?.style.display,
+        computedDisplay: authModalEl ? window.getComputedStyle(authModalEl).display : 'N/A',
+        zIndex: authModalEl ? window.getComputedStyle(authModalEl).zIndex : 'N/A'
+    });
+
+    console.log('Auth Modal Overlay:', {
+        exists: !!authOverlayEl,
+        display: authOverlayEl?.style.display,
+        computedDisplay: authOverlayEl ? window.getComputedStyle(authOverlayEl).display : 'N/A',
+        opacity: authOverlayEl ? window.getComputedStyle(authOverlayEl).opacity : 'N/A'
+    });
+
+    console.log('Decision Confirmation:', {
+        exists: !!decisionConfEl,
+        display: decisionConfEl?.style.display,
+        computedDisplay: decisionConfEl ? window.getComputedStyle(decisionConfEl).display : 'N/A'
+    });
+
+    console.log('Body State:', {
+        overflow: document.body.style.overflow,
+        computedOverflow: window.getComputedStyle(document.body).overflow
+    });
+
+    // Find all high z-index elements
+    const highZ = Array.from(document.querySelectorAll('*'))
+        .filter(el => {
+            const z = window.getComputedStyle(el).zIndex;
+            return z !== 'auto' && parseInt(z) > 100;
+        })
+        .map(el => ({
+            selector: el.tagName.toLowerCase() + (el.id ? '#' + el.id : '') + (el.className ? '.' + el.className.split(' ')[0] : ''),
+            zIndex: window.getComputedStyle(el).zIndex,
+            display: window.getComputedStyle(el).display,
+            opacity: window.getComputedStyle(el).opacity,
+            visible: window.getComputedStyle(el).display !== 'none' && window.getComputedStyle(el).opacity !== '0'
+        }))
+        .filter(item => item.visible);
+
+    console.log('High Z-Index Visible Elements:', highZ);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('💡 To manually clear overlays, run: clearAllOverlays()');
+};
+
+// Debug function to force clear all overlays (call from console)
+window.clearAllOverlays = function() {
+    console.log('🧹 Forcing overlay cleanup...');
+
+    const authModalEl = document.getElementById('auth-modal');
+    const decisionConfEl = document.getElementById('decision-confirmation');
+
+    if (authModalEl) {
+        authModalEl.style.display = 'none';
+        console.log('✅ Auth modal hidden');
+    }
+
+    if (decisionConfEl) {
+        decisionConfEl.style.display = 'none';
+        console.log('✅ Decision confirmation hidden');
+    }
+
+    document.body.style.overflow = 'auto';
+    console.log('✅ Body overflow reset');
+
+    console.log('✅ All overlays cleared!');
+    console.log('Run debugOverlays() to verify');
+};
+
+console.log('🛠️  Debug tools loaded:');
+console.log('  • debugOverlays() - Check what overlays are visible');
+console.log('  • clearAllOverlays() - Force clear all overlays');
 
 // Initialize on load
 clearStaleVideoSources();
